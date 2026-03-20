@@ -1,0 +1,52 @@
+name: E2E
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Python dependencies
+        working-directory: examples/chat-agent
+        run: uv sync
+
+      - name: Start LangGraph dev server
+        working-directory: examples/chat-agent
+        run: uv run langgraph dev --no-browser &
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          LANGSMITH_TRACING: "true"
+          LANGSMITH_PROJECT: stream-resource-e2e-ci
+
+      - name: Wait for server to be ready
+        run: |
+          echo "Waiting for LangGraph server..."
+          for i in {1..30}; do
+            curl -sf http://localhost:2024/ok && echo "Server ready" && break
+            echo "Attempt $i/30..."
+            sleep 2
+          done
+          curl -sf http://localhost:2024/ok || (echo "Server failed to start after 60s" && exit 1)
+
+      - name: Run e2e tests
+        run: npx nx e2e stream-resource-e2e
+        env:
+          LANGGRAPH_URL: http://localhost:2024

@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  library:
+    name: Library — lint / test / build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx nx lint stream-resource
+      - run: npx nx test stream-resource --coverage
+      - run: npx nx build stream-resource --configuration=production
+
+  website:
+    name: Website — lint / build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx nx lint website
+      # nx build website triggers demo:build first (dependsOn in project.json)
+      - run: npx nx build website
+
+  mcp:
+    name: MCP — build / smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx nx test mcp --skip-nx-cache
+
+  chat-agent-smoke:
+    name: Chat Agent — smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - working-directory: examples/chat-agent
+        run: uv sync
+      - run: npx nx run chat-agent:smoke --skip-nx-cache
+
+  website-e2e:
+    name: Website — e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx nx e2e website --skip-nx-cache
+
+  deploy:
+    name: Deploy → Vercel
+    needs: [library, website, mcp, chat-agent-smoke, website-e2e]
+    runs-on: ubuntu-latest
+    # Only deploy on pushes to main, not on pull requests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      # Vercel re-runs the full build on its servers using vercel.json buildCommand.
+      # Required GitHub secrets (Settings → Secrets and variables → Actions):
+      #   VERCEL_TOKEN      — vercel.com/account/tokens
+      #   VERCEL_ORG_ID     — from .vercel/project.json after `vercel link`
+      #   VERCEL_PROJECT_ID — from .vercel/project.json after `vercel link`
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Deploy to Vercel (production)
+        id: deploy
+        run: |
+          url=$(npx vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }} | tail -n 1)
+          echo "deployment_url=$url" >> "$GITHUB_OUTPUT"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Verify deployed website
+        run: npx nx e2e website --skip-nx-cache
+        env:
+          BASE_URL: ${{ steps.deploy.outputs.deployment_url }}

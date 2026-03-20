@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300">
+  <rect width="1200" height="300" fill="#080B14"/>
+
+  <!-- Decorative left rule -->
+  <line x1="60" y1="80" x2="60" y2="220" stroke="#6C8EFF" stroke-width="1" stroke-opacity="0.35"/>
+
+  <!-- Wordmark: "stream-resource" -->
+  <text
+    x="88"
+    y="182"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="88"
+    font-weight="700"
+    letter-spacing="-2"
+    fill="#EEF1FF"
+  >stream-resource</text>
+
+  <!-- Tagline -->
+  <text
+    x="90"
+    y="228"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="18"
+    font-style="italic"
+    fill="#8B96C8"
+    opacity="0.9"
+  >The Enterprise Streaming Resource for LangChain and Angular</text>
+
+  <!-- Bottom horizontal rule -->
+  <line x1="60" y1="252" x2="1140" y2="252" stroke="#6C8EFF" stroke-width="1" stroke-opacity="0.18"/>
+</svg>

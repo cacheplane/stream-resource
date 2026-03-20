@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #080B14;
+  --color-accent: #6C8EFF;
+  --color-accent-glow: rgba(108, 142, 255, 0.35);
+  --color-accent-border: rgba(108, 142, 255, 0.15);
+  --color-accent-border-hover: rgba(108, 142, 255, 0.40);
+  --color-accent-surface: rgba(108, 142, 255, 0.08);
+  --color-text-primary: #EEF1FF;
+  --color-text-secondary: #8B96C8;
+  --color-text-muted: #4A527A;
+  --color-sidebar-bg: #0A0D18;
+  --color-angular-red: #DD0031;
+
+  --font-garamond: "EB Garamond", Georgia, serif;
+  --font-inter: Inter, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+:root {
+  --color-bg: #080B14;
+  --color-accent: #6C8EFF;
+  --color-accent-glow: rgba(108, 142, 255, 0.35);
+  --color-accent-border: rgba(108, 142, 255, 0.15);
+  --color-accent-border-hover: rgba(108, 142, 255, 0.40);
+  --color-accent-surface: rgba(108, 142, 255, 0.08);
+  --color-text-primary: #EEF1FF;
+  --color-text-secondary: #8B96C8;
+  --color-text-muted: #4A527A;
+  --color-sidebar-bg: #0A0D18;
+  --color-angular-red: #DD0031;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-inter);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.glow-text {
+  text-shadow: 0 0 40px rgba(108, 142, 255, 0.5);
+}
+
+.glow-demo {
+  box-shadow: 0 0 30px rgba(108, 142, 255, 0.25);
+}
+
+.glow-card {
+  box-shadow: 0 0 24px rgba(108, 142, 255, 0.3);
+}
+
+/* Shiki code blocks — tokyo-night theme */
+.shiki {
+  padding: 1.5rem;
+  background: #1a1b26 !important;
+  overflow-x: auto;
+}
+.shiki code {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  line-height: 1.7;
+}

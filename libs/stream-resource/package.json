@@ -1,0 +1,12 @@
+{
+  "name": "@cacheplane/stream-resource",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/core": "^20.0.0 || ^21.0.0",
+    "@langchain/core": "^1.1.33",
+    "@langchain/langgraph-sdk": "^1.7.4",
+    "rxjs": "~7.8.0"
+  },
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "sideEffects": false
+}

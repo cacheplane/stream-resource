@@ -1,0 +1,6 @@
+{
+  "buildCommand": "npx nx build website",
+  "outputDirectory": "dist/apps/website/.next",
+  "framework": "nextjs",
+  "installCommand": "npm ci"
+}

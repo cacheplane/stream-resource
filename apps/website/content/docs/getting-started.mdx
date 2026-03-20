@@ -1,0 +1,47 @@
+# Getting Started
+
+Add stream-resource to your Angular 20+ application.
+
+## Installation
+
+```bash
+npm install stream-resource@latest
+```
+
+## Setup
+
+In `app.config.ts`, add `provideStreamResource` to your providers:
+
+```typescript
+import { provideStreamResource } from 'stream-resource';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideStreamResource({ apiUrl: 'http://localhost:2024' }),
+  ],
+};
+```
+
+## Your first component
+
+```typescript
+import { streamResource } from 'stream-resource';
+
+@Component({
+  template: `
+    @for (msg of chat.messages(); track $index) {
+      <p>{{ msg.content }}</p>
+    }
+    <button (click)="chat.submit({ messages: [{ role: 'human', content: 'Hello' }] })">
+      Send
+    </button>
+  `,
+})
+export class ChatComponent {
+  chat = streamResource<{ messages: BaseMessage[] }>({
+    assistantId: 'chat_agent',
+  });
+}
+```
+
+`streamResource()` MUST be called in an Angular injection context (component field initializer or constructor). Never call it in `ngOnInit`.

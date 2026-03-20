@@ -1,0 +1,39 @@
+import type { Metadata } from 'next';
+import { EB_Garamond, Inter, JetBrains_Mono } from 'next/font/google';
+import './global.css';
+import { Nav } from '../components/shared/Nav';
+import { Footer } from '../components/shared/Footer';
+
+const garamond = EB_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '700', '800'],
+  style: ['normal', 'italic'],
+  variable: '--font-garamond',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+});
+
+export const metadata: Metadata = {
+  title: 'StreamResource — LangChain Streaming for Angular',
+  description: 'The Enterprise Streaming Resource for LangChain and Angular. streamResource() brings full parity with React useStream() to Angular 20+.',
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={`${garamond.variable} ${inter.variable} ${mono.variable}`}>
+      <body>
+        <Nav />
+        <main>{children}</main>
+        <Footer />
+      </body>
+    </html>
+  );
+}

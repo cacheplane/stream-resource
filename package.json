@@ -1,0 +1,95 @@
+{
+  "name": "stream-resource",
+  "version": "0.0.0",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "scripts": {
+    "generate-agent-context": "npx tsx --tsconfig apps/website/tsconfig.json apps/website/scripts/generate-agent-context.ts",
+    "generate-api-docs": "npx tsx apps/website/scripts/generate-api-docs.ts",
+    "generate-narrative-docs": "npx tsx apps/website/scripts/generate-narrative-docs.ts",
+    "generate-docs": "npm run generate-api-docs && npm run generate-narrative-docs"
+  },
+  "private": true,
+  "devDependencies": {
+    "@angular-devkit/core": "~21.1.0",
+    "@angular-devkit/schematics": "~21.1.0",
+    "@angular/build": "~21.1.0",
+    "@angular/cli": "~21.1.0",
+    "@angular/compiler-cli": "~21.1.0",
+    "@angular/elements": "~21.1.0",
+    "@angular/language-service": "~21.1.0",
+    "@anthropic-ai/sdk": "^0.79.0",
+    "@eslint/js": "^9.8.0",
+    "@nx/angular": "^22.5.4",
+    "@nx/eslint": "22.5.4",
+    "@nx/eslint-plugin": "22.5.4",
+    "@nx/js": "22.6.0",
+    "@nx/next": "^22.6.0",
+    "@nx/playwright": "^22.6.0",
+    "@nx/vite": "^22.5.4",
+    "@playwright/test": "^1.58.2",
+    "@schematics/angular": "~21.1.0",
+    "@swc-node/register": "1.11.1",
+    "@swc/cli": "~0.8.0",
+    "@swc/core": "1.15.8",
+    "@swc/helpers": "0.5.18",
+    "@tailwindcss/postcss": "^4.2.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@typescript-eslint/utils": "^8.40.0",
+    "@vitest/coverage-v8": "^4.1.0",
+    "angular-eslint": "^21.0.1",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^9.8.0",
+    "eslint-config-prettier": "^10.0.0",
+    "jsdom": "^29.0.0",
+    "jsonc-eslint-parser": "^2.1.0",
+    "ng-packagr": "~21.1.0",
+    "nx": "22.5.1",
+    "postcss": "^8.5.8",
+    "postcss-url": "~10.1.3",
+    "prettier": "^2.6.2",
+    "tailwindcss": "^4.2.2",
+    "tslib": "^2.3.0",
+    "tsx": "^4.21.0",
+    "typedoc": "^0.28.17",
+    "typescript": "~5.9.2",
+    "typescript-eslint": "^8.40.0",
+    "verdaccio": "^6.0.5",
+    "vitest": "^4.1.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "dependencies": {
+    "@angular/common": "~21.1.0",
+    "@angular/compiler": "~21.1.0",
+    "@angular/core": "~21.1.0",
+    "@angular/forms": "~21.1.0",
+    "@angular/platform-browser": "~21.1.0",
+    "@angular/router": "~21.1.0",
+    "@langchain/core": "^1.1.33",
+    "@langchain/langgraph-sdk": "^1.7.4",
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "framer-motion": "^12.38.0",
+    "next": "~16.1.6",
+    "next-mdx-remote": "^6.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "rxjs": "~7.8.0",
+    "shiki": "^4.0.2"
+  },
+  "nx": {
+    "includedScripts": [],
+    "targets": {
+      "local-registry": {
+        "executor": "@nx/js:verdaccio",
+        "options": {
+          "port": 4873,
+          "config": ".verdaccio/config.yml",
+          "storage": "tmp/local-registry/storage"
+        }
+      }
+    }
+  }
+}

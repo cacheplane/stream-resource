@@ -1,0 +1,62 @@
+{
+  "name": "website",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/website/src",
+  "projectType": "application",
+  "tags": ["scope:website", "type:app"],
+  "targets": {
+    "build": {
+      "executor": "@nx/next:build",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "dependsOn": ["demo:build"],
+      "options": {
+        "outputPath": "dist/apps/website"
+      },
+      "configurations": {
+        "development": {
+          "outputPath": "dist/apps/website"
+        },
+        "production": {
+          "outputPath": "dist/apps/website"
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/next:server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "website:build",
+        "dev": true,
+        "port": 3000
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "website:build:development",
+          "dev": true
+        },
+        "production": {
+          "buildTarget": "website:build:production",
+          "dev": false
+        }
+      }
+    },
+    "export": {
+      "executor": "@nx/next:export",
+      "options": {
+        "buildTarget": "website:build:production"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "e2e": {
+      "executor": "@nx/playwright:playwright",
+      "dependsOn": [{ "projects": ["demo"], "target": "build" }],
+      "options": {
+        "config": "apps/website/playwright.config.ts"
+      }
+    }
+  }
+}

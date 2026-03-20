@@ -1,0 +1,29 @@
+# Worktrees
+.worktrees/
+.superpowers/
+
+# Node
+node_modules/
+dist/
+.next/
+
+# Nx
+.nx/cache/
+.nx/workspace-data
+tmp/
+apps/website/test-results/
+apps/website/public/demo/
+
+# Env
+.env
+.env.local
+
+# OS
+.DS_Store
+
+.angular
+
+# Next.js
+.next
+out
+.vercel
