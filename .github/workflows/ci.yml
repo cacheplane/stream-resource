@@ -63,7 +63,6 @@ jobs:
   cockpit-secret-integration:
     name: Cockpit — secret-gated integration
     runs-on: ubuntu-latest
-    if: ${{ secrets.COCKPIT_SECRET_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -71,7 +70,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx nx run cockpit-langgraph-deployment-runtime-python:integration --skip-nx-cache
+      - run: |
+          if [ -z "${COCKPIT_SECRET_TOKEN}" ]; then
+            echo "Skipping secret-gated integration: COCKPIT_SECRET_TOKEN is not configured"
+            exit 0
+          fi
+          npx nx run cockpit-langgraph-deployment-runtime-python:integration --skip-nx-cache
         env:
           COCKPIT_SECRET_TOKEN: ${{ secrets.COCKPIT_SECRET_TOKEN }}
 
