@@ -1,0 +1,6 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npx nx build cockpit --skip-nx-cache",
+  "outputDirectory": "dist/apps/cockpit/.next",
+  "installCommand": "npm ci"
+}

@@ -4,17 +4,29 @@ export interface DeploySmokeOptions {
   url: string;
   expectedTitle?: string;
   dryRun?: boolean;
+  retries?: number;
+  retryDelayMs?: number;
+  fetchImpl?: typeof fetch;
+  sleep?: (delayMs: number) => Promise<void>;
 }
 
 export interface ParsedDeploySmokeArgs extends DeploySmokeOptions {}
 
 const DEFAULT_EXPECTED_TITLE = 'Cockpit';
+const DEFAULT_RETRIES = 0;
+const DEFAULT_RETRY_DELAY_MS = 2000;
+const defaultSleep = (delayMs: number): Promise<void> =>
+  new Promise((resolvePromise) => {
+    setTimeout(resolvePromise, delayMs);
+  });
 
 export const parseDeploySmokeArgs = (argv: string[]): ParsedDeploySmokeArgs => {
   const options: ParsedDeploySmokeArgs = {
     url: 'http://127.0.0.1:3000',
     expectedTitle: DEFAULT_EXPECTED_TITLE,
     dryRun: false,
+    retries: DEFAULT_RETRIES,
+    retryDelayMs: DEFAULT_RETRY_DELAY_MS,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -34,6 +46,18 @@ export const parseDeploySmokeArgs = (argv: string[]): ParsedDeploySmokeArgs => {
 
     if (current === '--dry-run') {
       options.dryRun = true;
+      continue;
+    }
+
+    if (current === '--retries' && argv[index + 1]) {
+      options.retries = Number(argv[index + 1]);
+      index += 1;
+      continue;
+    }
+
+    if (current === '--retry-delay-ms' && argv[index + 1]) {
+      options.retryDelayMs = Number(argv[index + 1]);
+      index += 1;
     }
   }
 
@@ -44,24 +68,46 @@ export const runDeploySmoke = async ({
   url,
   expectedTitle = DEFAULT_EXPECTED_TITLE,
   dryRun = false,
+  retries = DEFAULT_RETRIES,
+  retryDelayMs = DEFAULT_RETRY_DELAY_MS,
+  fetchImpl = fetch,
+  sleep = defaultSleep,
 }: DeploySmokeOptions): Promise<string> => {
   if (dryRun) {
     return `dry-run:${url}:${expectedTitle}`;
   }
 
-  const response = await fetch(url);
+  let attemptsRemaining = retries + 1;
+  let lastError: Error | null = null;
 
-  if (!response.ok) {
-    throw new Error(`Deploy smoke failed for ${url}: ${response.status} ${response.statusText}`);
+  while (attemptsRemaining > 0) {
+    try {
+      const response = await fetchImpl(url);
+
+      if (!response.ok) {
+        throw new Error(`Deploy smoke failed for ${url}: ${response.status} ${response.statusText}`);
+      }
+
+      const html = await response.text();
+
+      if (!html.includes(expectedTitle)) {
+        throw new Error(`Deploy smoke failed for ${url}: missing title ${expectedTitle}`);
+      }
+
+      return `pass:${url}:${expectedTitle}`;
+    } catch (error: unknown) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      attemptsRemaining -= 1;
+
+      if (attemptsRemaining === 0) {
+        throw lastError;
+      }
+
+      await sleep(retryDelayMs);
+    }
   }
 
-  const html = await response.text();
-
-  if (!html.includes(expectedTitle)) {
-    throw new Error(`Deploy smoke failed for ${url}: missing title ${expectedTitle}`);
-  }
-
-  return `pass:${url}:${expectedTitle}`;
+  throw lastError ?? new Error(`Deploy smoke failed for ${url}`);
 };
 
 if (process.argv[1] === resolve(process.cwd(), 'apps/cockpit/scripts/deploy-smoke.ts')) {

@@ -163,7 +163,8 @@ jobs:
       # Required GitHub secrets (Settings → Secrets and variables → Actions):
       #   VERCEL_TOKEN      — vercel.com/account/tokens
       #   VERCEL_ORG_ID     — from .vercel/project.json after `vercel link`
-      #   VERCEL_PROJECT_ID — from .vercel/project.json after `vercel link`
+      #   VERCEL_PROJECT_ID — website project id
+      #   VERCEL_COCKPIT_PROJECT_ID — cockpit project id
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Deploy to Vercel (production)
@@ -178,3 +179,15 @@ jobs:
         run: npx nx e2e website --skip-nx-cache
         env:
           BASE_URL: ${{ steps.deploy.outputs.deployment_url }}
+      - name: Deploy cockpit to Vercel (production)
+        id: deploy_cockpit
+        run: |
+          url=$(npx vercel deploy --prod --yes --local-config=vercel.cockpit.json --token=${{ secrets.VERCEL_TOKEN }} | tail -n 1)
+          echo "deployment_url=$url" >> "$GITHUB_OUTPUT"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_COCKPIT_PROJECT_ID }}
+      - name: Verify deployed cockpit
+        run: |
+          npx tsx apps/cockpit/scripts/deploy-smoke.ts --url "${{ steps.deploy_cockpit.outputs.deployment_url }}" --retries 10 --retry-delay-ms 2000
+          npx tsx apps/cockpit/scripts/deploy-smoke.ts --url https://cockpit.stream-resource.dev --retries 20 --retry-delay-ms 5000
