@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  getDocsBundles,
   resolveDocsBundle,
   toCockpitHref,
   toDocsSlug,
@@ -61,5 +62,41 @@ describe('docs bundle links', () => {
     expect(toCockpitHref(bundle)).toBe(
       '/deep-agents/core-capabilities/planning/overview/python'
     );
+  });
+});
+
+describe('docs bundle matrix coverage', () => {
+  it('covers every approved topic with canonical python docs pages', () => {
+    const expectedTopics = [
+      ['deep-agents', 'getting-started', 'overview'],
+      ['deep-agents', 'core-capabilities', 'planning'],
+      ['deep-agents', 'core-capabilities', 'filesystem'],
+      ['deep-agents', 'core-capabilities', 'subagents'],
+      ['deep-agents', 'core-capabilities', 'memory'],
+      ['deep-agents', 'core-capabilities', 'skills'],
+      ['deep-agents', 'core-capabilities', 'sandboxes'],
+      ['langgraph', 'getting-started', 'overview'],
+      ['langgraph', 'core-capabilities', 'persistence'],
+      ['langgraph', 'core-capabilities', 'durable-execution'],
+      ['langgraph', 'core-capabilities', 'streaming'],
+      ['langgraph', 'core-capabilities', 'interrupts'],
+      ['langgraph', 'core-capabilities', 'memory'],
+      ['langgraph', 'core-capabilities', 'subgraphs'],
+      ['langgraph', 'core-capabilities', 'time-travel'],
+      ['langgraph', 'core-capabilities', 'deployment-runtime'],
+    ] as const;
+    const bundles = getDocsBundles();
+    const pageCounts = new Map<string, number>();
+
+    for (const bundle of bundles) {
+      const key = `${bundle.product}/${bundle.section}/${bundle.topic}/${bundle.language}`;
+      pageCounts.set(key, (pageCounts.get(key) ?? 0) + 1);
+    }
+
+    for (const [product, section, topic] of expectedTopics) {
+      expect(pageCounts.get(`${product}/${section}/${topic}/python`)).toBe(
+        section === 'getting-started' ? 1 : 5
+      );
+    }
   });
 });

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
 import { cockpitManifest } from './manifest';
 import type { CockpitManifestEntry } from './manifest.types';
 
@@ -63,5 +64,29 @@ describe('cockpitManifest', () => {
       'deep-agents/getting-started/overview',
       'langgraph/getting-started/overview',
     ]);
+  });
+
+  it('tracks implemented python assets for every approved capability topic', () => {
+    const capabilityEntries = cockpitManifest.filter(
+      (entry) => entry.entryKind === 'capability'
+    );
+
+    expect(capabilityEntries).toHaveLength(14);
+
+    for (const entry of capabilityEntries) {
+      expect(entry.supportedLanguages).toEqual(['python']);
+      expect(entry.docsPath).toBe(
+        `/docs/${entry.product}/${entry.section}/${entry.topic}/overview/python`
+      );
+      expect(entry.implementationStatus).toBe('implemented');
+      expect(entry.docsStatus).toBe('docs-authored');
+      expect(entry.testStatus).toBe('smoke-tested');
+      expect(entry.promptAssetPaths.length).toBeGreaterThan(0);
+      expect(entry.codeAssetPaths.length).toBeGreaterThan(0);
+
+      for (const assetPath of [...entry.promptAssetPaths, ...entry.codeAssetPaths]) {
+        expect(fs.existsSync(assetPath)).toBe(true);
+      }
+    }
   });
 });

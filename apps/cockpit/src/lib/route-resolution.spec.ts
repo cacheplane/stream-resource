@@ -77,12 +77,35 @@ describe('getCapabilityPresentation', () => {
 
     expect(getCapabilityPresentation(docsEntry)).toMatchObject({
       kind: 'docs-only',
-      docsPath: '/docs/deep-agents/overview',
+      docsPath: '/docs/deep-agents/getting-started/overview/overview/python',
     });
     expect(getCapabilityPresentation(capabilityEntry)).toMatchObject({
       kind: 'capability',
+      docsPath: '/docs/langgraph/core-capabilities/streaming/overview/python',
       promptAssetPaths: ['cockpit/langgraph/streaming/python/prompts/streaming.md'],
       codeAssetPaths: ['cockpit/langgraph/streaming/python/src/index.ts'],
     });
+  });
+
+  it('resolves module-backed metadata for every implemented capability topic', () => {
+    const capabilityEntries = cockpitManifest.filter(
+      (entry) => entry.entryKind === 'capability'
+    );
+
+    for (const entry of capabilityEntries) {
+      expect(getCapabilityPresentation(entry)).toMatchObject({
+        kind: 'capability',
+      });
+      expect(
+        (getCapabilityPresentation(entry).kind === 'capability' &&
+          getCapabilityPresentation(entry).promptAssetPaths.length > 0) ||
+          false
+      ).toBe(true);
+      expect(
+        (getCapabilityPresentation(entry).kind === 'capability' &&
+          getCapabilityPresentation(entry).codeAssetPaths.length > 0) ||
+          false
+      ).toBe(true);
+    }
   });
 });

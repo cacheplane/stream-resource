@@ -12,6 +12,13 @@
         "main": "cockpit/langgraph/streaming/python/src/index.ts",
         "tsConfig": "cockpit/langgraph/streaming/python/tsconfig.json"
       }
+    },
+    "smoke": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "cockpit/langgraph/streaming/python",
+        "command": "npx tsx -e \"import { langgraphStreamingPythonModule } from './src/index.ts'; const module = langgraphStreamingPythonModule; if (module.id !== 'langgraph-streaming-python' || module.title !== 'LangGraph Streaming (Python)') { throw new Error('Unexpected module shape for ' + module.id); }\""
+      }
     }
   }
 }

@@ -1,0 +1,24 @@
+{
+  "name": "cockpit-langgraph-interrupts-python",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "cockpit/langgraph/interrupts/python/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{workspaceRoot}/dist/cockpit/langgraph/interrupts/python"],
+      "options": {
+        "outputPath": "dist/cockpit/langgraph/interrupts/python",
+        "main": "cockpit/langgraph/interrupts/python/src/index.ts",
+        "tsConfig": "cockpit/langgraph/interrupts/python/tsconfig.json"
+      }
+    },
+    "smoke": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "cockpit/langgraph/interrupts/python",
+        "command": "npx tsx -e \"import { langgraphInterruptsPythonModule } from './src/index.ts'; const module = langgraphInterruptsPythonModule; if (module.id !== 'langgraph-interrupts-python' || module.title !== 'LangGraph Interrupts (Python)') { throw new Error('Unexpected module shape for ' + module.id); }\""
+      }
+    }
+  }
+}

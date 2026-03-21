@@ -1,6 +1,7 @@
 import {
   cockpitManifest,
   type CockpitLanguage,
+  type CockpitPageId,
   type CockpitProduct,
 } from '../../../cockpit-registry/src/index';
 
@@ -8,7 +9,7 @@ export interface DocsBundle {
   product: CockpitProduct;
   section: 'getting-started' | 'core-capabilities';
   topic: string;
-  page: 'overview' | 'build' | 'prompts' | 'code' | 'testing';
+  page: CockpitPageId;
   language: CockpitLanguage;
   title: string;
   sourcePath: string;
@@ -22,116 +23,39 @@ export interface ResolveDocsBundleOptions {
   language: CockpitLanguage;
 }
 
-const docsBundles: DocsBundle[] = [
-  {
-    product: 'deep-agents',
-    section: 'getting-started',
-    topic: 'overview',
-    page: 'overview',
-    language: 'python',
-    title: 'Deep Agents Overview',
-    sourcePath: 'deep-agents/getting-started/overview/python/overview.mdx',
-  },
-  {
-    product: 'langgraph',
-    section: 'getting-started',
-    topic: 'overview',
-    page: 'overview',
-    language: 'python',
-    title: 'LangGraph Overview',
-    sourcePath: 'langgraph/getting-started/overview/python/overview.mdx',
-  },
-  {
-    product: 'deep-agents',
-    section: 'core-capabilities',
-    topic: 'planning',
-    page: 'overview',
-    language: 'python',
-    title: 'Deep Agents Planning Overview',
-    sourcePath: 'deep-agents/core-capabilities/planning/python/overview.mdx',
-  },
-  {
-    product: 'deep-agents',
-    section: 'core-capabilities',
-    topic: 'planning',
-    page: 'build',
-    language: 'python',
-    title: 'Deep Agents Planning Build',
-    sourcePath: 'deep-agents/core-capabilities/planning/python/build.mdx',
-  },
-  {
-    product: 'deep-agents',
-    section: 'core-capabilities',
-    topic: 'planning',
-    page: 'prompts',
-    language: 'python',
-    title: 'Deep Agents Planning Prompts',
-    sourcePath: 'deep-agents/core-capabilities/planning/python/prompts.mdx',
-  },
-  {
-    product: 'deep-agents',
-    section: 'core-capabilities',
-    topic: 'planning',
-    page: 'code',
-    language: 'python',
-    title: 'Deep Agents Planning Code',
-    sourcePath: 'deep-agents/core-capabilities/planning/python/code.mdx',
-  },
-  {
-    product: 'deep-agents',
-    section: 'core-capabilities',
-    topic: 'planning',
-    page: 'testing',
-    language: 'python',
-    title: 'Deep Agents Planning Testing',
-    sourcePath: 'deep-agents/core-capabilities/planning/python/testing.mdx',
-  },
-  {
-    product: 'langgraph',
-    section: 'core-capabilities',
-    topic: 'streaming',
-    page: 'overview',
-    language: 'python',
-    title: 'LangGraph Streaming Overview',
-    sourcePath: 'langgraph/core-capabilities/streaming/python/overview.mdx',
-  },
-  {
-    product: 'langgraph',
-    section: 'core-capabilities',
-    topic: 'streaming',
-    page: 'build',
-    language: 'python',
-    title: 'LangGraph Streaming Build',
-    sourcePath: 'langgraph/core-capabilities/streaming/python/build.mdx',
-  },
-  {
-    product: 'langgraph',
-    section: 'core-capabilities',
-    topic: 'streaming',
-    page: 'prompts',
-    language: 'python',
-    title: 'LangGraph Streaming Prompts',
-    sourcePath: 'langgraph/core-capabilities/streaming/python/prompts.mdx',
-  },
-  {
-    product: 'langgraph',
-    section: 'core-capabilities',
-    topic: 'streaming',
-    page: 'code',
-    language: 'python',
-    title: 'LangGraph Streaming Code',
-    sourcePath: 'langgraph/core-capabilities/streaming/python/code.mdx',
-  },
-  {
-    product: 'langgraph',
-    section: 'core-capabilities',
-    topic: 'streaming',
-    page: 'testing',
-    language: 'python',
-    title: 'LangGraph Streaming Testing',
-    sourcePath: 'langgraph/core-capabilities/streaming/python/testing.mdx',
-  },
+const PAGE_TITLE_SUFFIX = {
+  overview: 'Overview',
+  build: 'Build',
+  prompts: 'Prompts',
+  code: 'Code',
+  testing: 'Testing',
+} as const satisfies Record<CockpitPageId, string>;
+
+const CAPABILITY_PAGES: CockpitPageId[] = [
+  'overview',
+  'build',
+  'prompts',
+  'code',
+  'testing',
 ];
+
+const docsBundles: DocsBundle[] = cockpitManifest.flatMap((entry) => {
+  const pages =
+    entry.entryKind === 'docs-only' ? (['overview'] as CockpitPageId[]) : CAPABILITY_PAGES;
+
+  return pages.map((page) => ({
+    product: entry.product,
+    section: entry.section,
+    topic: entry.topic,
+    page,
+    language: entry.language,
+    title:
+      entry.entryKind === 'docs-only'
+        ? entry.title
+        : `${entry.title} ${PAGE_TITLE_SUFFIX[page]}`,
+    sourcePath: `${entry.product}/${entry.section}/${entry.topic}/${entry.language}/${page}.mdx`,
+  }));
+});
 
 const findBundle = (options: ResolveDocsBundleOptions): DocsBundle | undefined =>
   docsBundles.find(

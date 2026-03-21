@@ -2,7 +2,35 @@ import type {
   CockpitManifestEntry,
   CockpitManifestIdentity,
   CockpitProduct,
+  CockpitRuntimeClass,
 } from './manifest.types';
+
+const APPROVED_TOPICS = {
+  'deep-agents': {
+    'getting-started': ['overview'],
+    'core-capabilities': [
+      'planning',
+      'filesystem',
+      'subagents',
+      'memory',
+      'skills',
+      'sandboxes',
+    ],
+  },
+  langgraph: {
+    'getting-started': ['overview'],
+    'core-capabilities': [
+      'persistence',
+      'durable-execution',
+      'streaming',
+      'interrupts',
+      'memory',
+      'subgraphs',
+      'time-travel',
+      'deployment-runtime',
+    ],
+  },
+} as const;
 
 const toTitle = (value: string): string =>
   value
@@ -21,12 +49,27 @@ const getOverviewIdentity = (product: CockpitProduct): CockpitManifestIdentity =
   language: 'python',
 });
 
+const getDocsPath = (
+  product: CockpitProduct,
+  section: CockpitManifestEntry['section'],
+  topic: string
+): string => `/docs/${product}/${section}/${topic}/overview/python`;
+
+const getPromptAssetPath = (product: CockpitProduct, topic: string): string =>
+  `cockpit/${product}/${topic}/python/prompts/${topic}.md`;
+
+const getCodeAssetPath = (product: CockpitProduct, topic: string): string =>
+  `cockpit/${product}/${topic}/python/src/index.ts`;
+
+const getRuntimeClass = (topic: string): CockpitRuntimeClass =>
+  topic === 'deployment-runtime' ? 'deployed-service' : 'local-service';
+
 const createEntry = (
   product: CockpitProduct,
   section: CockpitManifestEntry['section'],
-  topic: string,
-  entryKind: CockpitManifestEntry['entryKind']
+  topic: string
 ): CockpitManifestEntry => {
+  const isDocsOnly = section === 'getting-started';
   const page: CockpitManifestEntry['page'] = 'overview';
   const title =
     section === 'getting-started'
@@ -55,33 +98,28 @@ const createEntry = (
       },
     },
     fallbackTarget: getOverviewIdentity(product),
-    entryKind,
-    runtimeClass: entryKind === 'docs-only' ? 'docs-only' : 'local-service',
-    docsPath: `/docs/${product}/${topic}`,
-    promptAssetPaths: [],
-    codeAssetPaths: [],
-    implementationStatus: 'planned',
-    docsStatus: 'planned',
-    testStatus: 'planned',
+    entryKind: isDocsOnly ? 'docs-only' : 'capability',
+    runtimeClass: isDocsOnly ? 'docs-only' : getRuntimeClass(topic),
+    docsPath: getDocsPath(product, section, topic),
+    promptAssetPaths: isDocsOnly ? [] : [getPromptAssetPath(product, topic)],
+    codeAssetPaths: isDocsOnly ? [] : [getCodeAssetPath(product, topic)],
+    implementationStatus: isDocsOnly ? 'docs-authored' : 'implemented',
+    docsStatus: 'docs-authored',
+    testStatus: isDocsOnly ? 'docs-authored' : 'smoke-tested',
     deploymentStatus: 'planned',
   };
 };
 
-export const cockpitManifest: CockpitManifestEntry[] = [
-  createEntry('deep-agents', 'getting-started', 'overview', 'docs-only'),
-  createEntry('deep-agents', 'core-capabilities', 'planning', 'capability'),
-  createEntry('deep-agents', 'core-capabilities', 'filesystem', 'capability'),
-  createEntry('deep-agents', 'core-capabilities', 'subagents', 'capability'),
-  createEntry('deep-agents', 'core-capabilities', 'memory', 'capability'),
-  createEntry('deep-agents', 'core-capabilities', 'skills', 'capability'),
-  createEntry('deep-agents', 'core-capabilities', 'sandboxes', 'capability'),
-  createEntry('langgraph', 'getting-started', 'overview', 'docs-only'),
-  createEntry('langgraph', 'core-capabilities', 'persistence', 'capability'),
-  createEntry('langgraph', 'core-capabilities', 'durable-execution', 'capability'),
-  createEntry('langgraph', 'core-capabilities', 'streaming', 'capability'),
-  createEntry('langgraph', 'core-capabilities', 'interrupts', 'capability'),
-  createEntry('langgraph', 'core-capabilities', 'memory', 'capability'),
-  createEntry('langgraph', 'core-capabilities', 'subgraphs', 'capability'),
-  createEntry('langgraph', 'core-capabilities', 'time-travel', 'capability'),
-  createEntry('langgraph', 'core-capabilities', 'deployment-runtime', 'capability'),
-];
+export const cockpitManifest: CockpitManifestEntry[] = Object.entries(
+  APPROVED_TOPICS
+).flatMap(([product, sections]) =>
+  Object.entries(sections).flatMap(([section, topics]) =>
+    (topics as readonly string[]).map((topic: string) =>
+      createEntry(
+        product as CockpitProduct,
+        section as CockpitManifestEntry['section'],
+        topic
+      )
+    )
+  )
+);
