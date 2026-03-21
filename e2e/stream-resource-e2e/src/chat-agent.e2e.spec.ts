@@ -36,7 +36,9 @@ describe.skipIf(!process.env['LANGGRAPH_URL'])('chat-agent e2e', () => {
     }
 
     expect(chunks.length).toBeGreaterThan(0);
-    const messageChunks = chunks.filter((c: any) => c.event === 'messages');
+    const messageChunks = chunks.filter(
+      (c: any) => c.event === 'messages/partial' || c.event === 'messages/metadata'
+    );
     expect(messageChunks.length).toBeGreaterThan(0);
   });
 
