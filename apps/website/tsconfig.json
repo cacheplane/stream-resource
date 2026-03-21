@@ -6,30 +6,33 @@
     "emitDeclarationOnly": false,
     "esModuleInterop": true,
     "module": "esnext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "incremental": true,
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
-    },
-    "outDir": "dist",
-    "rootDir": "src",
-    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+      "@/*": ["./src/*"],
+      "@cacheplane/cockpit-docs": ["../../libs/cockpit-docs/src/index.ts"],
+      "@cacheplane/cockpit-registry": [
+        "../../libs/cockpit-registry/src/index.ts"
+      ],
+      "@cacheplane/cockpit-shell": ["../../libs/cockpit-shell/src/index.ts"]
+    }
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.js",
     "src/**/*.jsx",
-    "next-env.d.ts"
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "out-tsc",
