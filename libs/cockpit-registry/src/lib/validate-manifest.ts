@@ -31,6 +31,27 @@ export const validateCockpitManifest = (manifest: CockpitManifestEntry[]): strin
     }
   }
 
+  for (const entry of manifest) {
+    if (!entry.testingContract) {
+      errors.push(`Missing testing contract for ${identityKey(entry)}`);
+      continue;
+    }
+
+    if (entry.entryKind === 'capability' && !entry.testingContract.smokeTarget) {
+      errors.push(`Missing smoke target for ${identityKey(entry)}`);
+    }
+
+    if (!entry.testingContract.deploySmokePath.startsWith('/')) {
+      errors.push(`Invalid deploy smoke path for ${identityKey(entry)}`);
+    }
+
+    if (
+      entry.testingContract.integrationMode !== 'none' &&
+      !entry.testingContract.integrationTarget
+    ) {
+      errors.push(`Missing integration target for ${identityKey(entry)}`);
+    }
+  }
+
   return errors;
 };
-

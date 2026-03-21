@@ -24,6 +24,15 @@ export type CockpitLifecycleStatus =
   | 'integration-tested'
   | 'deployed';
 
+export type CockpitIntegrationMode = 'none' | 'local' | 'secret-gated';
+
+export interface CockpitTestingContract {
+  smokeTarget: string | null;
+  integrationTarget: string | null;
+  integrationMode: CockpitIntegrationMode;
+  deploySmokePath: string;
+}
+
 export interface CockpitManifestIdentity {
   product: CockpitProduct;
   section: CockpitSection;
@@ -50,4 +59,5 @@ export interface CockpitManifestEntry extends CockpitManifestIdentity {
   docsStatus: CockpitLifecycleStatus;
   testStatus: CockpitLifecycleStatus;
   deploymentStatus: CockpitLifecycleStatus;
+  testingContract: CockpitTestingContract;
 }

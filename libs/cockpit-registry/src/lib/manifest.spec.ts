@@ -89,4 +89,24 @@ describe('cockpitManifest', () => {
       }
     }
   });
+
+  it('marks secret-gated integration explicitly for deployment runtime', () => {
+    const deploymentRuntimeEntry = cockpitManifest.find(
+      (entry) =>
+        entry.product === 'langgraph' &&
+        entry.section === 'core-capabilities' &&
+        entry.topic === 'deployment-runtime'
+    );
+
+    expect(deploymentRuntimeEntry).toMatchObject({
+      runtimeClass: 'deployed-service',
+      testingContract: {
+        smokeTarget: 'cockpit-langgraph-deployment-runtime-python:smoke',
+        integrationTarget: 'cockpit-langgraph-deployment-runtime-python:integration',
+        integrationMode: 'secret-gated',
+        deploySmokePath:
+          '/langgraph/core-capabilities/deployment-runtime/overview/python',
+      },
+    });
+  });
 });

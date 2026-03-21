@@ -5,6 +5,41 @@ on:
     branches: [main]
 
 jobs:
+  cockpit-deploy-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Run cockpit deploy smoke
+        run: npx tsx apps/cockpit/scripts/deploy-smoke.ts --url https://cockpit.stream-resource.dev
+
+  cockpit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run cockpit e2e tests
+        run: npx nx e2e cockpit --skip-nx-cache
+
   e2e:
     runs-on: ubuntu-latest
     steps:
