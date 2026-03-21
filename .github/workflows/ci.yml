@@ -178,7 +178,7 @@ jobs:
       - name: Verify deployed website
         run: npx nx e2e website --skip-nx-cache
         env:
-          BASE_URL: ${{ steps.deploy.outputs.deployment_url }}
+          BASE_URL: https://stream-resource.dev
       - name: Deploy cockpit to Vercel (production)
         id: deploy_cockpit
         run: |
