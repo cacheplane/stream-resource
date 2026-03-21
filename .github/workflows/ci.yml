@@ -159,35 +159,84 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      # Vercel re-runs the full build on its servers using vercel.json buildCommand.
       # Required GitHub secrets (Settings → Secrets and variables → Actions):
-      #   VERCEL_TOKEN      — vercel.com/account/tokens
-      #   VERCEL_ORG_ID     — from .vercel/project.json after `vercel link`
-      #   VERCEL_PROJECT_ID — website project id
-      #   VERCEL_COCKPIT_PROJECT_ID — cockpit project id
+      #   VERCEL_TOKEN               — vercel.com/account/tokens
+      #   VERCEL_ORG_ID              — Vercel team id
+      #   VERCEL_PROJECT_ID          — website project id
+      #   VERCEL_COCKPIT_PROJECT_ID  — cockpit project id
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Deploy to Vercel (production)
-        id: deploy
+      - name: Resolve deploy targets
+        id: affected
         run: |
-          url=$(npx vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }} | tail -n 1)
+          base_sha="${{ github.event.before }}"
+          head_sha="${{ github.sha }}"
+          if [ -z "$base_sha" ] || [ "$base_sha" = "0000000000000000000000000000000000000000" ]; then
+            base_sha="$(git rev-parse "$head_sha^")"
+          fi
+
+          affected_projects="$(npx nx show projects --affected --base="$base_sha" --head="$head_sha")"
+          changed_files="$(git diff --name-only "$base_sha" "$head_sha")"
+
+          website_changed=false
+          cockpit_changed=false
+
+          if printf '%s\n' "$affected_projects" | rg -x 'website' >/dev/null; then
+            website_changed=true
+          fi
+
+          if printf '%s\n' "$affected_projects" | rg -x 'cockpit' >/dev/null; then
+            cockpit_changed=true
+          fi
+
+          if printf '%s\n' "$changed_files" | rg '^(\.github/workflows/ci\.yml|vercel\.json)$' >/dev/null; then
+            website_changed=true
+          fi
+
+          if printf '%s\n' "$changed_files" | rg '^(\.github/workflows/ci\.yml|vercel\.cockpit\.json)$' >/dev/null; then
+            cockpit_changed=true
+          fi
+
+          echo "website=$website_changed" >> "$GITHUB_OUTPUT"
+          echo "cockpit=$cockpit_changed" >> "$GITHUB_OUTPUT"
+      - name: Prepare website Vercel project
+        if: steps.affected.outputs.website == 'true'
+        run: |
+          mkdir -p .vercel
+          cat > .vercel/project.json <<EOF
+          {"projectId":"${{ secrets.VERCEL_PROJECT_ID }}","orgId":"${{ secrets.VERCEL_ORG_ID }}","projectName":"stream-resource"}
+          EOF
+          npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          rm -rf .vercel/output
+      - name: Build and deploy website to Vercel (production)
+        if: steps.affected.outputs.website == 'true'
+        id: deploy_website
+        run: |
+          npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          url=$(npx vercel deploy --prebuilt --archive=tgz --prod --yes --token=${{ secrets.VERCEL_TOKEN }} | tail -n 1)
           echo "deployment_url=$url" >> "$GITHUB_OUTPUT"
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       - name: Verify deployed website
+        if: steps.affected.outputs.website == 'true'
         run: npx nx e2e website --skip-nx-cache
         env:
           BASE_URL: https://stream-resource.dev
-      - name: Deploy cockpit to Vercel (production)
+      - name: Prepare cockpit Vercel project
+        if: steps.affected.outputs.cockpit == 'true'
+        run: |
+          mkdir -p .vercel
+          cat > .vercel/project.json <<EOF
+          {"projectId":"${{ secrets.VERCEL_COCKPIT_PROJECT_ID }}","orgId":"${{ secrets.VERCEL_ORG_ID }}","projectName":"cockpit"}
+          EOF
+          npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          rm -rf .vercel/output
+      - name: Build and deploy cockpit to Vercel (production)
+        if: steps.affected.outputs.cockpit == 'true'
         id: deploy_cockpit
         run: |
-          url=$(npx vercel deploy --prod --yes --local-config=vercel.cockpit.json --token=${{ secrets.VERCEL_TOKEN }} | tail -n 1)
+          npx vercel build --prod --local-config vercel.cockpit.json --token=${{ secrets.VERCEL_TOKEN }}
+          url=$(npx vercel deploy --prebuilt --archive=tgz --prod --yes --token=${{ secrets.VERCEL_TOKEN }} | tail -n 1)
           echo "deployment_url=$url" >> "$GITHUB_OUTPUT"
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_COCKPIT_PROJECT_ID }}
       - name: Verify deployed cockpit
+        if: steps.affected.outputs.cockpit == 'true'
         run: |
-          npx tsx apps/cockpit/scripts/deploy-smoke.ts --url "${{ steps.deploy_cockpit.outputs.deployment_url }}" --retries 10 --retry-delay-ms 2000
           npx tsx apps/cockpit/scripts/deploy-smoke.ts --url https://cockpit.stream-resource.dev --retries 20 --retry-delay-ms 5000
