@@ -13,7 +13,7 @@ export default defineConfig({
     ? {
         command: 'npx next dev . --port 4201',
         url: 'http://127.0.0.1:4201',
-        reuseExistingServer: !process.env['CI'],
+        reuseExistingServer: false,
       }
     : undefined,
 });

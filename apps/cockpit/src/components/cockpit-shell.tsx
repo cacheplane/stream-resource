@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { cockpitManifest } from '../../../../libs/cockpit-registry/src/index';
 import type { CapabilityPresentation, NavigationProduct } from '../lib/route-resolution';
 import { CodeMode } from './code-mode/code-mode';
@@ -35,6 +35,7 @@ export function CockpitShell({
   presentation,
   entryTitle,
 }: CockpitShellProps) {
+  const [isHydrated, setIsHydrated] = useState(false);
   const [activeMode, setActiveMode] = useState<PrimaryMode>('Run');
   const [isPromptDrawerOpen, setIsPromptDrawerOpen] = useState(false);
   const isCapability = presentation.kind === 'capability';
@@ -64,8 +65,16 @@ export function CockpitShell({
     },
   ].filter((section) => Boolean(section.code || section.body));
 
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
   return (
-    <main aria-label="Cockpit shell" className="cockpit-shell">
+    <main
+      aria-label="Cockpit shell"
+      className="cockpit-shell"
+      data-hydrated={isHydrated ? 'true' : 'false'}
+    >
       <CockpitSidebar
         navigationTree={navigationTree}
         manifest={cockpitManifest}
