@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import { tokens } from '../../lib/design-tokens';
 
 export function GenerativeUIFrame() {
   const frameRef = useRef<HTMLDivElement>(null);
@@ -13,9 +14,9 @@ export function GenerativeUIFrame() {
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
       const distance = Math.hypot(e.clientX - cx, e.clientY - cy);
-      const intensity = 0.15 + 0.45 * Math.max(0, 1 - distance / 400);
-      const blur = 20 + intensity * 60;
-      frame.style.boxShadow = `0 0 ${blur}px rgba(108,142,255,${intensity.toFixed(2)})`;
+      const intensity = 0.08 + 0.2 * Math.max(0, 1 - distance / 400);
+      const blur = 10 + intensity * 40;
+      frame.style.boxShadow = `0 0 ${blur}px rgba(0,64,144,${intensity.toFixed(2)})`;
     };
 
     document.addEventListener('mousemove', handleMouseMove);
@@ -29,9 +30,9 @@ export function GenerativeUIFrame() {
       aria-label="Animated demo of stream-resource rendering a generative UI"
       className="rounded-xl overflow-hidden"
       style={{
-        border: '1px solid rgba(108,142,255,0.4)',
+        border: `1px solid ${tokens.glass.border}`,
         background: '#080B14',
-        boxShadow: '0 0 20px rgba(108,142,255,0.2)',
+        boxShadow: tokens.glow.demo,
         transition: 'box-shadow 0.1s ease-out',
         width: '100%',
         maxWidth: 520,
@@ -39,7 +40,7 @@ export function GenerativeUIFrame() {
       {/* Browser chrome */}
       <div style={{
         padding: '10px 14px',
-        borderBottom: '1px solid rgba(108,142,255,0.15)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
         display: 'flex', alignItems: 'center', gap: 8,
       }}>
         <div style={{ display: 'flex', gap: 6 }}>
@@ -48,7 +49,7 @@ export function GenerativeUIFrame() {
           <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#28C840' }} />
         </div>
         <div style={{
-          flex: 1, background: 'rgba(108,142,255,0.06)',
+          flex: 1, background: 'rgba(255,255,255,0.06)',
           borderRadius: 4, padding: '3px 10px',
           fontFamily: 'var(--font-mono)', fontSize: 11,
           color: '#4A527A', textAlign: 'center',
@@ -57,7 +58,7 @@ export function GenerativeUIFrame() {
         </div>
       </div>
 
-      {/* Animated content area */}
+      {/* Animated content area — stays dark themed */}
       <div style={{ padding: 20, minHeight: 260, position: 'relative', overflow: 'hidden' }}>
         <style>{`
           @keyframes fadeWord {
@@ -92,7 +93,6 @@ export function GenerativeUIFrame() {
         `}</style>
 
         <div className="gen-ui-loop">
-          {/* Phase 1: streaming chat reply */}
           <div style={{ marginBottom: 16, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
             <div style={{
               width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
@@ -113,7 +113,6 @@ export function GenerativeUIFrame() {
             </div>
           </div>
 
-          {/* Phase 2: generative card */}
           <div style={{
             border: '1px solid rgba(108,142,255,0.2)', borderRadius: 8,
             padding: '12px 14px', marginBottom: 12,
@@ -130,10 +129,9 @@ export function GenerativeUIFrame() {
               background: 'rgba(108,142,255,0.15)',
               border: '1px solid rgba(108,142,255,0.3)',
               fontFamily: 'var(--font-mono)', fontSize: 11, color: '#6C8EFF',
-            }}>View details →</div>
+            }}>View details &rarr;</div>
           </div>
 
-          {/* Phase 3: streaming table */}
           <div style={{ border: '1px solid rgba(108,142,255,0.15)', borderRadius: 8, overflow: 'hidden' }}>
             <div style={{
               display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
