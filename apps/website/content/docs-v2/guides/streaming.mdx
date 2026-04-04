@@ -1,6 +1,6 @@
 # Streaming
 
-StreamResource provides token-by-token streaming from LangGraph agents via Server-Sent Events (SSE). Every update lands directly in Angular Signals.
+StreamResource provides token-by-token streaming from LangGraph agents via Server-Sent Events (SSE). Every update lands directly in Angular Signals — no subscriptions, no manual change detection.
 
 <Callout type="tip" title="Prerequisites">
 Make sure you've completed the Installation guide first.
@@ -8,28 +8,44 @@ Make sure you've completed the Installation guide first.
 
 ## Basic streaming
 
-<Tabs items={['TypeScript', 'Template']}>
-<Tab>
+Create a `streamResource` in your component, pass it a message, and bind to the resulting signals.
+
+<Tabs>
+<Tab label="chat.component.ts">
 
 ```typescript
-// chat.component.ts
-const chat = streamResource<{ messages: BaseMessage[] }>({
-  assistantId: 'chat_agent',
-});
+import { Component, computed } from '@angular/core';
+import { streamResource } from '@stream-resource/angular';
+import { BaseMessage } from '@langchain/core/messages';
 
-// Status updates as streaming progresses
-const isStreaming = computed(() => chat.status() === 'streaming');
+@Component({ selector: 'app-chat', templateUrl: './chat.component.html' })
+export class ChatComponent {
+  readonly chat = streamResource<{ messages: BaseMessage[] }>({
+    assistantId: 'chat_agent',
+  });
+
+  readonly isStreaming = computed(() => this.chat.status() === 'streaming');
+
+  send(text: string) {
+    this.chat.stream({ messages: [{ role: 'user', content: text }] });
+  }
+}
 ```
 
 </Tab>
-<Tab>
+<Tab label="chat.component.html">
 
 ```html
-<!-- chat.component.html -->
+<button (click)="send(input.value)" [disabled]="isStreaming()">Send</button>
+
 @for (msg of chat.messages(); track $index) {
   <p [class.streaming]="$last && isStreaming()">
     {{ msg.content }}
   </p>
+}
+
+@if (chat.status() === 'error') {
+  <p class="error">{{ chat.error()?.message }}</p>
 }
 ```
 
@@ -38,16 +54,152 @@ const isStreaming = computed(() => chat.status() === 'streaming');
 
 ## Stream status
 
-The `status()` signal reports the current state:
+The `status()` signal reports the current lifecycle state of the SSE connection:
 
 <Steps>
 <Step title="idle">
-No active stream. Ready to send a message.
+No active stream. The resource is ready to accept a new message.
 </Step>
 <Step title="streaming">
-Tokens are arriving. Messages update in real-time.
+Tokens are arriving over the SSE connection. Signal values update in real-time with each chunk.
 </Step>
 <Step title="error">
-Something went wrong. Check the error() signal for details.
+The connection was interrupted or the agent returned an error. Inspect `error()` for the full details.
 </Step>
 </Steps>
+
+## Stream modes
+
+LangGraph supports three stream modes. Pass `streamMode` to control what each SSE chunk contains.
+
+<Tabs>
+<Tab label="values (default)">
+
+```typescript
+// Receives the full agent state after every node execution.
+// Best for message-based chat interfaces.
+const chat = streamResource<{ messages: BaseMessage[] }>({
+  assistantId: 'chat_agent',
+  streamMode: 'values',
+});
+
+// chat.messages() always contains the complete message list
+```
+
+</Tab>
+<Tab label="messages">
+
+```typescript
+// Streams individual message tokens as they are generated.
+// Best for token-by-token rendering with lowest perceived latency.
+const chat = streamResource<{ messages: BaseMessage[] }>({
+  assistantId: 'chat_agent',
+  streamMode: 'messages',
+});
+```
+
+</Tab>
+<Tab label="events">
+
+```typescript
+// Emits raw LangGraph run events (on_chain_start, on_llm_stream, etc.).
+// Best for advanced observability or custom progress indicators.
+const chat = streamResource<{ messages: BaseMessage[] }>({
+  assistantId: 'chat_agent',
+  streamMode: 'events',
+});
+```
+
+</Tab>
+</Tabs>
+
+<Callout type="info" title="Choosing a mode">
+Use `values` for most chat UIs — it gives you a consistent, complete state snapshot. Switch to `messages` only when you need sub-token latency or are rendering a live typing cursor.
+</Callout>
+
+## Error handling
+
+If the SSE connection drops or the agent throws, `status()` transitions to `'error'` and `error()` is populated. Use these signals to render fallback UI and retry.
+
+<Tabs>
+<Tab label="chat.component.ts">
+
+```typescript
+import { Component, computed, effect } from '@angular/core';
+import { streamResource } from '@stream-resource/angular';
+import { BaseMessage } from '@langchain/core/messages';
+
+@Component({ selector: 'app-chat', templateUrl: './chat.component.html' })
+export class ChatComponent {
+  readonly chat = streamResource<{ messages: BaseMessage[] }>({
+    assistantId: 'chat_agent',
+  });
+
+  readonly hasError = computed(() => this.chat.status() === 'error');
+
+  retry() {
+    // Re-stream using the same thread so context is preserved
+    this.chat.stream();
+  }
+}
+```
+
+</Tab>
+<Tab label="chat.component.html">
+
+```html
+@if (hasError()) {
+  <div class="error-banner">
+    <p>{{ chat.error()?.message }}</p>
+    <button (click)="retry()">Retry</button>
+  </div>
+}
+```
+
+</Tab>
+</Tabs>
+
+<Callout type="warning" title="Network errors vs agent errors">
+`error()` surfaces both transport-level failures (lost connection, 5xx) and application-level errors returned by the agent graph. Check `error().cause` for the underlying HTTP status when you need to distinguish them.
+</Callout>
+
+## Throttle configuration
+
+By default StreamResource emits a signal update for every incoming SSE chunk. On fast connections this can trigger hundreds of renders per second. Use the `throttle` option to coalesce updates.
+
+```typescript
+const chat = streamResource<{ messages: BaseMessage[] }>({
+  assistantId: 'chat_agent',
+  // Batch incoming chunks and flush at most once every 50 ms
+  throttle: 50,
+});
+```
+
+The value is in milliseconds. A `throttle` of `0` (default) disables batching and passes every chunk through immediately. Good starting values:
+
+| Use case | Recommended throttle |
+|---|---|
+| Token-by-token typing effect | 0 ms (disabled) |
+| Standard chat bubble | 50 ms |
+| Background summarisation | 150 ms |
+
+<Callout type="tip" title="SSE connection behavior">
+Each call to `chat.stream()` opens a new SSE connection. Connections are automatically closed when the agent run completes or when the Angular component is destroyed — you do not need to manage the lifecycle manually.
+</Callout>
+
+## What's Next
+
+<CardGroup cols={2}>
+  <Card title="Persistence" href="/docs-v2/guides/persistence">
+    Resume conversations across page reloads using thread IDs and checkpointers.
+  </Card>
+  <Card title="Interrupts" href="/docs-v2/guides/interrupts">
+    Pause agent execution mid-stream to collect human input before continuing.
+  </Card>
+  <Card title="Testing" href="/docs-v2/guides/testing">
+    Unit-test components that use streamResource with the built-in test harness.
+  </Card>
+  <Card title="API Reference" href="/docs-v2/api/stream-resource">
+    Full option reference for streamResource(), including all configuration keys.
+  </Card>
+</CardGroup>
