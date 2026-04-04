@@ -1,0 +1,65 @@
+# Memory
+
+Memory in LangGraph preserves useful context that later steps can read back. streamResource() exposes memory through the messages and state signals, with thread persistence providing cross-session continuity.
+
+<Callout type="info" title="Short-term vs long-term">
+Short-term memory lives within a thread (conversation history). Long-term memory persists across threads via LangGraph's memory store.
+</Callout>
+
+## Short-term memory (thread-scoped)
+
+Every message in a thread is automatically preserved. When you reconnect with the same `threadId`, the full conversation history is restored.
+
+```typescript
+const chat = streamResource<{ messages: BaseMessage[] }>({
+  assistantId: 'memory_agent',
+  threadId: signal(userId()),  // User-specific thread
+});
+
+// Messages accumulate across the conversation
+const messageCount = computed(() => chat.messages().length);
+
+// Resume where you left off on next visit
+// threadId persists, so history is restored
+```
+
+## Accessing agent state as memory
+
+The `value()` signal contains the full agent state, which can include custom memory fields.
+
+```typescript
+interface AgentState {
+  messages: BaseMessage[];
+  userPreferences: { theme: string; language: string };
+  projectContext: { name: string; files: string[] };
+}
+
+const agent = streamResource<AgentState>({
+  assistantId: 'context_agent',
+  threadId: signal(projectId()),
+});
+
+// Read memory fields from agent state
+const prefs = computed(() => agent.value().userPreferences);
+const context = computed(() => agent.value().projectContext);
+```
+
+## Cross-session memory
+
+Thread persistence enables memory that spans sessions. The agent decides what to store in its state.
+
+```typescript
+// User returns days later — same threadId resumes context
+const agent = streamResource<AgentState>({
+  assistantId: 'memory_agent',
+  threadId: signal(localStorage.getItem('agent-thread')),
+  onThreadId: (id) => localStorage.setItem('agent-thread', id),
+});
+
+// Agent recalls past decisions, preferences, and context
+// No explicit memory management needed on the Angular side
+```
+
+<Callout type="tip" title="Memory is server-side">
+The agent controls what gets stored in memory. streamResource() just surfaces the current state. Design your agent's state schema to include the fields you want to persist.
+</Callout>

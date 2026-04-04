@@ -1,0 +1,61 @@
+# Angular Signals
+
+streamResource() is built on Angular Signals — the reactive primitive introduced in Angular 16+. Every property on a StreamResourceRef is a Signal, making it work seamlessly with OnPush change detection, computed values, and effect callbacks.
+
+## Signals primer
+
+A Signal is a reactive value container. When a Signal's value changes, Angular automatically re-renders any template that reads it.
+
+```typescript
+// streamResource returns Signals, not Observables
+const chat = streamResource<ChatState>({ assistantId: 'agent' });
+
+chat.messages()    // Signal<BaseMessage[]> — call to read
+chat.status()      // Signal<ResourceStatus>
+chat.error()       // Signal<unknown>
+chat.isLoading()   // Signal<boolean> (computed)
+```
+
+## Computed values
+
+Use `computed()` to derive new Signals from streamResource signals.
+
+```typescript
+const lastMessage = computed(() =>
+  chat.messages().at(-1)?.content ?? ''
+);
+
+const messageCount = computed(() =>
+  chat.messages().length
+);
+
+const isIdle = computed(() =>
+  chat.status() === 'idle'
+);
+```
+
+## OnPush change detection
+
+Because Signals trigger change detection automatically, streamResource works perfectly with `ChangeDetectionStrategy.OnPush`.
+
+```typescript
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    @for (msg of chat.messages(); track $index) {
+      <p>{{ msg.content }}</p>
+    }
+  `,
+})
+export class ChatComponent {
+  chat = streamResource<ChatState>({ assistantId: 'agent' });
+}
+```
+
+## No RxJS required
+
+Unlike traditional Angular HTTP patterns, streamResource doesn't use Observables. There are no subscriptions to manage, no async pipes needed, and no memory leak risks.
+
+<Callout type="tip" title="Why Signals over RxJS?">
+Signals are simpler for UI state. They synchronously read the latest value, compose with computed(), and integrate with Angular's template syntax. streamResource handles the async SSE connection internally and surfaces results as Signals.
+</Callout>
