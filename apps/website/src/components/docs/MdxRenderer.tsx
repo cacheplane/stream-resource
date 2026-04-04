@@ -8,6 +8,7 @@ import { CodeGroup } from './mdx/CodeGroup';
 import { DocsBreadcrumb } from './DocsBreadcrumb';
 import { DocsPrevNext } from './DocsPrevNext';
 import rehypePrettyCode from 'rehype-pretty-code';
+import rehypeSlug from 'rehype-slug';
 
 const mdxComponents = {
   Callout,
@@ -48,7 +49,7 @@ export function MdxRendererNew({ source, section, slug, title }: NewProps) {
           components={mdxComponents}
           options={{
             mdxOptions: {
-              rehypePlugins: [[rehypePrettyCode, rehypeOptions] as any],
+              rehypePlugins: [rehypeSlug, [rehypePrettyCode, rehypeOptions] as any],
             },
           }}
         />
