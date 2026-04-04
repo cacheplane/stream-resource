@@ -2,9 +2,10 @@
 import { useState, Children } from 'react';
 import { tokens } from '../../../../lib/design-tokens';
 
-export function Tabs({ items, children }: { items: string[]; children: React.ReactNode }) {
+export function Tabs({ items, children }: { items?: string[]; children: React.ReactNode }) {
   const [active, setActive] = useState(0);
   const tabs = Children.toArray(children);
+  const labels = items ?? tabs.map((_, i) => `Tab ${i + 1}`);
 
   return (
     <div style={{ marginBottom: 16 }}>
@@ -12,7 +13,7 @@ export function Tabs({ items, children }: { items: string[]; children: React.Rea
         display: 'flex', gap: 0,
         borderBottom: `1px solid ${tokens.colors.accentBorder}`,
       }}>
-        {items.map((label, i) => (
+        {labels.map((label, i) => (
           <button
             key={label}
             onClick={() => setActive(i)}
