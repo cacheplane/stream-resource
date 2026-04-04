@@ -29,8 +29,8 @@ export function DocsTOC({ headings }: { headings: DocHeading[] }) {
   if (headings.length === 0) return null;
 
   return (
-    <aside className="hidden xl:block w-52 shrink-0 py-8 pl-8"
-      style={{ position: 'sticky', top: '5rem', maxHeight: 'calc(100vh - 6rem)', overflowY: 'auto' }}>
+    <aside className="hidden xl:block w-56 shrink-0 py-8 pl-8 pr-6"
+      style={{ position: 'sticky', top: '5rem', alignSelf: 'flex-start', maxHeight: 'calc(100vh - 6rem)', overflowY: 'auto' }}>
       <p className="font-mono text-xs uppercase tracking-wider mb-3"
         style={{ color: tokens.colors.textMuted, fontWeight: 600 }}>On this page</p>
       <nav className="flex flex-col gap-1.5">
