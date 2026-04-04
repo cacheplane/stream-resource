@@ -242,34 +242,9 @@ Open `http://localhost:4200` and start chatting with your agent. Messages stream
 
 ## Key Concepts
 
-Here's what streamResource() gives you out of the box:
+Everything streamResource() gives you out of the box — click any to learn more:
 
-<CardGroup cols={2}>
-  <Card title="Messages" href="/docs/guides/streaming">
-    `chat.messages()` — live message list that updates as each token arrives from the agent
-  </Card>
-  <Card title="Status" href="/docs/guides/streaming">
-    `chat.status()` — current state: idle, loading, resolved, or error
-  </Card>
-  <Card title="Thread Persistence" href="/docs/guides/persistence">
-    `threadId` option — conversations survive page refreshes via localStorage or backend
-  </Card>
-  <Card title="Interrupts" href="/docs/guides/interrupts">
-    `chat.interrupt()` — agent pauses for human approval, your UI handles the decision
-  </Card>
-  <Card title="Time Travel" href="/docs/guides/time-travel">
-    `chat.history()` — full checkpoint timeline for debugging and branching
-  </Card>
-  <Card title="Subagents" href="/docs/guides/subgraphs">
-    `chat.subagents()` — track delegated agent work across multiple graphs
-  </Card>
-  <Card title="Tool Calls" href="/docs/guides/streaming">
-    `chat.toolCalls()` — see what tools the agent is invoking in real-time
-  </Card>
-  <Card title="Testing" href="/docs/guides/testing">
-    `MockStreamTransport` — deterministic testing without a running server
-  </Card>
-</CardGroup>
+<FeatureChips />
 
 ## Deploy to Production
 
