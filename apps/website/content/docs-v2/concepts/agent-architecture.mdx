@@ -529,7 +529,7 @@ export class AgentComponent {
 | Transport error (network) | N/A | `error()` fires, `status()` becomes `'error'` |
 | Agent exceeds recursion limit | Graph raises `GraphRecursionError` | `error()` fires with recursion message |
 
-<Callout type="warn" title="Recursion limits">
+<Callout type="warning" title="Recursion limits">
 LangGraph defaults to 25 recursion steps. If your agent loops between `model` and `tools` more than 25 times, it stops with a `GraphRecursionError`. Increase the limit in production with `graph.compile(recursion_limit=50)` or redesign the agent to converge faster.
 </Callout>
 

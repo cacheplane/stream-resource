@@ -249,7 +249,7 @@ effect(() => {
 });
 ```
 
-<Callout type="warn" title="Avoid writing to Signals inside effect()">
+<Callout type="warning" title="Avoid writing to Signals inside effect()">
 Writing to a Signal inside an `effect()` can create infinite loops. If you need to transform one Signal into another, use `computed()` instead. Reserve `effect()` for side effects that leave the reactive graph — DOM manipulation, logging, analytics, network calls.
 </Callout>
 

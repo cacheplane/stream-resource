@@ -6,7 +6,7 @@ Deploy your LangGraph agent to the cloud and ship your Angular frontend to produ
 
 Your agent code needs a `langgraph.json` manifest at the project root. This file tells LangGraph Cloud how to build and serve your agent.
 
-```json title="langgraph.json"
+```json
 {
   "dependencies": ["."],
   "graphs": {
@@ -20,7 +20,7 @@ The `graphs` key maps an assistant ID (used by `streamResource()` on the Angular
 
 ### Agent entry point
 
-```python title="agent/graph.py"
+```python
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, MessagesState
 
@@ -83,7 +83,7 @@ Angular uses file-based environment replacement at build time rather than `proce
 <Tabs>
 <Tab label="Development">
 
-```typescript title="src/environments/environment.ts"
+```typescript
 export const environment = {
   production: false,
   langgraphUrl: 'http://localhost:2024',
@@ -94,7 +94,7 @@ export const environment = {
 </Tab>
 <Tab label="Production">
 
-```typescript title="src/environments/environment.prod.ts"
+```typescript
 export const environment = {
   production: true,
   langgraphUrl: 'https://my-agent-abc123.langgraph.app',
@@ -107,7 +107,7 @@ export const environment = {
 
 Wire the environment into `provideStreamResource()`:
 
-```typescript title="app.config.ts"
+```typescript
 import { provideStreamResource } from '@cacheplane/stream-resource';
 import { environment } from '../environments/environment';
 
@@ -128,7 +128,7 @@ Angular CLI replaces `environment.ts` with `environment.prod.ts` during `ng buil
 
 LangGraph Cloud deployments require an API key on every request. The recommended approach is an Angular HTTP interceptor that attaches the key as a header.
 
-```typescript title="auth.interceptor.ts"
+```typescript
 import { HttpInterceptorFn } from '@angular/common/http';
 import { environment } from '../environments/environment';
 
@@ -147,7 +147,7 @@ export const langGraphAuthInterceptor: HttpInterceptorFn = (req, next) => {
 
 Register the interceptor in your application config:
 
-```typescript title="app.config.ts"
+```typescript
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { langGraphAuthInterceptor } from './auth.interceptor';
 
@@ -161,7 +161,7 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-<Callout type="warn" title="Never commit API keys">
+<Callout type="warning" title="Never commit API keys">
 Add `environment.prod.ts` to `.gitignore`. In CI, generate it from environment variables or inject secrets at build time.
 </Callout>
 
@@ -175,7 +175,7 @@ When your Angular frontend and LangGraph backend are on different origins, you m
 
 In `langgraph.json`, add an `http` section:
 
-```json title="langgraph.json"
+```json
 {
   "dependencies": ["."],
   "graphs": {
@@ -200,7 +200,7 @@ During local development with `langgraph dev`, CORS is permissive by default. Yo
 
 Production apps need graceful error handling. Build a reactive error boundary using `streamResource()` signals.
 
-```typescript title="chat.component.ts"
+```typescript
 import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
 import { streamResource } from '@cacheplane/stream-resource';
 
@@ -246,7 +246,7 @@ export class ChatComponent {
 
 For automated retries (network blips, transient 5xx errors), wrap `.submit()` with a backoff utility:
 
-```typescript title="retry-submit.ts"
+```typescript
 export async function retrySubmit(
   chat: ReturnType<typeof streamResource>,
   input: Record<string, unknown>,
@@ -290,7 +290,7 @@ if (savedRunId) {
 
 A typical pipeline deploys the Python agent and Angular frontend in parallel since they are independent artifacts.
 
-```yaml title=".github/workflows/deploy.yml"
+```yaml
 name: Deploy
 on:
   push:
