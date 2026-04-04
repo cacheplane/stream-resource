@@ -1,0 +1,90 @@
+# Deployment
+
+Configure streamResource() for production with LangGraph Cloud, environment-based URLs, and error handling patterns.
+
+## Production configuration
+
+Point `apiUrl` to your LangGraph Cloud deployment.
+
+<Tabs items={['Environment-based', 'Direct URL']}>
+<Tab>
+
+```typescript
+// app.config.ts
+provideStreamResource({
+  apiUrl: environment.langgraphUrl,
+})
+```
+
+```typescript
+// environment.prod.ts
+export const environment = {
+  langgraphUrl: 'https://your-project.langgraph.app',
+};
+```
+
+</Tab>
+<Tab>
+
+```typescript
+// app.config.ts
+provideStreamResource({
+  apiUrl: 'https://your-project.langgraph.app',
+})
+```
+
+</Tab>
+</Tabs>
+
+## Error boundaries
+
+Handle errors gracefully in production.
+
+```typescript
+const chat = streamResource<ChatState>({
+  assistantId: 'chat_agent',
+});
+
+// Reactive error display
+hasError = computed(() => chat.status() === 'error');
+errorMessage = computed(() => {
+  const err = chat.error();
+  return err instanceof Error ? err.message : 'Something went wrong';
+});
+
+// Retry after error
+retry() {
+  chat.reload();
+}
+```
+
+## Recovering interrupted streams
+
+Use `joinStream()` to reconnect to a running stream after a network interruption.
+
+```typescript
+// If you know the run ID (e.g., from a status endpoint)
+await chat.joinStream(runId, lastEventId);
+// Resumes streaming from where it left off
+```
+
+<Callout type="tip" title="Stateless client pattern">
+streamResource() is a stateless client. All state lives on the LangGraph Platform. This means your Angular app can be deployed anywhere (CDN, edge, SSR) without state management concerns.
+</Callout>
+
+## Checklist
+
+<Steps>
+<Step title="Set production apiUrl">
+Point to your LangGraph Cloud deployment URL.
+</Step>
+<Step title="Handle errors">
+Show user-friendly error messages and retry buttons.
+</Step>
+<Step title="Persist thread IDs">
+Store threadId in localStorage or a backend so users can resume conversations.
+</Step>
+<Step title="Configure throttle">
+Set `throttle` option if token-by-token updates are too frequent for your UI.
+</Step>
+</Steps>
