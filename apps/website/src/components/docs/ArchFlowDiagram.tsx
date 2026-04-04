@@ -1,264 +1,169 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { tokens } from '../../../lib/design-tokens';
 
-// Animation phases for a full AI turn
-type Phase = 'idle' | 'submit' | 'processing' | 'streaming' | 'rendered' | 'complete';
+interface LogEntry {
+  time: string;
+  source: 'angular' | 'transport' | 'langgraph' | 'signal';
+  message: string;
+}
 
-const PHASE_LABELS: Record<Phase, string> = {
-  idle: 'Waiting for user input...',
-  submit: 'User sends message',
-  processing: 'Agent processing...',
-  streaming: 'Tokens streaming back',
-  rendered: 'UI updated',
-  complete: 'Turn complete',
-};
+const SCENARIO: { delay: number; chatBubble?: { role: 'user' | 'assistant'; text: string; streaming?: boolean }; log: LogEntry }[] = [
+  { delay: 0, chatBubble: { role: 'user', text: 'How do Angular Signals work with streaming?' }, log: { time: '0.00s', source: 'angular', message: 'chat.submit({ messages: [userMsg] })' } },
+  { delay: 800, log: { time: '0.02s', source: 'transport', message: 'POST /threads/t_8f3a/runs/stream → 200' } },
+  { delay: 1200, log: { time: '0.04s', source: 'langgraph', message: 'Executing node: call_model (gpt-5-mini)' } },
+  { delay: 2200, log: { time: '0.82s', source: 'langgraph', message: 'SSE event: { type: "values", messages: [...] }' } },
+  { delay: 2600, log: { time: '0.84s', source: 'transport', message: 'Received chunk → messages$.next([...])' } },
+  { delay: 2800, log: { time: '0.85s', source: 'signal', message: 'messages() updated → 2 messages' } },
+  { delay: 3000, chatBubble: { role: 'assistant', text: 'Angular Signals', streaming: true }, log: { time: '0.86s', source: 'signal', message: 'status() → "loading"' } },
+  { delay: 3400, chatBubble: { role: 'assistant', text: 'Angular Signals provide a synchronous', streaming: true }, log: { time: '1.12s', source: 'transport', message: 'Received chunk → values event' } },
+  { delay: 3900, chatBubble: { role: 'assistant', text: 'Angular Signals provide a synchronous, reactive way to', streaming: true }, log: { time: '1.45s', source: 'signal', message: 'messages() updated → streaming token' } },
+  { delay: 4500, chatBubble: { role: 'assistant', text: 'Angular Signals provide a synchronous, reactive way to track streaming state.', streaming: true }, log: { time: '1.82s', source: 'langgraph', message: 'SSE event: { type: "values", status: "done" }' } },
+  { delay: 5200, chatBubble: { role: 'assistant', text: 'Angular Signals provide a synchronous, reactive way to track streaming state. Each token updates the Signal, and OnPush change detection re-renders automatically.' }, log: { time: '2.10s', source: 'signal', message: 'status() → "resolved" ✓' } },
+  { delay: 6000, log: { time: '2.12s', source: 'angular', message: 'Template re-rendered (OnPush) — 1 component' } },
+];
 
-const PHASE_DURATION: Record<Phase, number> = {
-  idle: 1200,
-  submit: 1000,
-  processing: 1500,
-  streaming: 2000,
-  rendered: 1200,
-  complete: 800,
+const SOURCE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
+  angular: { bg: 'rgba(221,0,49,0.08)', text: '#c62828', label: 'ANGULAR' },
+  transport: { bg: 'rgba(100,80,200,0.08)', text: '#5e35b1', label: 'TRANSPORT' },
+  langgraph: { bg: 'rgba(0,64,144,0.08)', text: '#004090', label: 'LANGGRAPH' },
+  signal: { bg: 'rgba(16,185,129,0.08)', text: '#059669', label: 'SIGNAL' },
 };
 
 export function ArchFlowDiagram() {
-  const [phase, setPhase] = useState<Phase>('idle');
-  const [tokenCount, setTokenCount] = useState(0);
-  const [streamedText, setStreamedText] = useState('');
-
-  const fullResponse = 'Hello! I can help you with that.';
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [bubbles, setBubbles] = useState<{ role: 'user' | 'assistant'; text: string; streaming?: boolean }[]>([]);
+  const [cycle, setCycle] = useState(0);
+  const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const phases: Phase[] = ['idle', 'submit', 'processing', 'streaming', 'rendered', 'complete'];
-    let phaseIdx = 0;
-    let tokenInterval: ReturnType<typeof setInterval>;
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
 
-    const advancePhase = () => {
-      const currentPhase = phases[phaseIdx];
-      setPhase(currentPhase);
+    const runScenario = () => {
+      setLogs([]);
+      setBubbles([]);
 
-      if (currentPhase === 'streaming') {
-        let t = 0;
-        setStreamedText('');
-        setTokenCount(0);
-        tokenInterval = setInterval(() => {
-          t++;
-          setTokenCount(t);
-          setStreamedText(fullResponse.slice(0, t * 2));
-          if (t * 2 >= fullResponse.length) {
-            clearInterval(tokenInterval);
+      SCENARIO.forEach((step, i) => {
+        timeouts.push(setTimeout(() => {
+          setLogs(prev => [...prev, step.log]);
+          if (step.chatBubble) {
+            setBubbles(prev => {
+              const existing = prev.findIndex(b => b.role === step.chatBubble!.role && b.role === 'assistant');
+              if (existing >= 0 && step.chatBubble!.role === 'assistant') {
+                const updated = [...prev];
+                updated[existing] = step.chatBubble!;
+                return updated;
+              }
+              return [...prev, step.chatBubble!];
+            });
           }
-        }, 100);
-      }
+          if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
+        }, step.delay));
+      });
 
-      if (currentPhase === 'idle') {
-        setStreamedText('');
-        setTokenCount(0);
-      }
-
-      phaseIdx = (phaseIdx + 1) % phases.length;
-      setTimeout(advancePhase, PHASE_DURATION[currentPhase]);
+      // Restart after completion
+      timeouts.push(setTimeout(() => {
+        setCycle(c => c + 1);
+      }, 8000));
     };
 
-    advancePhase();
-    return () => { clearInterval(tokenInterval); };
-  }, []);
-
-  const isActive = (node: string) => {
-    if (node === 'angular' && (phase === 'idle' || phase === 'submit' || phase === 'rendered')) return true;
-    if (node === 'bridge' && (phase === 'submit' || phase === 'streaming' || phase === 'rendered')) return true;
-    if (node === 'transport' && (phase === 'submit' || phase === 'streaming')) return true;
-    if (node === 'langgraph' && (phase === 'processing' || phase === 'streaming')) return true;
-    return false;
-  };
-
-  const showDownFlow = phase === 'submit';
-  const showUpFlow = phase === 'streaming' || phase === 'rendered';
-  const showProcessing = phase === 'processing';
+    runScenario();
+    return () => timeouts.forEach(clearTimeout);
+  }, [cycle]);
 
   return (
     <div style={{
       width: '100%',
-      maxWidth: 520,
-      margin: '32px auto',
-      fontFamily: '-apple-system, BlinkMacSystemFont, system-ui, sans-serif',
+      margin: '28px 0 36px',
+      borderRadius: 14,
+      overflow: 'hidden',
+      border: `1px solid ${tokens.glass.border}`,
+      boxShadow: tokens.glass.shadow,
+      background: 'rgba(255,255,255,0.5)',
+      backdropFilter: `blur(${tokens.glass.blur})`,
+      WebkitBackdropFilter: `blur(${tokens.glass.blur})`,
     }}>
-      {/* Phase indicator */}
+      {/* Header bar */}
       <div style={{
-        textAlign: 'center',
-        marginBottom: 24,
-        fontFamily: 'var(--font-mono)',
-        fontSize: '0.75rem',
-        color: tokens.colors.textMuted,
-        letterSpacing: '0.04em',
-        textTransform: 'uppercase',
+        padding: '10px 16px',
+        borderBottom: `1px solid ${tokens.glass.border}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        background: 'rgba(255,255,255,0.6)',
       }}>
-        <span style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          padding: '4px 12px', borderRadius: 20,
-          background: 'rgba(255,255,255,0.6)',
-          border: `1px solid ${tokens.glass.border}`,
-        }}>
-          <span style={{
-            width: 6, height: 6, borderRadius: '50%',
-            background: phase === 'idle' ? '#aeaeb2' : phase === 'complete' ? '#34c759' : tokens.colors.accent,
-            boxShadow: phase !== 'idle' ? `0 0 6px ${phase === 'complete' ? 'rgba(52,199,89,0.4)' : 'rgba(0,64,144,0.3)'}` : 'none',
-            animation: phase !== 'idle' && phase !== 'complete' ? 'pulse 1s ease-in-out infinite' : 'none',
-          }} />
-          {PHASE_LABELS[phase]}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF5F57' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#FEBC2E' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#28C840' }} />
+        </div>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: tokens.colors.textMuted }}>streamResource() — live architecture flow</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: tokens.colors.textMuted, background: 'rgba(0,0,0,0.04)', padding: '2px 6px', borderRadius: 4 }}>localhost:4200</span>
+      </div>
+
+      <div style={{ display: 'flex', minHeight: 320 }}>
+        {/* Left: Chat simulation */}
+        <div style={{ flex: 1, padding: 16, borderRight: `1px solid ${tokens.glass.border}`, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: tokens.colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10, fontWeight: 600 }}>Chat Interface</div>
+
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' }}>
+            {bubbles.map((b, i) => (
+              <div key={`${b.role}-${i}`} style={{
+                display: 'flex',
+                justifyContent: b.role === 'user' ? 'flex-end' : 'flex-start',
+                alignItems: 'flex-start', gap: 6,
+              }}>
+                {b.role === 'assistant' && (
+                  <div style={{
+                    width: 22, height: 22, borderRadius: 6, flexShrink: 0,
+                    background: 'rgba(0,64,144,0.1)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'var(--font-mono)', fontSize: 8, color: tokens.colors.accent, fontWeight: 700,
+                  }}>AI</div>
+                )}
+                <div style={{
+                  padding: '8px 12px', borderRadius: 10, maxWidth: '85%',
+                  fontSize: 12, lineHeight: 1.5, color: b.role === 'user' ? '#fff' : tokens.colors.textPrimary,
+                  background: b.role === 'user' ? tokens.colors.accent : 'rgba(0,0,0,0.04)',
+                }}>
+                  {b.text}
+                  {b.streaming && <span style={{ opacity: 0.5, animation: 'blink 0.6s infinite' }}>▊</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right: Console log */}
+        <div ref={logRef} style={{ flex: 1, padding: 12, background: '#1a1b26', overflow: 'auto', fontFamily: 'var(--font-mono)', fontSize: 10 }}>
+          <div style={{ fontSize: 9, color: '#4A527A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, fontWeight: 600 }}>Developer Console</div>
+
+          {logs.map((log, i) => {
+            const sc = SOURCE_COLORS[log.source];
+            return (
+              <div key={i} style={{
+                display: 'flex', gap: 6, marginBottom: 4, alignItems: 'flex-start',
+                animation: 'fadeIn 0.2s ease-out',
+              }}>
+                <span style={{ color: '#4A527A', flexShrink: 0, width: 36, textAlign: 'right' }}>{log.time}</span>
+                <span style={{
+                  padding: '1px 5px', borderRadius: 3, flexShrink: 0,
+                  background: sc.bg, color: sc.text, fontSize: 8, fontWeight: 600,
+                  minWidth: 62, textAlign: 'center',
+                }}>{sc.label}</span>
+                <span style={{ color: '#a9b1d6', wordBreak: 'break-all' }}>{log.message}</span>
+              </div>
+            );
+          })}
+
+          {logs.length === 0 && (
+            <div style={{ color: '#4A527A', fontStyle: 'italic' }}>Waiting for interaction...</div>
+          )}
+        </div>
       </div>
 
       <style>{`
-        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-        @keyframes flowDown { 0% { top:-8px; opacity:0; } 15% { opacity:1; } 85% { opacity:1; } 100% { top:100%; opacity:0; } }
-        @keyframes flowUp { 0% { bottom:-8px; opacity:0; } 15% { opacity:1; } 85% { opacity:1; } 100% { bottom:100%; opacity:0; } }
-        @keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+        @keyframes blink { 0%,100% { opacity:0.5; } 50% { opacity:0; } }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
       `}</style>
-
-      {/* Node: Angular */}
-      <div style={{
-        padding: '20px 24px', borderRadius: 14,
-        background: isActive('angular') ? 'rgba(255,240,243,0.7)' : 'rgba(255,255,255,0.55)',
-        border: `1px solid ${isActive('angular') ? 'rgba(221,0,49,0.15)' : 'rgba(0,0,0,0.04)'}`,
-        boxShadow: isActive('angular') ? '0 2px 20px rgba(221,0,49,0.06)' : 'none',
-        display: 'flex', alignItems: 'flex-start', gap: 14,
-        transition: 'all 0.4s ease',
-      }}>
-        <div style={{ width: 42, height: 42, borderRadius: 10, background: 'rgba(221,0,49,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🅰️</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: tokens.colors.textPrimary, marginBottom: 3 }}>Your Angular App</div>
-          <div style={{ fontSize: 12, color: tokens.colors.textMuted, lineHeight: 1.4, marginBottom: 6 }}>
-            {phase === 'rendered' || phase === 'complete'
-              ? <span style={{ color: tokens.colors.textSecondary }}>Rendering: <code style={{ fontFamily: 'var(--font-mono)', fontSize: 11, background: 'rgba(221,0,49,0.06)', padding: '1px 4px', borderRadius: 3, color: '#b71c1c' }}>chat.messages()</code></span>
-              : 'Components call submit() and bind Signals in templates'}
-          </div>
-          {/* Live message preview */}
-          {(phase === 'streaming' || phase === 'rendered' || phase === 'complete') && (
-            <div style={{
-              padding: '6px 10px', borderRadius: 6,
-              background: '#1a1b26', fontFamily: 'var(--font-mono)', fontSize: 11,
-              color: '#a9b1d6', minHeight: 20,
-            }}>
-              {streamedText}<span style={{ opacity: phase === 'streaming' ? 1 : 0, animation: 'pulse 0.5s infinite' }}>▊</span>
-            </div>
-          )}
-          <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
-            {['OnPush', 'computed()', 'signal()'].map(c => (
-              <span key={c} style={{ fontFamily: 'var(--font-mono)', fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(221,0,49,0.05)', color: '#b71c1c' }}>{c}</span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Connector 1 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '2px 0' }}>
-        <div style={{ flex: 1, textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 10, color: showDownFlow ? tokens.colors.textSecondary : tokens.colors.textMuted }}>submit(input)</div>
-        <div style={{ width: 1.5, height: 40, position: 'relative', overflow: 'visible', background: 'linear-gradient(to bottom, rgba(221,0,49,0.1), rgba(100,80,200,0.1))' }}>
-          {showDownFlow && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#DD0031', boxShadow: '0 0 8px rgba(221,0,49,0.5)', position: 'absolute', left: -2.25, animation: 'flowDown 1s ease-in-out infinite' }} />}
-        </div>
-        <div style={{ flex: 1, fontFamily: 'var(--font-mono)', fontSize: 10, color: tokens.colors.textMuted }}>↓ message</div>
-      </div>
-
-      {/* Node: streamResource */}
-      <div style={{
-        padding: '20px 24px', borderRadius: 14,
-        background: isActive('bridge') ? 'rgba(245,240,255,0.7)' : 'rgba(255,255,255,0.55)',
-        border: `1px solid ${isActive('bridge') ? 'rgba(100,80,200,0.15)' : 'rgba(0,0,0,0.04)'}`,
-        boxShadow: isActive('bridge') ? '0 2px 20px rgba(100,80,200,0.06)' : 'none',
-        display: 'flex', alignItems: 'flex-start', gap: 14,
-        transition: 'all 0.4s ease',
-      }}>
-        <div style={{ width: 42, height: 42, borderRadius: 10, background: 'rgba(100,80,200,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>⚡</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: tokens.colors.textPrimary, marginBottom: 3 }}>streamResource()</div>
-          <div style={{ fontSize: 12, color: tokens.colors.textMuted, lineHeight: 1.4, marginBottom: 6 }}>
-            {showUpFlow
-              ? <span style={{ color: tokens.colors.textSecondary }}>Converting SSE events → Angular Signals</span>
-              : 'Reactive bridge — BehaviorSubject → toSignal()'}
-          </div>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            {['toSignal()', 'throttle()', 'DestroyRef'].map(c => (
-              <span key={c} style={{ fontFamily: 'var(--font-mono)', fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(100,80,200,0.05)', color: '#5e35b1' }}>{c}</span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Connector 2 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '2px 0' }}>
-        <div style={{ flex: 1, textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 10, color: showDownFlow ? tokens.colors.textSecondary : tokens.colors.textMuted }}>HTTP POST</div>
-        <div style={{ width: 1.5, height: 40, position: 'relative', overflow: 'visible', background: 'linear-gradient(to bottom, rgba(100,80,200,0.1), rgba(0,64,144,0.1))' }}>
-          {showDownFlow && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#7C5FCF', boxShadow: '0 0 8px rgba(100,80,200,0.5)', position: 'absolute', left: -2.25, animation: 'flowDown 1s ease-in-out infinite', animationDelay: '0.2s' }} />}
-          {showUpFlow && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#64C3FD', boxShadow: '0 0 8px rgba(100,195,253,0.5)', position: 'absolute', left: -2.25, animation: 'flowUp 0.8s ease-in-out infinite' }} />}
-          {showUpFlow && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#64C3FD', boxShadow: '0 0 8px rgba(100,195,253,0.5)', position: 'absolute', left: -2.25, animation: 'flowUp 0.8s ease-in-out infinite', animationDelay: '0.3s' }} />}
-        </div>
-        <div style={{ flex: 1, fontFamily: 'var(--font-mono)', fontSize: 10, color: showUpFlow ? tokens.colors.accent : tokens.colors.textMuted }}>SSE ↑</div>
-      </div>
-
-      {/* Node: Transport */}
-      <div style={{
-        padding: '20px 24px', borderRadius: 14,
-        background: isActive('transport') ? 'rgba(234,243,255,0.6)' : 'rgba(255,255,255,0.5)',
-        border: `1px solid ${isActive('transport') ? 'rgba(0,64,144,0.1)' : 'rgba(0,0,0,0.04)'}`,
-        boxShadow: isActive('transport') ? '0 2px 20px rgba(0,64,144,0.04)' : 'none',
-        display: 'flex', alignItems: 'flex-start', gap: 14,
-        transition: 'all 0.4s ease',
-      }}>
-        <div style={{ width: 42, height: 42, borderRadius: 10, background: 'rgba(0,64,144,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>📡</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: tokens.colors.textPrimary, marginBottom: 3 }}>FetchStreamTransport</div>
-          <div style={{ fontSize: 12, color: tokens.colors.textMuted, lineHeight: 1.4, marginBottom: 6 }}>SSE connection, thread management, event parsing</div>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            {['langgraph-sdk', 'AsyncIterable', 'AbortSignal'].map(c => (
-              <span key={c} style={{ fontFamily: 'var(--font-mono)', fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(0,64,144,0.04)', color: '#004090' }}>{c}</span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Connector 3 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '2px 0' }}>
-        <div style={{ flex: 1, textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 10, color: tokens.colors.textMuted }}>threads</div>
-        <div style={{ width: 1.5, height: 48, position: 'relative', overflow: 'visible', background: 'linear-gradient(to bottom, rgba(0,64,144,0.06), rgba(0,64,144,0.14))' }}>
-          {showDownFlow && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#004090', boxShadow: '0 0 8px rgba(0,64,144,0.5)', position: 'absolute', left: -2.25, animation: 'flowDown 1s ease-in-out infinite', animationDelay: '0.4s' }} />}
-          {showUpFlow && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#64C3FD', boxShadow: '0 0 10px rgba(100,195,253,0.6)', position: 'absolute', left: -2.25, animation: 'flowUp 0.6s ease-in-out infinite' }} />}
-          {showUpFlow && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#64C3FD', boxShadow: '0 0 10px rgba(100,195,253,0.6)', position: 'absolute', left: -2.25, animation: 'flowUp 0.6s ease-in-out infinite', animationDelay: '0.2s' }} />}
-          {showUpFlow && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#64C3FD', boxShadow: '0 0 10px rgba(100,195,253,0.6)', position: 'absolute', left: -2.25, animation: 'flowUp 0.6s ease-in-out infinite', animationDelay: '0.4s' }} />}
-        </div>
-        <div style={{ flex: 1, fontFamily: 'var(--font-mono)', fontSize: 10, color: showUpFlow ? tokens.colors.accent : tokens.colors.textMuted }}>
-          {showUpFlow ? `${tokenCount} tokens` : 'token stream'}
-        </div>
-      </div>
-
-      {/* Node: LangGraph */}
-      <div style={{
-        padding: '20px 24px', borderRadius: 14,
-        background: isActive('langgraph') ? 'rgba(234,243,255,0.7)' : 'rgba(255,255,255,0.55)',
-        border: `1px solid ${isActive('langgraph') ? 'rgba(0,64,144,0.15)' : 'rgba(0,0,0,0.04)'}`,
-        boxShadow: isActive('langgraph') ? '0 2px 20px rgba(0,64,144,0.06)' : 'none',
-        display: 'flex', alignItems: 'flex-start', gap: 14,
-        transition: 'all 0.4s ease',
-      }}>
-        <div style={{ width: 42, height: 42, borderRadius: 10, background: 'rgba(0,64,144,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
-          {showProcessing ? <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⚙️</span> : '🧠'}
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: tokens.colors.textPrimary, marginBottom: 3 }}>LangGraph Platform</div>
-          <div style={{ fontSize: 12, color: tokens.colors.textMuted, lineHeight: 1.4, marginBottom: 6 }}>
-            {showProcessing
-              ? <span style={{ color: tokens.colors.textSecondary }}>Running call_model node...</span>
-              : 'Agent graph, state management, checkpoints, tool execution'}
-          </div>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            {['StateGraph', 'MessagesState', 'Checkpoints', 'Tools'].map(c => (
-              <span key={c} style={{ fontFamily: 'var(--font-mono)', fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(0,64,144,0.04)', color: '#004090' }}>{c}</span>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
