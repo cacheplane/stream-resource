@@ -25,19 +25,21 @@ const ENTRIES: ApiEntry[] = [
 
 export default function ApiReferencePage() {
   return (
-    <div className="pt-24 px-8 py-16 max-w-4xl mx-auto" style={{ background: 'var(--gradient-bg-flow)', minHeight: '100vh' }}>
-      <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: 'var(--color-accent)' }}>API Reference</p>
-      <h1
-        style={{
-          fontFamily: 'var(--font-garamond)',
-          fontWeight: 800,
-          fontSize: 'clamp(32px, 4vw, 56px)',
-          color: 'var(--color-text-primary)',
-          marginBottom: 48,
-        }}>
-        API Reference
-      </h1>
-      <ApiRefTable entries={ENTRIES} />
+    <div style={{ background: 'var(--gradient-bg-flow)', minHeight: '100vh' }}>
+      <div className="pt-24 px-8 py-16 max-w-4xl mx-auto">
+        <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: 'var(--color-accent)' }}>API Reference</p>
+        <h1
+          style={{
+            fontFamily: 'var(--font-garamond)',
+            fontWeight: 800,
+            fontSize: 'clamp(32px, 4vw, 56px)',
+            color: 'var(--color-text-primary)',
+            marginBottom: 48,
+          }}>
+          API Reference
+        </h1>
+        <ApiRefTable entries={ENTRIES} />
+      </div>
     </div>
   );
 }
