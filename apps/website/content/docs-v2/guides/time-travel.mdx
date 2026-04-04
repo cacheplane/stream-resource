@@ -1,0 +1,55 @@
+# Time Travel
+
+Time travel lets you inspect earlier states and replay alternate execution paths. streamResource() exposes the full checkpoint history and branch navigation through Angular Signals.
+
+<Callout type="info" title="Use cases">
+Debug agent decisions, explore alternate paths, and build undo/redo experiences for your users.
+</Callout>
+
+## Browsing execution history
+
+The `history()` signal contains an array of `ThreadState` checkpoints.
+
+```typescript
+const agent = streamResource<AgentState>({
+  assistantId: 'agent',
+  threadId: signal(threadId),
+});
+
+// Full execution timeline
+const checkpoints = computed(() => agent.history());
+const checkpointCount = computed(() => agent.history().length);
+```
+
+## Forking from a checkpoint
+
+Submit with a specific checkpoint to branch execution from an earlier state.
+
+```typescript
+// Fork from the 3rd checkpoint with new input
+forkFromCheckpoint(index: number) {
+  const checkpoint = this.agent.history()[index];
+  this.agent.submit(
+    { messages: [{ role: 'user', content: 'Try a different approach' }] },
+    { checkpoint: checkpoint.checkpoint }
+  );
+}
+```
+
+## Branch navigation
+
+Use `branch()` and `setBranch()` to navigate between execution branches.
+
+```typescript
+// Current branch
+const activeBranch = computed(() => agent.branch());
+
+// Switch to a different branch
+selectBranch(branchId: string) {
+  agent.setBranch(branchId);
+}
+```
+
+<Callout type="tip" title="Debugging workflow">
+Time travel is most useful during development. Inspect why an agent chose a particular path, then fork to test alternatives without restarting the conversation.
+</Callout>
