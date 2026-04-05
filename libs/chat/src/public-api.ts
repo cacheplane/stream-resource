@@ -29,6 +29,18 @@ export { ChatToolCallCardComponent } from './lib/compositions/chat-tool-call-car
 export type { ToolCallInfo } from './lib/compositions/chat-tool-call-card/chat-tool-call-card.component';
 export { ChatSubagentCardComponent } from './lib/compositions/chat-subagent-card/chat-subagent-card.component';
 export { ChatTimelineSliderComponent } from './lib/compositions/chat-timeline-slider/chat-timeline-slider.component';
+export { ChatDebugComponent } from './lib/compositions/chat-debug/chat-debug.component';
+export { toDebugCheckpoint, extractStateValues } from './lib/compositions/chat-debug/debug-utils';
+export { DebugCheckpointCardComponent } from './lib/compositions/chat-debug/debug-checkpoint-card.component';
+export type { DebugCheckpoint } from './lib/compositions/chat-debug/debug-checkpoint-card.component';
+export { DebugStateInspectorComponent } from './lib/compositions/chat-debug/debug-state-inspector.component';
+export { DebugStateDiffComponent } from './lib/compositions/chat-debug/debug-state-diff.component';
+export { DebugTimelineComponent } from './lib/compositions/chat-debug/debug-timeline.component';
+export { DebugDetailComponent } from './lib/compositions/chat-debug/debug-detail.component';
+export { DebugControlsComponent } from './lib/compositions/chat-debug/debug-controls.component';
+export { DebugSummaryComponent } from './lib/compositions/chat-debug/debug-summary.component';
+export { computeStateDiff } from './lib/compositions/chat-debug/state-diff';
+export type { DiffEntry } from './lib/compositions/chat-debug/state-diff';
 
 // Test utilities
 export { createMockStreamResourceRef } from './lib/testing/mock-stream-resource-ref';
