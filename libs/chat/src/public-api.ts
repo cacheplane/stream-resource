@@ -18,5 +18,17 @@ export type { Thread } from './lib/primitives/chat-thread-list/chat-thread-list.
 export { ChatTimelineComponent } from './lib/primitives/chat-timeline/chat-timeline.component';
 export { ChatGenerativeUiComponent } from './lib/primitives/chat-generative-ui/chat-generative-ui.component';
 
+// DI provider
+export { provideChat, CHAT_CONFIG } from './lib/provide-chat';
+
+// Compositions
+export { ChatComponent } from './lib/compositions/chat/chat.component';
+export { ChatInterruptPanelComponent } from './lib/compositions/chat-interrupt-panel/chat-interrupt-panel.component';
+export type { InterruptAction } from './lib/compositions/chat-interrupt-panel/chat-interrupt-panel.component';
+export { ChatToolCallCardComponent } from './lib/compositions/chat-tool-call-card/chat-tool-call-card.component';
+export type { ToolCallInfo } from './lib/compositions/chat-tool-call-card/chat-tool-call-card.component';
+export { ChatSubagentCardComponent } from './lib/compositions/chat-subagent-card/chat-subagent-card.component';
+export { ChatTimelineSliderComponent } from './lib/compositions/chat-timeline-slider/chat-timeline-slider.component';
+
 // Test utilities
 export { createMockStreamResourceRef } from './lib/testing/mock-stream-resource-ref';
