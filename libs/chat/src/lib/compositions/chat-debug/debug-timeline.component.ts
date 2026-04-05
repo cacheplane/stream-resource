@@ -9,7 +9,7 @@ import { DebugCheckpointCardComponent } from './debug-checkpoint-card.component'
 import type { DebugCheckpoint } from './debug-checkpoint-card.component';
 
 @Component({
-  selector: 'debug-timeline',
+  selector: 'chat-debug-timeline',
   standalone: true,
   imports: [DebugCheckpointCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,7 +26,7 @@ import type { DebugCheckpoint } from './debug-checkpoint-card.component';
             [class]="i === selectedIndex() ? 'bg-blue-500 border-blue-500' : 'bg-white border-gray-300'"
           ></div>
 
-          <debug-checkpoint-card
+          <chat-debug-checkpoint-card
             [checkpoint]="cp"
             [isSelected]="i === selectedIndex()"
             (selected)="checkpointSelected.emit(i)"

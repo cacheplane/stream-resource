@@ -8,7 +8,7 @@ import { DebugStateDiffComponent } from './debug-state-diff.component';
 import { DebugStateInspectorComponent } from './debug-state-inspector.component';
 
 @Component({
-  selector: 'debug-detail',
+  selector: 'chat-debug-detail',
   standalone: true,
   imports: [DebugStateDiffComponent, DebugStateInspectorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -16,11 +16,11 @@ import { DebugStateInspectorComponent } from './debug-state-inspector.component'
     <div class="space-y-3">
       <section>
         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">State Diff</h4>
-        <debug-state-diff [before]="previousState()" [after]="currentState()" />
+        <chat-debug-state-diff [before]="previousState()" [after]="currentState()" />
       </section>
       <section>
         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Current State</h4>
-        <debug-state-inspector [state]="currentState()" />
+        <chat-debug-state-inspector [state]="currentState()" />
       </section>
     </div>
   `,

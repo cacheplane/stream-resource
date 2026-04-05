@@ -7,7 +7,7 @@ import {
 import { JsonPipe } from '@angular/common';
 
 @Component({
-  selector: 'debug-state-inspector',
+  selector: 'chat-debug-state-inspector',
   standalone: true,
   imports: [JsonPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,

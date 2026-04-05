@@ -9,7 +9,8 @@ import {
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import type { BaseMessage } from '@langchain/core/messages';
-import type { StreamResourceRef, ToolCallWithResult } from '@cacheplane/stream-resource';
+import type { StreamResourceRef } from '@cacheplane/stream-resource';
+import type { ToolCallWithResult } from '@langchain/langgraph-sdk';
 
 @Component({
   selector: 'chat-tool-calls',

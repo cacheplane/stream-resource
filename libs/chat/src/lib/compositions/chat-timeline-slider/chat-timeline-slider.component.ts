@@ -38,8 +38,8 @@ import type { StreamResourceRef, ThreadState } from '@cacheplane/stream-resource
               <p class="text-xs font-medium text-gray-700 truncate">
                 {{ checkpointLabel(state, i) }}
               </p>
-              @if (state.checkpoint_id) {
-                <p class="text-xs text-gray-400 font-mono truncate">{{ state.checkpoint_id }}</p>
+              @if (state.checkpoint?.checkpoint_id) {
+                <p class="text-xs text-gray-400 font-mono truncate">{{ state.checkpoint?.checkpoint_id }}</p>
               }
             </div>
 
@@ -74,22 +74,22 @@ export class ChatTimelineSliderComponent {
   readonly history = computed((): ThreadState<any>[] => this.ref().history());
 
   checkpointLabel(state: ThreadState<any>, index: number): string {
-    if (state.checkpoint_id) {
+    if (state.checkpoint?.checkpoint_id) {
       return `Checkpoint ${index + 1}`;
     }
     return `State ${index + 1}`;
   }
 
   replay(state: ThreadState<any>): void {
-    if (state.checkpoint_id) {
-      this.ref().setBranch(state.checkpoint_id);
+    if (state.checkpoint?.checkpoint_id) {
+      this.ref().setBranch(state.checkpoint?.checkpoint_id ?? '');
     }
   }
 
   fork(state: ThreadState<any>, index: number): void {
     this.selectedIndex.set(index);
-    if (state.checkpoint_id) {
-      this.ref().setBranch(state.checkpoint_id);
+    if (state.checkpoint?.checkpoint_id) {
+      this.ref().setBranch(state.checkpoint?.checkpoint_id ?? '');
     }
   }
 }

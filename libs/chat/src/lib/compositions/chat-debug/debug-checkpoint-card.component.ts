@@ -14,7 +14,7 @@ export interface DebugCheckpoint {
 }
 
 @Component({
-  selector: 'debug-checkpoint-card',
+  selector: 'chat-debug-checkpoint-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -27,12 +27,12 @@ export interface DebugCheckpoint {
         {{ checkpoint().node ?? 'Unknown' }}
       </p>
       <div class="flex gap-2 mt-1">
-        @if (checkpoint().duration != null) {
+        @if (checkpoint().duration !== null && checkpoint().duration !== undefined) {
           <span class="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">
             {{ checkpoint().duration }}ms
           </span>
         }
-        @if (checkpoint().tokenCount != null) {
+        @if (checkpoint().tokenCount !== null && checkpoint().tokenCount !== undefined) {
           <span class="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">
             {{ checkpoint().tokenCount }} tok
           </span>

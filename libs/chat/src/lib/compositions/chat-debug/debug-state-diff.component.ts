@@ -10,7 +10,7 @@ import { computeStateDiff } from './state-diff';
 import type { DiffEntry } from './state-diff';
 
 @Component({
-  selector: 'debug-state-diff',
+  selector: 'chat-debug-state-diff',
   standalone: true,
   imports: [JsonPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -8,7 +8,7 @@ import {
 import type { StreamResourceRef } from '@cacheplane/stream-resource';
 
 @Component({
-  selector: 'debug-controls',
+  selector: 'chat-debug-controls',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `

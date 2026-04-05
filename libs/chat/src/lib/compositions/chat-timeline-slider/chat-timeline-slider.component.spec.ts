@@ -17,7 +17,7 @@ describe('ChatTimelineSliderComponent', () => {
 
   it('checkpointLabel uses "Checkpoint N" when checkpoint_id is present', () => {
     const checkpointLabel = ChatTimelineSliderComponent.prototype.checkpointLabel;
-    const state = { checkpoint_id: 'abc123' } as any;
+    const state = { checkpoint: { checkpoint_id: 'abc123' } } as any;
     expect(checkpointLabel(state, 0)).toBe('Checkpoint 1');
     expect(checkpointLabel(state, 2)).toBe('Checkpoint 3');
   });

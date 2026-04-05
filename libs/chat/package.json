@@ -4,9 +4,12 @@
   "peerDependencies": {
     "@angular/core": "^20.0.0 || ^21.0.0",
     "@angular/common": "^20.0.0 || ^21.0.0",
+    "@angular/forms": "^20.0.0 || ^21.0.0",
     "@cacheplane/render": "^0.0.1",
     "@cacheplane/stream-resource": "^0.0.1",
-    "@langchain/core": "^1.1.33"
+    "@json-render/core": "^0.16.0",
+    "@langchain/core": "^1.1.33",
+    "@langchain/langgraph-sdk": "^1.7.4"
   },
   "license": "PolyForm-Noncommercial-1.0.0",
   "sideEffects": false

@@ -38,7 +38,7 @@ export function submitMessage(
         name="messageText"
         [placeholder]="placeholder()"
         [disabled]="isDisabled()"
-        (keydown.enter)="onKeydown($event)"
+        (keydown.enter)="onKeydown($any($event))"
       ></textarea>
       <button type="submit" [disabled]="isDisabled()">Send</button>
     </form>

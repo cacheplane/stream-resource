@@ -9,7 +9,7 @@ import type { StreamResourceRef } from '@cacheplane/stream-resource';
 import type { DebugCheckpoint } from './debug-checkpoint-card.component';
 
 @Component({
-  selector: 'debug-summary',
+  selector: 'chat-debug-summary',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `

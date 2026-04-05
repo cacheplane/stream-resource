@@ -20,11 +20,15 @@ export function getMessageType(message: BaseMessage): MessageTemplateType {
   const type = message._getType();
   switch (type) {
     case 'human':
+      return 'human';
     case 'ai':
+      return 'ai';
     case 'tool':
+      return 'tool';
     case 'system':
+      return 'system';
     case 'function':
-      return type;
+      return 'function';
     default:
       return 'ai';
   }
@@ -57,6 +61,6 @@ export class ChatMessagesComponent {
   readonly getMessageType = getMessageType;
 
   findTemplate(type: MessageTemplateType): MessageTemplateDirective | undefined {
-    return this.messageTemplates().find(t => t.messageTemplate() === type);
+    return this.messageTemplates().find(t => t.chatMessageTemplate() === type);
   }
 }

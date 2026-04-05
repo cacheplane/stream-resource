@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 import { signal } from '@angular/core';
-import type { StreamResourceRef, SubagentStreamRef, ResourceStatus as ResourceStatusType, Interrupt, ThreadState, ToolProgress, ToolCallWithResult, SubmitOptions } from '@cacheplane/stream-resource';
+import type { StreamResourceRef, SubagentStreamRef, ResourceStatus as ResourceStatusType, Interrupt, ThreadState, SubmitOptions } from '@cacheplane/stream-resource';
+import type { ToolProgress, ToolCallWithResult } from '@langchain/langgraph-sdk';
 import { ResourceStatus } from '@cacheplane/stream-resource';
 import type { BaseMessage, AIMessage as CoreAIMessage } from '@langchain/core/messages';
 import type { MessageMetadata } from '@langchain/langgraph-sdk/ui';
@@ -41,6 +42,7 @@ export function createMockStreamResourceRef(
     isLoading: isLoading$,
     error: error$,
     hasValue: hasValue$,
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     reload: () => {},
 
     messages: messages$,
@@ -58,8 +60,10 @@ export function createMockStreamResourceRef(
 
     submit: (_values: any, _opts?: SubmitOptions) => Promise.resolve(),
     stop: () => Promise.resolve(),
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     switchThread: (_threadId: string | null) => {},
     joinStream: (_runId: string, _lastEventId?: string) => Promise.resolve(),
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     setBranch: (_branch: string) => {},
     getMessagesMetadata: (_msg: BaseMessage, _idx?: number): MessageMetadata<Record<string, unknown>> | undefined => undefined,
     getToolCalls: (_msg: CoreAIMessage): ToolCallWithResult[] => [],

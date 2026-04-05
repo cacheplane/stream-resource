@@ -67,25 +67,25 @@ describe('ChatMessagesComponent — computed messages', () => {
 
 describe('ChatMessagesComponent — findTemplate logic', () => {
   it('findTemplate returns matching directive by type', () => {
-    // Simulate findTemplate logic: find in array by messageTemplate() value
+    // Simulate findTemplate logic: find in array by chatMessageTemplate() value
     const templates = [
-      { messageTemplate: () => 'human' as const, templateRef: {} },
-      { messageTemplate: () => 'ai' as const, templateRef: {} },
+      { chatMessageTemplate: () => 'human' as const, templateRef: {} },
+      { chatMessageTemplate: () => 'ai' as const, templateRef: {} },
     ];
 
     const findTemplate = (type: string) =>
-      templates.find(t => t.messageTemplate() === type);
+      templates.find(t => t.chatMessageTemplate() === type);
 
     expect(findTemplate('human')).toBeDefined();
-    expect(findTemplate('human')?.messageTemplate()).toBe('human');
+    expect(findTemplate('human')?.chatMessageTemplate()).toBe('human');
     expect(findTemplate('ai')).toBeDefined();
     expect(findTemplate('tool')).toBeUndefined();
   });
 
   it('findTemplate returns undefined when no templates registered', () => {
-    const templates: { messageTemplate: () => string }[] = [];
+    const templates: { chatMessageTemplate: () => string }[] = [];
     const findTemplate = (type: string) =>
-      templates.find(t => t.messageTemplate() === type);
+      templates.find(t => t.chatMessageTemplate() === type);
 
     expect(findTemplate('human')).toBeUndefined();
   });
