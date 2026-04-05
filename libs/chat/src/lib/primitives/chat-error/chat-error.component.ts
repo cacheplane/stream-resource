@@ -25,7 +25,7 @@ export function extractErrorMessage(error: unknown): string | null {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (errorMessage(); as msg) {
-      <div role="alert">{{ msg }}</div>
+      <div class="px-4 py-3 text-sm" style="background: var(--chat-error-bg, #2d1515); color: var(--chat-error-text, #f87171); border-radius: var(--chat-radius-card, 12px);" role="alert">{{ msg }}</div>
     }
   `,
 })
