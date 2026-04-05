@@ -16,38 +16,38 @@ export type InterruptAction = 'accept' | 'edit' | 'respond' | 'ignore';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (interrupt()) {
-      <div class="rounded-lg border border-amber-300 bg-amber-50 p-4 space-y-3">
+      <div style="background: var(--chat-warning-bg); border: 1px solid var(--chat-border); border-radius: var(--chat-radius-card); padding: 16px; display: flex; flex-direction: column; gap: 12px;">
         <!-- Warning header -->
-        <div class="flex items-start gap-2">
-          <span class="text-amber-600 text-lg">⚠</span>
-          <div class="flex-1">
-            <h3 class="text-sm font-semibold text-amber-800">Agent Interrupt</h3>
-            <p class="text-sm text-amber-700 mt-1">{{ interruptPayload() }}</p>
+        <div style="display: flex; align-items: flex-start; gap: 8px;">
+          <span style="color: var(--chat-warning-text); font-size: 18px;">⚠</span>
+          <div style="flex: 1;">
+            <h3 style="font-size: 14px; font-weight: 600; color: var(--chat-warning-text); margin: 0;">Agent Interrupt</h3>
+            <p style="font-size: 14px; color: var(--chat-warning-text); margin: 4px 0 0;">{{ interruptPayload() }}</p>
           </div>
         </div>
 
         <!-- Action buttons -->
-        <div class="flex flex-wrap gap-2">
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           <button
-            class="px-3 py-1.5 text-sm font-medium rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors"
+            style="padding: 6px 12px; font-size: 14px; font-weight: 500; background: var(--chat-bg-alt); color: var(--chat-text); border: 1px solid var(--chat-border); border-radius: var(--chat-radius-card); cursor: pointer;"
             (click)="action.emit('accept')"
           >
             Accept
           </button>
           <button
-            class="px-3 py-1.5 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+            style="padding: 6px 12px; font-size: 14px; font-weight: 500; background: var(--chat-bg-alt); color: var(--chat-text); border: 1px solid var(--chat-border); border-radius: var(--chat-radius-card); cursor: pointer;"
             (click)="action.emit('edit')"
           >
             Edit
           </button>
           <button
-            class="px-3 py-1.5 text-sm font-medium rounded-md bg-purple-600 text-white hover:bg-purple-700 transition-colors"
+            style="padding: 6px 12px; font-size: 14px; font-weight: 500; background: var(--chat-bg-alt); color: var(--chat-text); border: 1px solid var(--chat-border); border-radius: var(--chat-radius-card); cursor: pointer;"
             (click)="action.emit('respond')"
           >
             Respond
           </button>
           <button
-            class="px-3 py-1.5 text-sm font-medium rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+            style="padding: 6px 12px; font-size: 14px; font-weight: 500; background: transparent; color: var(--chat-text-muted); border: none; cursor: pointer;"
             (click)="action.emit('ignore')"
           >
             Ignore
