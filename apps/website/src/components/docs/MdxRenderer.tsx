@@ -5,6 +5,9 @@ import { Steps, Step } from './mdx/Steps';
 import { Tabs, Tab } from './mdx/Tabs';
 import { Card, CardGroup } from './mdx/Card';
 import { CodeGroup } from './mdx/CodeGroup';
+import { Pre } from './mdx/CodeBlock';
+import { FeatureChips } from './mdx/FeatureChips';
+import { ArchFlowDiagram } from './ArchFlowDiagram';
 import { DocsBreadcrumb } from './DocsBreadcrumb';
 import { DocsPrevNext } from './DocsPrevNext';
 import rehypePrettyCode from 'rehype-pretty-code';
@@ -19,6 +22,9 @@ const mdxComponents = {
   Card,
   CardGroup,
   CodeGroup,
+  ArchFlowDiagram,
+  FeatureChips,
+  pre: Pre,
 };
 
 const rehypeOptions = {
