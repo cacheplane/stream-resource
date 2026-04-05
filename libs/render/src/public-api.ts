@@ -10,3 +10,6 @@ export type {
 
 // Registry
 export { defineAngularRegistry } from './lib/define-angular-registry';
+
+// State
+export { signalStateStore } from './lib/signal-state-store';
