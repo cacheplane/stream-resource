@@ -13,3 +13,6 @@ export { defineAngularRegistry } from './lib/define-angular-registry';
 
 // State
 export { signalStateStore } from './lib/signal-state-store';
+
+// Provider
+export { provideRender, RENDER_CONFIG } from './lib/provide-render';
