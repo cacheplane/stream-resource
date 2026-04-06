@@ -729,7 +729,7 @@ import path from 'path';
 import pkg from '../../../package.json';
 
 function buildLlmsTxt(): string {
-  return `# stream-resource v${pkg.version}
+  return `# Angular Stream Resource v${pkg.version}
 
 Angular streaming library for LangChain/LangGraph. Provides streamResource() — full parity with React's useStream() hook, built on Angular Signals.
 
@@ -798,7 +798,7 @@ function loadAllPrompts(): string {
 
 export async function GET() {
   const sections = [
-    '# stream-resource — Full Reference\n\nSee /llms.txt for a compact summary.\n',
+    '# Angular Stream Resource — Full Reference\n\nSee /llms.txt for a compact summary.\n',
     '## API Reference (TypeDoc)\n\n' + loadApiDocs(),
     '## Prompt Recipes\n\n' + loadAllPrompts(),
     '## Common Gotchas\n\nstreamResource() MUST be called inside an Angular injection context.\nDo not call it in ngOnInit — use constructor or field initializer.\nDo not mock streamResource() in tests — use MockStreamTransport.\nRxJS is an internal implementation detail — do not import rxjs in consumer code.',
@@ -844,7 +844,7 @@ These files are generated at build time and served as static downloads from the 
 Create `apps/website/content/CLAUDE.md.template`:
 
 ```
-# stream-resource v@VERSION@
+# Angular Stream Resource v@VERSION@
 
 Angular streaming library for LangChain/LangGraph. Provides `streamResource()` — full parity with React's `useStream()`.
 

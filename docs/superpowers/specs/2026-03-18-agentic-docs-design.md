@@ -171,7 +171,7 @@ Targets Claude Code and Claude API agents. Downloadable from the Getting Started
 
 Content:
 ```markdown
-# stream-resource
+# Angular Stream Resource
 
 Angular streaming library for LangChain/LangGraph. Provides `streamResource()` — full parity with React's `useStream()`.
 
