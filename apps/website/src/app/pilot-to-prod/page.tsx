@@ -29,6 +29,7 @@ export default function PilotToProdPage() {
             filter: 'blur(80px)',
             pointerEvents: 'none',
           }}
+          aria-hidden="true"
         />
         <div
           style={{
@@ -42,6 +43,7 @@ export default function PilotToProdPage() {
             filter: 'blur(80px)',
             pointerEvents: 'none',
           }}
+          aria-hidden="true"
         />
         <div
           style={{
@@ -55,6 +57,7 @@ export default function PilotToProdPage() {
             filter: 'blur(80px)',
             pointerEvents: 'none',
           }}
+          aria-hidden="true"
         />
         <PilotHero />
         <WhatIsIncluded />

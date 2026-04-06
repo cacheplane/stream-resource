@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { tokens } from '../../../lib/design-tokens';
 
 export function PilotFooterCTA() {
   return (
@@ -85,7 +86,7 @@ export function PilotFooterCTA() {
               display: 'inline-block',
               padding: '0.875rem 2rem',
               background: '#ffffff',
-              color: '#004090',
+              color: tokens.colors.accent,
               fontFamily: 'var(--font-inter, Inter, sans-serif)',
               fontSize: '15px',
               fontWeight: 600,
