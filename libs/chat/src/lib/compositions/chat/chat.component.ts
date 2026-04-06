@@ -107,18 +107,15 @@ import { CHAT_MARKDOWN_STYLES, renderMarkdown } from '../../styles/chat-markdown
                 </div>
               </ng-template>
 
-              <!-- AI messages: no bubble, avatar + markdown -->
+              <!-- AI messages: avatar inline with content (ChatGPT pattern) -->
               <ng-template chatMessageTemplate="ai" let-message>
-                <div class="flex flex-col gap-1.5">
-                  <div class="flex items-center gap-2">
-                    <div
-                      class="w-6 h-6 flex items-center justify-center text-[11px] font-semibold shrink-0"
-                      style="background: var(--chat-avatar-bg); color: var(--chat-avatar-text); border-radius: var(--chat-radius-avatar);"
-                    >A</div>
-                    <span class="text-xs font-medium" style="color: var(--chat-text-muted);">Assistant</span>
-                  </div>
+                <div class="flex gap-3">
                   <div
-                    class="chat-md pl-8 break-words text-[length:var(--chat-font-size)] leading-[var(--chat-line-height)]"
+                    class="w-7 h-7 flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5"
+                    style="background: var(--chat-avatar-bg); color: var(--chat-avatar-text); border-radius: var(--chat-radius-avatar);"
+                  >A</div>
+                  <div
+                    class="chat-md flex-1 min-w-0 break-words text-[length:var(--chat-font-size)] leading-[var(--chat-line-height)]"
                     style="color: var(--chat-text);"
                     [innerHTML]="renderMd(messageContent(message))"
                   ></div>
