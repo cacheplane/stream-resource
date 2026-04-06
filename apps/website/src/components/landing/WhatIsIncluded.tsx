@@ -8,7 +8,7 @@ const cards = [
     icon: '📦',
     title: 'stream-resource',
     description:
-      "The Angular streaming library. Full parity with React's useStream(). Token-by-token streaming, thread persistence, MockStreamTransport for testing. Everything your team needs to wire LangGraph to Angular.",
+      "The Angular streaming library. Token-by-token streaming, thread persistence, interrupt handling, and MockStreamTransport for deterministic testing. Purpose-built for LangGraph and Angular Signals.",
     bullets: [
       'Signals-native API',
       'OnPush compatible',

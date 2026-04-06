@@ -67,7 +67,9 @@ export function WhitePaperGate() {
     e.preventDefault();
     setFormState('submitting');
 
-    const companyValue = role ? `${company} | ${role}` : company;
+    const messageValue = role
+      ? `Role: ${role}${message ? '\n\n' + message : ''}`
+      : message;
 
     try {
       const res = await fetch('/api/leads', {
@@ -76,8 +78,8 @@ export function WhitePaperGate() {
         body: JSON.stringify({
           name,
           email,
-          company: companyValue,
-          message,
+          company,
+          message: messageValue,
         }),
       });
 

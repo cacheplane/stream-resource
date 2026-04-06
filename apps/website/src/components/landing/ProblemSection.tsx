@@ -131,7 +131,7 @@ export function ProblemSection() {
       {/* Stat cards */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
         gap: 16,
         maxWidth: 840,
         margin: '0 auto 36px',

@@ -17,9 +17,15 @@ export function PricingSignal() {
         .pricing-signal-btn:hover {
           box-shadow: ${tokens.glow.button};
         }
+        @media (max-width: 640px) {
+          .pricing-signal-card {
+            padding: 32px 24px !important;
+          }
+        }
       `}</style>
       <div style={{ maxWidth: '1152px', margin: '0 auto' }}>
         <motion.div
+          className="pricing-signal-card"
           initial={{ opacity: 0, scale: 0.97 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
@@ -55,23 +61,13 @@ export function PricingSignal() {
             <span
               style={{
                 fontFamily: 'EB Garamond, Georgia, serif',
-                fontSize: '64px',
+                fontSize: 'clamp(48px, 8vw, 64px)',
                 fontWeight: 400,
                 color: tokens.colors.textPrimary,
                 lineHeight: 1,
               }}
             >
               $20,000
-            </span>
-            <span
-              style={{
-                fontFamily: 'Inter, sans-serif',
-                fontSize: '16px',
-                color: tokens.colors.textMuted,
-                marginLeft: '4px',
-              }}
-            >
-              / year
             </span>
             <span
               style={{
@@ -82,7 +78,7 @@ export function PricingSignal() {
                 marginTop: '8px',
               }}
             >
-              Renewable annually. 3-month pilot included in Year 1.
+              Fixed fee. 3-month pilot engagement + first-year license included.
             </span>
           </div>
 

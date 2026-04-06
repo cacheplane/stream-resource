@@ -3,6 +3,7 @@ import { WhatIsIncluded } from '../../components/landing/WhatIsIncluded';
 import { HowItWorks } from '../../components/landing/HowItWorks';
 import { ProblemSection } from '../../components/landing/ProblemSection';
 import { PricingSignal } from '../../components/landing/PricingSignal';
+import { RiskRemoval } from '../../components/landing/RiskRemoval';
 import { WhitePaperGate } from '../../components/landing/WhitePaperGate';
 import { PilotFooterCTA } from '../../components/landing/PilotFooterCTA';
 import { tokens } from '../../../lib/design-tokens';
@@ -64,6 +65,7 @@ export default function PilotToProdPage() {
         <HowItWorks />
         <ProblemSection />
         <PricingSignal />
+        <RiskRemoval />
         <WhitePaperGate />
       </div>
       <PilotFooterCTA />

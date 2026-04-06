@@ -50,8 +50,8 @@ export function PilotHero() {
       >
         {/* Eyebrow label */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ y: 16 }}
+          animate={{ y: 0 }}
           transition={{ duration: 0.5 }}
         >
           <span
@@ -72,8 +72,8 @@ export function PilotHero() {
         {/* H1 headline */}
         <motion.h1
           id="pilot-hero-heading"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ y: 20 }}
+          animate={{ y: 0 }}
           transition={{ duration: 0.6, delay: 0.05 }}
           style={{
             fontFamily: "'EB Garamond', serif",
@@ -91,8 +91,8 @@ export function PilotHero() {
 
         {/* Subheadline */}
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ y: 14 }}
+          animate={{ y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           style={{
             fontFamily: 'Inter, sans-serif',
@@ -110,8 +110,8 @@ export function PilotHero() {
 
         {/* CTAs */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ y: 14 }}
+          animate={{ y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           style={{
             display: 'flex',
@@ -133,11 +133,12 @@ export function PilotHero() {
               fontFamily: 'Inter, sans-serif',
               fontSize: 15,
               fontWeight: 600,
-              padding: '0.75rem 1.5rem',
+              padding: '0.875rem 1.75rem',
               borderRadius: 8,
               textDecoration: 'none',
               boxShadow: tokens.glow.button,
               transition: 'opacity 0.15s ease',
+              minHeight: 44,
             }}
           >
             Start Your Pilot →
@@ -158,11 +159,12 @@ export function PilotHero() {
               fontFamily: 'Inter, sans-serif',
               fontSize: 15,
               fontWeight: 600,
-              padding: '0.75rem 1.5rem',
+              padding: '0.875rem 1.75rem',
               borderRadius: 8,
               textDecoration: 'none',
               border: `1px solid ${tokens.colors.accentBorder}`,
               transition: 'background 0.15s ease, border-color 0.15s ease',
+              minHeight: 44,
             }}
           >
             Download the Guide
@@ -171,9 +173,9 @@ export function PilotHero() {
 
         {/* Trust line */}
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          initial={{ y: 14 }}
+          animate={{ y: 0 }}
+          transition={{ duration: 0.6, delay: 0.25 }}
           style={{
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: 11,

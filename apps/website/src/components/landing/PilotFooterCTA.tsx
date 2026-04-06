@@ -12,6 +12,7 @@ export function PilotFooterCTA() {
         padding: '0 2rem',
       }}
     >
+      <style>{`.pilot-footer-secondary-btn:hover { border-color: rgba(255,255,255,0.6) !important; }`}</style>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -99,10 +100,10 @@ export function PilotFooterCTA() {
           </motion.a>
 
           {/* Secondary CTA */}
-          <motion.a
+          <a
             href="/whitepaper.pdf"
             download
-            whileHover={{ borderColor: 'rgba(255, 255, 255, 0.6)' }}
+            className="pilot-footer-secondary-btn"
             style={{
               display: 'inline-block',
               padding: '0.875rem 2rem',
@@ -118,7 +119,7 @@ export function PilotFooterCTA() {
             }}
           >
             Download the Guide
-          </motion.a>
+          </a>
         </div>
 
         {/* Fine print */}
