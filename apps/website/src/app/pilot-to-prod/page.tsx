@@ -10,7 +10,7 @@ import { tokens } from '../../../lib/design-tokens';
 
 export const metadata = {
   title: 'Pilot to Production — StreamResource',
-  description: 'Close the last-mile gap. A structured 3-month Angular agent pilot at fixed price — ship to production or your money back.',
+  description: 'Close the last-mile gap. Purchase an app deployment license and we work alongside your Angular team for 3 months to ship your first agent to production.',
 };
 
 export default function PilotToProdPage() {

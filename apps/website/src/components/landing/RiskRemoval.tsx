@@ -3,26 +3,26 @@
 import { motion } from 'framer-motion';
 import { tokens } from '../../../lib/design-tokens';
 
-const guarantees = [
+const commitments = [
   {
-    icon: '✓',
-    title: 'Fixed price. No surprises.',
-    desc: '$20,000 flat. No hourly overruns, no scope creep invoices. If the work takes longer, that\'s on us.',
+    icon: '📄',
+    title: 'One license, one app.',
+    desc: '$20,000 covers one application deployed to production. stream-resource is licensed for that app. Buy more licenses as you scale to more apps.',
   },
   {
-    icon: '↩',
-    title: '100% money-back if you don\'t ship.',
-    desc: 'If your agent isn\'t in production by the end of Month 3, you get a full refund. No fine print, no conditions.',
+    icon: '👥',
+    title: 'We work alongside your team.',
+    desc: 'This is not a handoff. We pair with your engineers throughout the 3 months — code reviews, architecture calls, unblocking sessions. Your team drives; we co-pilot.',
   },
   {
     icon: '⚡',
-    title: 'We only win when you ship.',
-    desc: 'Our incentive is your production deploy. We have no interest in a long-running engagement that never lands.',
+    title: 'Fixed price. No scope creep.',
+    desc: '$20,000 flat. No hourly overruns, no change-order invoices. The engagement is scoped to ship your first agent — not open-ended consulting.',
   },
   {
     icon: '🔒',
     title: 'Your code. Your repo.',
-    desc: 'Everything we build lives in your codebase under your ownership. We leave you with patterns you can replicate, not dependencies on us.',
+    desc: 'Everything we build lives in your codebase under your ownership. We leave you with patterns you can replicate across every future agent, not dependencies on us.',
   },
 ];
 
@@ -49,7 +49,7 @@ export function RiskRemoval() {
               marginBottom: '0.75rem',
             }}
           >
-            The Guarantee
+            How It Works
           </span>
           <h2
             style={{
@@ -61,11 +61,11 @@ export function RiskRemoval() {
               lineHeight: 1.2,
             }}
           >
-            We carry the risk. You ship the agent.
+            What&apos;s included in the license
           </h2>
         </motion.div>
 
-        {/* Guarantee grid */}
+        {/* Commitments grid */}
         <div
           style={{
             display: 'grid',
@@ -73,7 +73,7 @@ export function RiskRemoval() {
             gap: '1.25rem',
           }}
         >
-          {guarantees.map((g, i) => (
+          {commitments.map((g, i) => (
             <motion.div
               key={g.title}
               initial={{ opacity: 0, y: 20 }}
@@ -141,7 +141,7 @@ export function RiskRemoval() {
             letterSpacing: '0.04em',
           }}
         >
-          Fixed $20,000 · 3-month engagement · Refund if you don&apos;t ship to production
+          App deployment license · $20,000 · 3-month co-pilot engagement
         </p>
       </div>
     </section>

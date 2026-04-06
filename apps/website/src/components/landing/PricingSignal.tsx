@@ -4,10 +4,10 @@ import { motion } from 'framer-motion';
 import { tokens } from '../../../lib/design-tokens';
 
 const features = [
-  '3-month structured pilot engagement',
-  'stream-resource license for your entire team',
-  'Unlimited agent builds after pilot',
-  "Money-back guarantee if you don't ship",
+  'stream-resource license for one app in production',
+  '3-month co-pilot engagement alongside your team',
+  'Architecture reviews, code pairing, unblocking sessions',
+  'Patterns your team owns and can replicate',
 ];
 
 export function PricingSignal() {
@@ -78,7 +78,7 @@ export function PricingSignal() {
                 marginTop: '8px',
               }}
             >
-              Fixed fee. 3-month pilot engagement + first-year license included.
+              App deployment license. Includes stream-resource + 3-month co-pilot engagement.
             </span>
           </div>
 

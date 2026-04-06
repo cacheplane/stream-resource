@@ -31,14 +31,14 @@ const cards = [
     label: '★ Included',
   },
   {
-    icon: '✓',
-    title: 'Production Guarantee',
+    icon: '📄',
+    title: 'App Deployment License',
     description:
-      "If your agent isn't in production at the end of Month 3, you get a full refund. No fine print. We only win when you ship.",
+      'One license covers one Angular application in production. stream-resource is included for that app. The 3-month engagement is how we get you there together.',
     bullets: [
-      'Fixed $20,000 total',
-      'Money-back guarantee',
-      'Ongoing support license',
+      '$20,000 · one app in production',
+      'stream-resource license included',
+      'Patterns your team can replicate',
     ],
     highlighted: false,
     label: null,

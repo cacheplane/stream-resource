@@ -131,7 +131,7 @@ export function PilotFooterCTA() {
             color: 'rgba(255, 255, 255, 0.4)',
           }}
         >
-          Fixed $20,000 · 3-month pilot · Money-back guarantee
+          App deployment license · $20,000 · 3-month co-pilot engagement
         </p>
       </motion.div>
     </section>

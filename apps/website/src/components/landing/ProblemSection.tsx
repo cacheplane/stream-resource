@@ -2,11 +2,39 @@
 import { useRef, useEffect, useState, useCallback, useId } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { tokens } from '../../../lib/design-tokens';
+import { CitationBadge, type Citation } from './CitationBadge';
 
-const STATS = [
-  { num: '66%', label: 'of AI solutions are almost right — not quite production-ready' },
-  { num: '31%', label: 'of prioritized AI use cases actually reach production' },
-  { num: '75%', label: 'of developers still want a human in the loop when trust breaks down' },
+const STATS: Array<{ num: string; label: string; citation: Citation }> = [
+  {
+    num: '66%',
+    label: 'of AI solutions are almost right — not quite production-ready',
+    citation: {
+      source: 'Stack Overflow Developer Survey 2025',
+      url: 'https://survey.stackoverflow.co/2025/ai',
+      stat: '66% of developers say AI tools are "almost right but not quite"',
+      note: 'AI accelerates prototyping but struggles to reach production-quality outcomes.',
+    },
+  },
+  {
+    num: '31%',
+    label: 'of prioritized AI use cases actually reach production',
+    citation: {
+      source: 'ISG — AI Adoption Reports',
+      url: 'https://isg-one.com',
+      stat: '~31% of prioritized AI use cases reach production',
+      note: 'Enterprise AI initiatives consistently stall between pilot and production.',
+    },
+  },
+  {
+    num: '75%',
+    label: 'of developers still want a human in the loop when trust breaks down',
+    citation: {
+      source: 'Stack Overflow Developer Survey 2025',
+      url: 'https://survey.stackoverflow.co/2025/ai',
+      stat: '75% of developers prefer human help when AI trust breaks down',
+      note: 'Production agents that take consequential actions require human oversight.',
+    },
+  },
 ];
 
 function useCounter(target: number, duration: number, running: boolean) {
@@ -154,17 +182,19 @@ export function ProblemSection() {
               boxShadow: tokens.glass.shadow,
             }}
           >
-            <div style={{
-              fontFamily: 'var(--font-garamond, "EB Garamond", Georgia, serif)',
-              fontSize: '3.4rem',
-              fontWeight: 800,
-              lineHeight: 1,
-              marginBottom: 10,
-              background: `linear-gradient(135deg, #c00, ${tokens.colors.angularRed})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>{s.num}</div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: 10 }}>
+              <span style={{
+                fontFamily: 'var(--font-garamond, "EB Garamond", Georgia, serif)',
+                fontSize: '3.4rem',
+                fontWeight: 800,
+                lineHeight: 1,
+                background: `linear-gradient(135deg, #c00, ${tokens.colors.angularRed})`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>{s.num}</span>
+              <CitationBadge citation={s.citation} />
+            </div>
             <p style={{ fontSize: '0.82rem', color: tokens.colors.textSecondary, lineHeight: 1.5 }}>
               {s.label}
             </p>

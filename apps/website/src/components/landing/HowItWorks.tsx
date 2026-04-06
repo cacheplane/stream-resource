@@ -33,8 +33,8 @@ const phases: Phase[] = [
     number: 3,
     title: 'Production Deployment',
     description:
-      "Harden for scale, deploy to production, hand off the pattern. Your team can now build the next agent without us. Or don't ship — full refund, no questions.",
-    deliverable: '✓ In production or refund',
+      'Harden for scale, deploy to production, hand off the pattern. Your team can now build the next agent without us — the license and the knowledge stay with you.',
+    deliverable: '✓ Production deployment',
   },
 ];
 

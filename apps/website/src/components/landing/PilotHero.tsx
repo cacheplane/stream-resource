@@ -107,7 +107,7 @@ export function PilotHero() {
           }}
         >
           Most Angular teams are 77% of the way there. StreamResource closes the
-          gap — structured pilot, fixed price, guaranteed outcome.
+          gap — app deployment license, fixed price, your team owns the result.
         </motion.p>
 
         {/* CTAs */}
@@ -186,7 +186,7 @@ export function PilotHero() {
             letterSpacing: '0.02em',
           }}
         >
-          3-month structured engagement · Fixed $20,000 · 100% money-back if you don&apos;t ship
+          App deployment license · $20,000 · 3-month co-pilot engagement
         </motion.p>
       </div>
     </section>
