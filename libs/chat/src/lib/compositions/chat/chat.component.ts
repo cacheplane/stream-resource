@@ -11,7 +11,6 @@ import {
   ElementRef,
   ChangeDetectionStrategy,
   inject,
-  ViewEncapsulation,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import type { StreamResourceRef } from '@cacheplane/stream-resource';
@@ -39,7 +38,6 @@ import { CHAT_MARKDOWN_STYLES, renderMarkdown } from '../../styles/chat-markdown
     ChatThreadListComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None,
   styles: [CHAT_THEME_STYLES, CHAT_MARKDOWN_STYLES],
   template: `
     <div class="flex h-full overflow-hidden">
