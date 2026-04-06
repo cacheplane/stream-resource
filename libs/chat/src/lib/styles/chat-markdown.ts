@@ -3,18 +3,32 @@ import { SecurityContext } from '@angular/core';
 import type { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 let markedParse: ((src: string) => string) | null = null;
-let markedLoaded = false;
+let markedLoadAttempted = false;
+function ensureMarkedLoaded(): void {
+  if (markedLoadAttempted) return;
+  markedLoadAttempted = true;
+  // Eagerly kick off the dynamic import so it's ready for subsequent calls
+  void import('marked')
+    .then((m) => {
+      markedParse = (src: string) => (m as any).marked.parse(src, { async: false }) as string;
+    })
+    .catch(() => {
+      markedParse = null;
+    });
+}
 
-function loadMarked(): void {
-  if (markedLoaded) return;
-  markedLoaded = true;
-  try {
-    // Dynamic require — marked is an optional peer dep
-    const m = require('marked');
-    markedParse = (src: string) => m.marked.parse(src, { async: false }) as string;
-  } catch {
-    markedParse = null;
-  }
+// Kick off the import at module load time so it resolves before first render
+ensureMarkedLoaded();
+
+/**
+ * Escape and convert plain text to basic HTML (fallback when marked is unavailable).
+ */
+function plainTextToHtml(content: string): string {
+  return content
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>');
 }
 
 /**
@@ -22,7 +36,6 @@ function loadMarked(): void {
  * Falls back to plain text with newline->br conversion if `marked` is not installed.
  */
 export function renderMarkdown(content: string, sanitizer: DomSanitizer): SafeHtml {
-  loadMarked();
   if (markedParse) {
     const html = markedParse(content);
     return sanitizer.bypassSecurityTrustHtml(
@@ -30,12 +43,7 @@ export function renderMarkdown(content: string, sanitizer: DomSanitizer): SafeHt
     );
   }
   // Fallback: escape HTML and convert newlines to <br>
-  const escaped = content
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\n/g, '<br>');
-  return sanitizer.bypassSecurityTrustHtml(escaped);
+  return sanitizer.bypassSecurityTrustHtml(plainTextToHtml(content));
 }
 
 /**
