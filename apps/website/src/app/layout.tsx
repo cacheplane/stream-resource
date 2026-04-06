@@ -22,7 +22,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'StreamResource — Signal-Native Streaming for Angular + LangGraph',
+  title: 'Angular Stream Resource — Signal-Native Streaming for Angular + LangGraph',
   description: 'The Enterprise Streaming Resource for LangChain and Angular. Signal-native streaming, thread persistence, and production patterns for Angular 20+.',
 };
 
