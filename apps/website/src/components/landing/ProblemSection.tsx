@@ -213,6 +213,7 @@ export function ProblemSection() {
             background: 'rgba(0,0,0,0.07)',
             overflow: 'hidden',
             position: 'relative',
+            animation: showStall ? 'sr-shake 0.5s ease-in-out' : 'none',
           }}>
             <div style={{
               position: 'absolute',
@@ -316,6 +317,7 @@ export function ProblemSection() {
 
       <style>{`
         @keyframes sr-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.6)} }
+        @keyframes sr-shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-3px)} 40%{transform:translateX(3px)} 60%{transform:translateX(-2px)} 80%{transform:translateX(2px)} }
       `}</style>
     </section>
   );
