@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { tokens } from '@cacheplane/design-tokens';
 
 const links = [
+  { label: 'Pilot to Prod', href: '/pilot-to-prod' },
   { label: 'Docs', href: '/docs' },
   { label: 'API', href: '/docs/api/stream-resource' },
   { label: 'Examples', href: 'https://cockpit.stream-resource.dev' },
@@ -73,7 +74,7 @@ export function Nav() {
             aria-label="GitHub repository">
             <GitHubIcon />
           </a>
-          <Link href="/pricing"
+          <Link href="/pilot-to-prod#whitepaper-gate"
             className="px-4 py-2 text-sm font-mono rounded transition-all"
             style={{ background: tokens.colors.accent, color: '#fff' }}
             onMouseEnter={(e) => (e.currentTarget.style.boxShadow = tokens.glow.button)}
@@ -112,7 +113,7 @@ export function Nav() {
               aria-label="GitHub repository">
               <GitHubIcon />
             </a>
-            <Link href="/pricing"
+            <Link href="/pilot-to-prod#whitepaper-gate"
               onClick={() => setOpen(false)}
               className="px-4 py-2 text-sm font-mono rounded"
               style={{ background: tokens.colors.accent, color: '#fff' }}>
