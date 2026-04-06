@@ -11,6 +11,9 @@ const LAYERS = [
     rgb: '0,64,144',
     bg: 'rgba(0,64,144,0.05)',
     border: 'rgba(0,64,144,0.25)',
+    outcome: 'Ship streaming agents without building the plumbing.',
+    problem: 'Wiring SSE into Angular requires weeks of zone patching, manual subscription management, and custom thread-persistence code — most of which breaks under load or after a page refresh.',
+    solution: 'streamResource() gives your team production-ready streaming, thread persistence, interrupt handling, and a deterministic test transport on day one.',
     chips: ['streamResource()', 'messages()', 'interrupt()', 'time travel', 'MockStreamTransport'],
     connLabel: 'AIMessage stream',
     connColor: 'rgba(0,64,144,.22)',
@@ -27,6 +30,9 @@ const LAYERS = [
     rgb: '90,0,200',
     bg: 'rgba(90,0,200,0.05)',
     border: 'rgba(90,0,200,0.25)',
+    outcome: 'Accessible agent UI in days, not sprints.',
+    problem: 'Approval flows, streaming indicators, tool-call cards, and interrupt panels are rebuilt from scratch by every team — typically a 4–6 week sprint that delays the real agent work.',
+    solution: 'Pre-built, accessible Angular components for every agent interaction pattern. Your team configures and styles them — not writes them.',
     chips: ['<chat-messages>', '<chat-interrupt>', '<chat-tool-calls>', '<chat> prebuilt', '<chat-debug>'],
     connLabel: 'Signal<Message[]>',
     connColor: 'rgba(26,122,64,.22)',
@@ -43,6 +49,9 @@ const LAYERS = [
     rgb: '26,122,64',
     bg: 'rgba(26,122,64,0.05)',
     border: 'rgba(26,122,64,0.25)',
+    outcome: 'Agents that render UI — without coupling them to your frontend.',
+    problem: 'Agents that surface dynamic data require either hardcoded frontend logic per agent or a fragile coupling between agent output and component code — both block iteration speed.',
+    solution: 'The agent emits a declarative UI spec. Your Angular registry maps it to components. Swap components or redesign the UI without touching the agent.',
     chips: ['<render-spec>', 'defineAngularRegistry()', 'signalStateStore()', 'JSON patch streaming'],
     connLabel: 'Spec · JSON patch',
     connColor: '',
@@ -158,21 +167,67 @@ export function FullStackSection() {
           <div key={layer.id}>
             <Connector layer={layer} />
             <div style={{
-              borderRadius: 14, padding: '18px 20px',
-              background: layer.bg, border: `2px solid ${layer.border}`,
-              position: 'relative',
+              borderRadius: 14,
+              padding: '20px 20px 18px',
+              background: layer.bg,
+              border: `2px solid ${layer.border}`,
             }}>
-              <div style={{
-                position: 'absolute', top: -10, left: 16,
+              {/* Tag — inline, not absolute. Fixes Gen UI overlap bug. */}
+              <span style={{
+                display: 'inline-block',
                 fontFamily: 'var(--font-mono,"JetBrains Mono",monospace)',
                 fontSize: '0.58rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em',
                 padding: '2px 9px', borderRadius: 5, color: '#fff', background: layer.color,
+                marginBottom: 10,
               }}>
                 {layer.tag}
-              </div>
-              <p style={{ fontFamily: 'var(--font-mono,"JetBrains Mono",monospace)', fontSize: '0.76rem', fontWeight: 700, color: layer.color, marginBottom: 8 }}>
+              </span>
+
+              {/* Package name */}
+              <p style={{
+                fontFamily: 'var(--font-mono,"JetBrains Mono",monospace)',
+                fontSize: '0.76rem', fontWeight: 700, color: layer.color,
+                marginBottom: 8,
+              }}>
                 {layer.pkg}
               </p>
+
+              {/* Outcome headline */}
+              <p style={{
+                fontFamily: 'var(--font-garamond,"EB Garamond",Georgia,serif)',
+                fontSize: '1.18rem', fontWeight: 700, color: tokens.colors.textPrimary,
+                lineHeight: 1.25, marginBottom: 10,
+              }}>
+                {layer.outcome}
+              </p>
+
+              {/* "Without this" problem block */}
+              <div style={{
+                padding: '8px 12px',
+                borderRadius: 6,
+                background: 'rgba(183,28,28,0.04)',
+                borderLeft: '2px solid rgba(183,28,28,0.25)',
+                marginBottom: 12,
+              }}>
+                <span style={{
+                  display: 'block',
+                  fontFamily: 'var(--font-mono,"JetBrains Mono",monospace)',
+                  fontSize: '0.52rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
+                  color: '#b71c1c', marginBottom: 4,
+                }}>
+                  Without this
+                </span>
+                <p style={{ fontSize: '0.75rem', lineHeight: 1.6, color: '#555', margin: 0 }}>
+                  {layer.problem}
+                </p>
+              </div>
+
+              {/* Solution line */}
+              <p style={{ fontSize: '0.8rem', lineHeight: 1.6, color: '#333', marginBottom: 14 }}>
+                {layer.solution}
+              </p>
+
+              {/* API chips */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                 {layer.chips.map(chip => (
                   <span key={chip} style={{
