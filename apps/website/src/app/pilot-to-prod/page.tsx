@@ -1,5 +1,11 @@
 import { PilotHero } from '../../components/landing/PilotHero';
-import { tokens } from '../../../lib/design-tokens';
+import { WhatIsIncluded } from '../../components/landing/WhatIsIncluded';
+import { HowItWorks } from '../../components/landing/HowItWorks';
+import { ProblemSection } from '../../components/landing/ProblemSection';
+import { PricingSignal } from '../../components/landing/PricingSignal';
+import { WhitePaperGate } from '../../components/landing/WhitePaperGate';
+import { PilotFooterCTA } from '../../components/landing/PilotFooterCTA';
+import { tokens } from '../../lib/design-tokens';
 
 export const metadata = {
   title: 'Pilot to Production — StreamResource',
@@ -8,9 +14,56 @@ export const metadata = {
 
 export default function PilotToProdPage() {
   return (
-    <div style={{ background: tokens.gradient.bgFlow, position: 'relative', overflow: 'hidden' }}>
-      <PilotHero />
-      {/* More sections to follow */}
-    </div>
+    <>
+      <div style={{ background: tokens.gradient.bgFlow, position: 'relative', overflow: 'hidden' }}>
+        {/* Ambient gradient blobs */}
+        <div
+          style={{
+            position: 'absolute',
+            width: 600,
+            height: 600,
+            borderRadius: '50%',
+            background: tokens.gradient.warm,
+            top: -200,
+            left: -150,
+            filter: 'blur(80px)',
+            pointerEvents: 'none',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            width: 500,
+            height: 500,
+            borderRadius: '50%',
+            background: tokens.gradient.cool,
+            top: 800,
+            right: -100,
+            filter: 'blur(80px)',
+            pointerEvents: 'none',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            width: 400,
+            height: 400,
+            borderRadius: '50%',
+            background: tokens.gradient.warm,
+            top: 2400,
+            left: -100,
+            filter: 'blur(80px)',
+            pointerEvents: 'none',
+          }}
+        />
+        <PilotHero />
+        <WhatIsIncluded />
+        <HowItWorks />
+        <ProblemSection />
+        <PricingSignal />
+        <WhitePaperGate />
+      </div>
+      <PilotFooterCTA />
+    </>
   );
 }
