@@ -1,21 +1,20 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 import { describe, it, expect, vi } from 'vitest';
 import { signal, computed } from '@angular/core';
-import { HumanMessage } from '@langchain/core/messages';
 import { submitMessage } from './chat-input.component';
 import { createMockStreamResourceRef } from '../../testing/mock-stream-resource-ref';
 
 describe('submitMessage()', () => {
-  it('calls ref.submit with a HumanMessage containing the trimmed text', () => {
+  it('calls ref.submit with a human message containing the trimmed text', () => {
     const mockRef = createMockStreamResourceRef();
     const submitSpy = vi.spyOn(mockRef, 'submit');
 
     submitMessage(mockRef, '  hello world  ');
 
     expect(submitSpy).toHaveBeenCalledOnce();
-    const args = submitSpy.mock.calls[0][0] as { messages: HumanMessage[] };
+    const args = submitSpy.mock.calls[0][0] as { messages: Array<{ role: string; content: string }> };
     expect(args.messages).toHaveLength(1);
-    expect(args.messages[0]).toBeInstanceOf(HumanMessage);
+    expect(args.messages[0].role).toBe('human');
     expect(args.messages[0].content).toBe('hello world');
   });
 

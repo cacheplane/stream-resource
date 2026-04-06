@@ -8,7 +8,6 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HumanMessage } from '@langchain/core/messages';
 import type { StreamResourceRef } from '@cacheplane/stream-resource';
 
 /**
@@ -22,7 +21,7 @@ export function submitMessage(
 ): string | null {
   const trimmed = text.trim();
   if (!trimmed) return null;
-  ref.submit({ messages: [new HumanMessage(trimmed)] });
+  ref.submit({ messages: [{ role: 'human', content: trimmed }] });
   return trimmed;
 }
 
