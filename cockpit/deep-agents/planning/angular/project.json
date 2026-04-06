@@ -27,7 +27,13 @@
         "development": {
           "optimization": false,
           "extractLicenses": false,
-          "sourceMap": true
+          "sourceMap": true,
+          "fileReplacements": [
+            {
+              "replace": "cockpit/deep-agents/planning/angular/src/environments/environment.ts",
+              "with": "cockpit/deep-agents/planning/angular/src/environments/environment.development.ts"
+            }
+          ]
         }
       },
       "defaultConfiguration": "production"
