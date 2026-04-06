@@ -11,6 +11,7 @@ export function PilotHero() {
     >
       {/* Ambient gradient blobs */}
       <div
+        aria-hidden="true"
         style={{
           position: 'absolute',
           width: 500,
@@ -24,6 +25,7 @@ export function PilotHero() {
         }}
       />
       <div
+        aria-hidden="true"
         style={{
           position: 'absolute',
           width: 450,

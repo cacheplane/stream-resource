@@ -77,7 +77,7 @@ export function Footer() {
               onMouseLeave={(e) => (e.currentTarget.style.color = tokens.colors.textSecondary)}>
               Documentation
             </Link>
-            <Link href="/api-reference" className="transition-colors" style={{ color: tokens.colors.textSecondary }}
+            <Link href="/docs/api/stream-resource" className="transition-colors" style={{ color: tokens.colors.textSecondary }}
               onMouseEnter={(e) => (e.currentTarget.style.color = tokens.colors.accent)}
               onMouseLeave={(e) => (e.currentTarget.style.color = tokens.colors.textSecondary)}>
               API Reference

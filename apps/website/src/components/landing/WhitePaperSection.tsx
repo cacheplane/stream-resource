@@ -134,7 +134,10 @@ export function WhitePaperSection() {
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
+              <label htmlFor="wp-name" className="sr-only">Name (optional)</label>
               <input
+                id="wp-name"
+                aria-label="Name (optional)"
                 style={inputStyle}
                 type="text"
                 placeholder="Name (optional)"
@@ -142,7 +145,10 @@ export function WhitePaperSection() {
                 onChange={e => setName(e.target.value)}
                 disabled={formState === 'submitting'}
               />
+              <label htmlFor="wp-email" className="sr-only">Email address</label>
               <input
+                id="wp-email"
+                aria-label="Email address"
                 style={{ ...inputStyle, marginBottom: 16 }}
                 type="email"
                 placeholder="Email address"
