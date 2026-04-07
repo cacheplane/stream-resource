@@ -2,11 +2,6 @@
 import { motion } from 'framer-motion';
 import { tokens } from '../../../lib/design-tokens';
 
-/**
- * Companies displayed as social proof — sourced from the LangChain ecosystem.
- * These represent the types of companies building with LangChain/LangGraph,
- * the same ecosystem Angular Agent Framework serves.
- */
 const COMPANIES = [
   'Klarna',
   'Elastic',
@@ -19,7 +14,7 @@ const COMPANIES = [
   'Cisco',
   'Workday',
   'ServiceNow',
-  'Monday.com',
+  'Monday',
 ];
 
 /** Duplicate for seamless infinite scroll */
@@ -27,7 +22,7 @@ const SCROLL_ITEMS = [...COMPANIES, ...COMPANIES];
 
 export function SocialProof() {
   return (
-    <section style={{ padding: '24px 0', overflow: 'hidden' }}>
+    <section style={{ padding: '32px 0', overflow: 'hidden' }}>
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -43,7 +38,7 @@ export function SocialProof() {
           letterSpacing: '0.12em',
           fontWeight: 700,
           color: tokens.colors.textMuted,
-          marginBottom: 16,
+          marginBottom: 20,
         }}>
           Built for teams shipping with LangChain
         </p>
@@ -51,25 +46,25 @@ export function SocialProof() {
         {/* Scrolling logo strip */}
         <div style={{
           position: 'relative',
-          maxWidth: 900,
+          maxWidth: 1000,
           margin: '0 auto',
-          borderRadius: 16,
+          borderRadius: 18,
           background: tokens.glass.bg,
           backdropFilter: `blur(${tokens.glass.blur})`,
           WebkitBackdropFilter: `blur(${tokens.glass.blur})`,
           border: `1px solid ${tokens.glass.border}`,
           overflow: 'hidden',
-          padding: '16px 0',
+          padding: '28px 0',
         }}>
           {/* Fade edges */}
           <div style={{
-            position: 'absolute', left: 0, top: 0, bottom: 0, width: 60, zIndex: 1,
-            background: 'linear-gradient(to right, rgba(244,240,255,0.95), transparent)',
+            position: 'absolute', left: 0, top: 0, bottom: 0, width: 80, zIndex: 1,
+            background: 'linear-gradient(to right, rgba(255,255,255,0.7), transparent)',
             pointerEvents: 'none',
           }} />
           <div style={{
-            position: 'absolute', right: 0, top: 0, bottom: 0, width: 60, zIndex: 1,
-            background: 'linear-gradient(to left, rgba(244,240,255,0.95), transparent)',
+            position: 'absolute', right: 0, top: 0, bottom: 0, width: 80, zIndex: 1,
+            background: 'linear-gradient(to left, rgba(255,255,255,0.7), transparent)',
             pointerEvents: 'none',
           }} />
 
@@ -79,26 +74,47 @@ export function SocialProof() {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 48,
+              gap: 64,
               width: 'max-content',
+              paddingLeft: 32,
+              paddingRight: 32,
             }}
           >
             {SCROLL_ITEMS.map((company, i) => (
-              <span
+              <div
                 key={`${company}-${i}`}
                 style={{
-                  fontFamily: 'var(--font-garamond,"EB Garamond",Georgia,serif)',
-                  fontSize: 'clamp(14px, 1.1vw, 17px)',
-                  fontWeight: 700,
-                  color: tokens.colors.textMuted,
-                  whiteSpace: 'nowrap',
-                  opacity: 0.6,
-                  letterSpacing: '0.02em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 36,
+                  flexShrink: 0,
+                  opacity: 0.3,
+                  filter: 'grayscale(100%)',
                   userSelect: 'none',
                 }}
               >
-                {company}
-              </span>
+                <svg
+                  height="24"
+                  viewBox={`0 0 ${company.length * 11 + 8} 28`}
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  role="img"
+                  aria-label={company}
+                >
+                  <text
+                    x="4"
+                    y="21"
+                    fill={tokens.colors.textPrimary}
+                    fontFamily="Inter, system-ui, -apple-system, sans-serif"
+                    fontSize="20"
+                    fontWeight="700"
+                    letterSpacing="-0.02em"
+                  >
+                    {company}
+                  </text>
+                </svg>
+              </div>
             ))}
           </div>
         </div>
@@ -110,7 +126,7 @@ export function SocialProof() {
           100% { transform: translateX(-50%); }
         }
         .logo-scroll-track {
-          animation: logo-scroll 30s linear infinite;
+          animation: logo-scroll 35s linear infinite;
         }
         .logo-scroll-track:hover {
           animation-play-state: paused;
