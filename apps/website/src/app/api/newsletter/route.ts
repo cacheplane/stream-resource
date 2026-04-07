@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail, FROM, addToAudience } from '../../../../lib/resend';
-import { loopsUpsertContact, loopsSendEvent } from '../../../../lib/loops';
 import { newsletterWelcomeHtml } from '../../../../emails/newsletter-welcome';
 
 export async function POST(req: NextRequest) {
@@ -27,14 +26,6 @@ export async function POST(req: NextRequest) {
         html: newsletterWelcomeHtml(),
       }),
       addToAudience(email),
-      loopsUpsertContact({
-        email,
-        source: 'newsletter',
-      }),
-      loopsSendEvent({
-        email,
-        eventName: 'newsletter_subscribed',
-      }),
     ]);
   } catch (err) {
     console.error('[resend] newsletter signup failed:', err);
