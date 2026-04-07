@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { sendEmail, FROM, NOTIFY_TO, addToAudience } from '../../../../lib/resend';
-import { loopsUpsertContact, loopsSendEvent } from '../../../../lib/loops';
 import { leadNotificationHtml } from '../../../../emails/lead-notification';
 
 const LEADS_FILE = path.join(process.cwd(), 'data', 'leads.ndjson');
@@ -41,17 +40,6 @@ export async function POST(req: NextRequest) {
         html: leadNotificationHtml({ name, email, company, message, ts }),
       }),
       addToAudience(email, name),
-      loopsUpsertContact({
-        email,
-        firstName: name,
-        source: 'lead-form',
-        properties: { company },
-      }),
-      loopsSendEvent({
-        email,
-        eventName: 'lead_submitted',
-        properties: { company },
-      }),
     ]);
   } catch (err) {
     console.error('[resend] lead notification failed:', err);
