@@ -1,11 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import { allDocsPages, type DocsPage } from './docs-config';
+import { docsConfig, type DocsPage, getLibraryPages } from './docs-config';
 
-const resolveContentDir = (): string => {
-  const workspacePath = path.join(process.cwd(), 'apps', 'website', 'content', 'docs');
+const resolveContentDir = (library: string): string => {
+  const workspacePath = path.join(process.cwd(), 'apps', 'website', 'content', 'docs', library);
   if (fs.existsSync(workspacePath)) return workspacePath;
-  return path.join(process.cwd(), 'content', 'docs');
+  return path.join(process.cwd(), 'content', 'docs', library);
 };
 
 export interface ResolvedDoc {
@@ -14,11 +14,12 @@ export interface ResolvedDoc {
   title: string;
 }
 
-export function getDocBySlug(section: string, slug: string): ResolvedDoc | null {
-  const page = allDocsPages.find((p) => p.section === section && p.slug === slug);
+export function getDocBySlug(library: string, section: string, slug: string): ResolvedDoc | null {
+  const pages = getLibraryPages(library);
+  const page = pages.find((p) => p.section === section && p.slug === slug);
   if (!page) return null;
 
-  const dir = resolveContentDir();
+  const dir = resolveContentDir(library);
   const filePath = path.join(dir, section, `${slug}.mdx`);
   if (!fs.existsSync(filePath)) return null;
 
@@ -31,6 +32,10 @@ export function getDocBySlug(section: string, slug: string): ResolvedDoc | null 
   };
 }
 
-export function getAllDocSlugs(): { section: string; slug: string }[] {
-  return allDocsPages.map((p) => ({ section: p.section, slug: p.slug }));
+export function getAllDocSlugs(): { library: string; section: string; slug: string }[] {
+  return docsConfig.flatMap((lib) =>
+    lib.sections.flatMap((s) =>
+      s.pages.map((p) => ({ library: lib.id, section: p.section, slug: p.slug }))
+    )
+  );
 }
