@@ -1,5 +1,2 @@
-export const environment = {
-  production: false,
-  langGraphApiUrl: 'http://localhost:4401/api',
-  streamingAssistantId: 'spec-rendering',
-};
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+export const environment = { production: false };

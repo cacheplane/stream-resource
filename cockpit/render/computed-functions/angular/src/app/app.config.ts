@@ -1,20 +1,15 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 import { ApplicationConfig } from '@angular/core';
-import { provideStreamResource } from '@cacheplane/stream-resource';
-import { provideChat } from '@cacheplane/chat';
 import { provideRender } from '@cacheplane/render';
-import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideStreamResource({ apiUrl: environment.langGraphApiUrl }),
-    provideChat({}),
     provideRender({
       functions: {
-        formatDate: (value: string) => new Date(value).toLocaleDateString(),
-        uppercase: (value: string) => value.toUpperCase(),
-        multiply: (a: number, b: number) => a * b,
-        reverse: (value: string) => value.split('').reverse().join(''),
+        formatDate: (args: Record<string, unknown>) => new Date(args['value'] as string).toLocaleDateString(),
+        uppercase: (args: Record<string, unknown>) => (args['value'] as string).toUpperCase(),
+        multiply: (args: Record<string, unknown>) => (args['a'] as number) * (args['b'] as number),
+        reverse: (args: Record<string, unknown>) => (args['value'] as string).split('').reverse().join(''),
       },
     }),
   ],
