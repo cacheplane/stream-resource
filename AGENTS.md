@@ -38,7 +38,6 @@ This file is for agents working in this repository. It is contributor-facing, no
 
 - `libs/stream-resource`: main Angular library.
 - `apps/website`: docs and marketing site.
-- `packages/mcp`: MCP server package.
 - `e2e/stream-resource-e2e`: end-to-end coverage for the workspace.
 - `apps/demo` and `apps/demo-e2e`: demo application and related end-to-end coverage.
 

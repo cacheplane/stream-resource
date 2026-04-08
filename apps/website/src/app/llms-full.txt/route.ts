@@ -38,12 +38,6 @@ export async function GET() {
       'Do not mock streamResource() in tests — use MockStreamTransport.',
       'RxJS is an internal implementation detail — do not import rxjs in consumer code.',
     ].join('\n'),
-    [
-      '## MCP server',
-      '',
-      'npx @cacheplane/stream-resource-mcp',
-      'Add to Claude Code settings.json, Cursor .cursor/mcp.json, or any MCP-compatible agent.',
-    ].join('\n'),
   ];
 
   return new NextResponse(sections.join('\n\n---\n\n'), {

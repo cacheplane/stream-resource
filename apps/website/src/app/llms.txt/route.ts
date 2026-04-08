@@ -27,9 +27,6 @@ function buildLlmsTxt(): string {
     '// Template: @for (msg of chat.messages(); track $index) { <p>{{ msg.content }}</p> }',
     "// Submit: chat.submit({ messages: [{ role: 'human', content: input }] })",
     '',
-    '## MCP server',
-    'npx @cacheplane/stream-resource-mcp',
-    '',
     '## Full reference',
     'https://cacheplane.ai/llms-full.txt',
   ].join('\n');
