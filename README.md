@@ -11,8 +11,8 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@cacheplane/stream-resource">
-    <img alt="npm version" src="https://img.shields.io/npm/v/@cacheplane%2Fstream-resource?color=6C8EFF&labelColor=080B14&style=flat-square" />
+  <a href="https://www.npmjs.com/package/@cacheplane/langchain">
+    <img alt="npm version" src="https://img.shields.io/npm/v/@cacheplane%2Flangchain?color=6C8EFF&labelColor=080B14&style=flat-square" />
   </a>
   <a href="./LICENSE">
     <img alt="License: PolyForm Noncommercial + Commercial" src="https://img.shields.io/badge/license-PolyForm%20Noncommercial%20%2B%20Commercial-6C8EFF?labelColor=080B14&style=flat-square" />
@@ -34,7 +34,7 @@
 ## Install
 
 ```bash
-npm install @cacheplane/stream-resource
+npm install @cacheplane/langchain
 ```
 
 **Peer dependencies:** `@angular/core ^20.0.0 || ^21.0.0`, `@langchain/core ^1.1.0`, `@langchain/langgraph-sdk ^1.7.0`, `rxjs ~7.8.0`
@@ -45,7 +45,7 @@ npm install @cacheplane/stream-resource
 
 ```typescript
 import { Component } from '@angular/core';
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 import type { BaseMessage } from '@langchain/core/messages';
 
 @Component({
@@ -145,7 +145,7 @@ That's it. `chat.messages()` is an Angular Signal. Bind it directly in your temp
 
 ## License
 
-`@cacheplane/stream-resource` is source-available software dual-licensed:
+`@cacheplane/langchain` is source-available software dual-licensed:
 
 - **PolyForm Noncommercial 1.0.0** — free for noncommercial use (personal projects, academic, research, non-profit internal tooling). See [`LICENSE`](./LICENSE).
 - **Angular Stream Resource Commercial License** — required for any for-profit or revenue-generating use. See [`LICENSE-COMMERCIAL`](./LICENSE-COMMERCIAL) and [`COMMERCIAL.md`](./COMMERCIAL.md).

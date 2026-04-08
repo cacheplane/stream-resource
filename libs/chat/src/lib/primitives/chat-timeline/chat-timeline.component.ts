@@ -9,7 +9,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import type { StreamResourceRef, ThreadState } from '@cacheplane/stream-resource';
+import type { StreamResourceRef, ThreadState } from '@cacheplane/langchain';
 
 @Component({
   selector: 'chat-timeline',

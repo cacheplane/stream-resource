@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { signal, computed } from '@angular/core';
 import { getInterrupt } from './chat-interrupt.component';
 import { createMockStreamResourceRef } from '../../testing/mock-stream-resource-ref';
-import type { Interrupt } from '@cacheplane/stream-resource';
+import type { Interrupt } from '@cacheplane/langchain';
 
 describe('getInterrupt()', () => {
   it('returns undefined when no interrupt is present', () => {

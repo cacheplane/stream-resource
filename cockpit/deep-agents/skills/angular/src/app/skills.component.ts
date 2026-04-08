@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ChatComponent } from '@cacheplane/chat';
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 import { environment } from '../environments/environment';
 
 /**

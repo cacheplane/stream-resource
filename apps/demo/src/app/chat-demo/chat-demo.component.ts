@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, Injector, runInInjectionContext } from '@angular/core';
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 import type { BaseMessage } from '@langchain/core/messages';
 
 @Component({

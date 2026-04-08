@@ -1,12 +1,12 @@
-# Streaming with stream-resource
+# Streaming with @cacheplane/langchain
 
 <Summary>
 Build a real-time streaming chat interface using `streamResource()` from
-`@cacheplane/stream-resource` connected to a LangGraph backend on LangSmith Cloud.
+`@cacheplane/langchain` connected to a LangGraph backend on LangSmith Cloud.
 </Summary>
 
 <Prompt>
-Add real-time LLM streaming to this Angular component using `streamResource()` from `@cacheplane/stream-resource`. Configure `provideStreamResource({ apiUrl })` in the app config, then call `stream.submit()` to send messages. Bind `stream.messages()` in the template using `@for` — all Signals, no subscriptions needed.
+Add real-time LLM streaming to this Angular component using `streamResource()` from `@cacheplane/langchain`. Configure `provideStreamResource({ apiUrl })` in the app config, then call `stream.submit()` to send messages. Bind `stream.messages()` in the template using `@for` — all Signals, no subscriptions needed.
 </Prompt>
 
 <Steps>
@@ -17,7 +17,7 @@ Set up `provideStreamResource()` in your app config with the LangGraph Cloud URL
 ```typescript
 // app.config.ts
 import { ApplicationConfig } from '@angular/core';
-import { provideStreamResource } from '@cacheplane/stream-resource';
+import { provideStreamResource } from '@cacheplane/langchain';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -37,7 +37,7 @@ In your component, call `streamResource()` in a field initializer (injection con
 
 ```typescript
 // streaming.component.ts
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 
 export class StreamingComponent {
   protected readonly stream = streamResource({

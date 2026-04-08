@@ -8,7 +8,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import type { StreamResourceRef } from '@cacheplane/stream-resource';
+import type { StreamResourceRef } from '@cacheplane/langchain';
 import { ICON_SEND } from '../../styles/chat-icons';
 
 export function submitMessage(

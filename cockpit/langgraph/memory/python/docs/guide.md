@@ -1,4 +1,4 @@
-# Cross-Thread Persistent Memory with stream-resource
+# Cross-Thread Persistent Memory with @cacheplane/langchain
 
 <Summary>
 Build a chat interface where the agent actively learns and remembers facts about the user.
@@ -8,7 +8,7 @@ and displays it in a live sidebar.
 </Summary>
 
 <Prompt>
-Add persistent agent memory to this Angular component using `streamResource()` from `@cacheplane/stream-resource`. Use `stream.value()` to access the `memory` field in graph state, derive a reactive `memoryEntries` signal with Angular's `computed()`, and render the facts in a sidebar panel via the `<cp-chat>` component from `@cacheplane/chat`.
+Add persistent agent memory to this Angular component using `streamResource()` from `@cacheplane/langchain`. Use `stream.value()` to access the `memory` field in graph state, derive a reactive `memoryEntries` signal with Angular's `computed()`, and render the facts in a sidebar panel via the `<cp-chat>` component from `@cacheplane/chat`.
 </Prompt>
 
 <Steps>
@@ -19,7 +19,7 @@ Set up `provideStreamResource()` in your app config with the LangGraph API URL:
 ```typescript
 // app.config.ts
 import { ApplicationConfig } from '@angular/core';
-import { provideStreamResource } from '@cacheplane/stream-resource';
+import { provideStreamResource } from '@cacheplane/langchain';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -37,7 +37,7 @@ In your component, call `streamResource()` pointing at the `memory` assistant:
 
 ```typescript
 // memory.component.ts
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 
 export class MemoryComponent {
   protected readonly stream = streamResource({

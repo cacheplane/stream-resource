@@ -1,3 +1,3 @@
-# stream-resource
+# @cacheplane/langchain
 
 This library was generated with [Nx](https://nx.dev).

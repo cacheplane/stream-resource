@@ -6,7 +6,7 @@ const LAYERS = [
   {
     id: 'sr',
     tag: 'Primitives',
-    pkg: '@cacheplane/stream-resource',
+    pkg: '@cacheplane/langchain',
     color: tokens.colors.accent,
     rgb: '0,64,144',
     bg: 'rgba(0,64,144,0.05)',

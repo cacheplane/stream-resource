@@ -1,13 +1,13 @@
-# Thread Persistence with stream-resource
+# Thread Persistence with @cacheplane/langchain
 
 <Summary>
 Build a chat interface with thread persistence using `streamResource()` from
-`@cacheplane/stream-resource`. Conversations survive browser refreshes and
+`@cacheplane/langchain`. Conversations survive browser refreshes and
 can be resumed using `stream.switchThread(id)`.
 </Summary>
 
 <Prompt>
-Add thread persistence to this Angular component using `streamResource()` from `@cacheplane/stream-resource`. Use the `onThreadId` callback to capture thread IDs, `stream.switchThread(id)` to resume conversations, and `stream.switchThread(null)` to start fresh. Bind `stream.messages()` in the template via the `<cp-chat>` component from `@cacheplane/chat`.
+Add thread persistence to this Angular component using `streamResource()` from `@cacheplane/langchain`. Use the `onThreadId` callback to capture thread IDs, `stream.switchThread(id)` to resume conversations, and `stream.switchThread(null)` to start fresh. Bind `stream.messages()` in the template via the `<cp-chat>` component from `@cacheplane/chat`.
 </Prompt>
 
 <Steps>
@@ -18,7 +18,7 @@ Set up `provideStreamResource()` in your app config with the LangGraph API URL:
 ```typescript
 // app.config.ts
 import { ApplicationConfig } from '@angular/core';
-import { provideStreamResource } from '@cacheplane/stream-resource';
+import { provideStreamResource } from '@cacheplane/langchain';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -38,7 +38,7 @@ In your component, call `streamResource()` with the `onThreadId` callback to cap
 
 ```typescript
 // persistence.component.ts
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 
 export class PersistenceComponent {
   protected readonly stream = streamResource({

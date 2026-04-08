@@ -1,6 +1,6 @@
 # provideStreamResource()
 
-`provideStreamResource` is the provider factory that registers `stream-resource` in Angular's dependency injection system. Call it once inside `bootstrapApplication` (or an `ApplicationConfig`) to configure the transport and any global defaults used by every `streamResource` in your app.
+`provideStreamResource` is the provider factory that registers `@cacheplane/langchain` in Angular's dependency injection system. Call it once inside `bootstrapApplication` (or an `ApplicationConfig`) to configure the transport and any global defaults used by every `streamResource` in your app.
 
 This is the single configuration point for the entire library. Rather than configuring each resource individually, you declare your transport here and every `streamResource` call throughout the app inherits it automatically.
 
@@ -9,7 +9,7 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import {
   provideStreamResource,
   FetchStreamTransport,
-} from '@cacheplane/stream-resource';
+} from '@cacheplane/langchain';
 import { AppComponent } from './app/app.component';
 
 bootstrapApplication(AppComponent, {

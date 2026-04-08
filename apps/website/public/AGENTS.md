@@ -3,7 +3,7 @@
 Angular streaming library for LangChain/LangGraph. Provides `streamResource()` — full parity with React's `useStream()`.
 
 ## Install
-npm install stream-resource
+npm install @cacheplane/langchain
 
 ## Key requirement
 `streamResource()` MUST be called within an Angular injection context (component constructor or field initializer). Calling it in ngOnInit or any async context throws "NG0203: inject() must be called from an injection context".
@@ -11,13 +11,13 @@ npm install stream-resource
 ## Basic usage
 ```typescript
 // app.config.ts
-import { provideStreamResource } from 'stream-resource';
+import { provideStreamResource } from '@cacheplane/langchain';
 export const appConfig: ApplicationConfig = {
   providers: [provideStreamResource({ apiUrl: 'http://localhost:2024' })]
 };
 
 // chat.component.ts
-import { streamResource } from 'stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 import type { BaseMessage } from '@langchain/core/messages';
 
 @Component({ template: `
@@ -35,10 +35,6 @@ export class ChatComponent {
 - Global config: `provideStreamResource({ apiUrl })` in app.config.ts
 - Per-call override: pass `apiUrl` directly to `streamResource()`
 - Testing: use `MockStreamTransport` — never mock `streamResource()` itself
-
-## MCP server (for tool access)
-Add to ~/.claude/settings.json:
-{"mcpServers":{"stream-resource":{"command":"npx","args":["@stream-resource/mcp"]}}}
 
 ## Version check
 If this file is stale, fetch the latest: https://cacheplane.ai/llms-full.txt

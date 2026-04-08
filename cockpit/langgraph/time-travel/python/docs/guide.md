@@ -1,14 +1,14 @@
-# Time Travel with stream-resource
+# Time Travel with @cacheplane/langchain
 
 <Summary>
 Build a chat interface with time travel using `streamResource()` from
-`@cacheplane/stream-resource`. Browse the checkpoint history via `stream.history()`,
+`@cacheplane/langchain`. Browse the checkpoint history via `stream.history()`,
 see the active branch via `stream.branch()`, and fork the conversation from any
 past state with `stream.setBranch(checkpointId)`.
 </Summary>
 
 <Prompt>
-Add time travel to this Angular component using `streamResource()` from `@cacheplane/stream-resource`. Display checkpoint history from `stream.history()` in the sidebar. Highlight the active branch using `stream.branch()`. Call `stream.setBranch(id)` when the user clicks a checkpoint to fork the conversation from that point.
+Add time travel to this Angular component using `streamResource()` from `@cacheplane/langchain`. Display checkpoint history from `stream.history()` in the sidebar. Highlight the active branch using `stream.branch()`. Call `stream.setBranch(id)` when the user clicks a checkpoint to fork the conversation from that point.
 </Prompt>
 
 <Steps>
@@ -19,7 +19,7 @@ Set up `provideStreamResource()` in your app config with the LangGraph API URL:
 ```typescript
 // app.config.ts
 import { ApplicationConfig } from '@angular/core';
-import { provideStreamResource } from '@cacheplane/stream-resource';
+import { provideStreamResource } from '@cacheplane/langchain';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -38,7 +38,7 @@ available automatically — no extra config needed:
 
 ```typescript
 // time-travel.component.ts
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 
 export class TimeTravelComponent {
   protected readonly stream = streamResource({

@@ -6,7 +6,7 @@ import { tokens } from '../../../lib/design-tokens';
 const cards = [
   {
     icon: '📦',
-    title: 'stream-resource',
+    title: '@cacheplane/langchain',
     description:
       "The Angular streaming library. Token-by-token streaming, thread persistence, interrupt handling, and MockStreamTransport for deterministic testing. Purpose-built for LangGraph and Angular Signals.",
     bullets: [
@@ -34,10 +34,10 @@ const cards = [
     icon: '📄',
     title: 'App Deployment License',
     description:
-      'One license covers one Angular application in production. stream-resource is included for that app. The 3-month engagement is how we get you there together.',
+      'One license covers one Angular application in production. @cacheplane/langchain is included for that app. The 3-month engagement is how we get you there together.',
     bullets: [
       '$20,000 · one app in production',
-      'stream-resource license included',
+      '@cacheplane/langchain license included',
       'Patterns your team can replicate',
     ],
     highlighted: false,

@@ -8,8 +8,8 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import type { Interrupt } from '@cacheplane/stream-resource';
-import type { StreamResourceRef } from '@cacheplane/stream-resource';
+import type { Interrupt } from '@cacheplane/langchain';
+import type { StreamResourceRef } from '@cacheplane/langchain';
 
 /**
  * Retrieves the current interrupt value from a StreamResourceRef.

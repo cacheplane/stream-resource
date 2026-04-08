@@ -11,7 +11,7 @@ In most apps you will never import or inject `FetchStreamTransport` by name — 
 
 ```ts
 import { inject } from '@angular/core';
-import { streamResource, FetchStreamTransport } from '@cacheplane/stream-resource';
+import { streamResource, FetchStreamTransport } from '@cacheplane/langchain';
 
 // Override transport for a single resource
 const events = streamResource<Event>({

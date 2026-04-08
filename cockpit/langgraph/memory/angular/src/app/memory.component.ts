@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 import { Component, computed } from '@angular/core';
 import { ChatComponent } from '@cacheplane/chat';
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 import { environment } from '../environments/environment';
 
 /**

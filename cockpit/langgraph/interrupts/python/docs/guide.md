@@ -1,13 +1,13 @@
-# Human-in-the-Loop Interrupts with stream-resource
+# Human-in-the-Loop Interrupts with @cacheplane/langchain
 
 <Summary>
 Build a chat interface with human-in-the-loop approval using `streamResource()` from
-`@cacheplane/stream-resource`. The LangGraph backend pauses execution for approval,
+`@cacheplane/langchain`. The LangGraph backend pauses execution for approval,
 and the frontend resumes it with `stream.submit()`.
 </Summary>
 
 <Prompt>
-Add human-in-the-loop approval to this Angular component using `streamResource()` from `@cacheplane/stream-resource`. Use `stream.interrupt()` to display pending approvals, `stream.submit(null)` to approve and resume execution, and `stream.submit({ resume: false })` to reject. Bind `stream.messages()` in the template via the `<cp-chat>` component from `@cacheplane/chat`.
+Add human-in-the-loop approval to this Angular component using `streamResource()` from `@cacheplane/langchain`. Use `stream.interrupt()` to display pending approvals, `stream.submit(null)` to approve and resume execution, and `stream.submit({ resume: false })` to reject. Bind `stream.messages()` in the template via the `<cp-chat>` component from `@cacheplane/chat`.
 </Prompt>
 
 <Steps>
@@ -18,7 +18,7 @@ Set up `provideStreamResource()` in your app config with the LangGraph API URL:
 ```typescript
 // app.config.ts
 import { ApplicationConfig } from '@angular/core';
-import { provideStreamResource } from '@cacheplane/stream-resource';
+import { provideStreamResource } from '@cacheplane/langchain';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -38,7 +38,7 @@ In your component, call `streamResource()` with the assistant ID that maps to yo
 
 ```typescript
 // interrupts.component.ts
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 
 export class InterruptsComponent {
   protected readonly stream = streamResource({

@@ -5,7 +5,7 @@ import {
   input,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import type { StreamResourceRef } from '@cacheplane/stream-resource';
+import type { StreamResourceRef } from '@cacheplane/langchain';
 import type { DebugCheckpoint } from './debug-checkpoint-card.component';
 
 @Component({

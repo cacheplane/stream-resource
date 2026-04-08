@@ -6,7 +6,7 @@ import {
   signal,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import type { SubagentStreamRef } from '@cacheplane/stream-resource';
+import type { SubagentStreamRef } from '@cacheplane/langchain';
 import { ICON_AGENT, ICON_CHEVRON_UP, ICON_CHEVRON_DOWN } from '../../styles/chat-icons';
 
 type SubagentStatus = 'pending' | 'running' | 'complete' | 'error';

@@ -14,7 +14,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import type { StreamResourceRef } from '@cacheplane/stream-resource';
+import type { StreamResourceRef } from '@cacheplane/langchain';
 import { ChatMessagesComponent } from '../../primitives/chat-messages/chat-messages.component';
 import { MessageTemplateDirective } from '../../primitives/chat-messages/message-template.directive';
 import { ChatInputComponent } from '../../primitives/chat-input/chat-input.component';

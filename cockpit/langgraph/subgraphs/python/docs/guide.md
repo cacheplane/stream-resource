@@ -1,13 +1,13 @@
-# Nested Agent Delegation with Subgraphs and stream-resource
+# Nested Agent Delegation with Subgraphs and @cacheplane/langchain
 
 <Summary>
 Build a chat interface that visualizes nested agent delegation using `streamResource()` from
-`@cacheplane/stream-resource`. A parent orchestrator dispatches research tasks to a child
+`@cacheplane/langchain`. A parent orchestrator dispatches research tasks to a child
 subgraph, and the sidebar tracks each subagent's status in real time using `stream.subagents()`.
 </Summary>
 
 <Prompt>
-Add a subgraph-powered orchestrator to this Angular component using `streamResource()` from `@cacheplane/stream-resource`. Use `stream.subagents()` to track active child subgraph executions, and derive a `subagentEntries` signal with `computed()` for template iteration. Bind `stream.messages()` via the `<cp-chat>` component from `@cacheplane/chat`.
+Add a subgraph-powered orchestrator to this Angular component using `streamResource()` from `@cacheplane/langchain`. Use `stream.subagents()` to track active child subgraph executions, and derive a `subagentEntries` signal with `computed()` for template iteration. Bind `stream.messages()` via the `<cp-chat>` component from `@cacheplane/chat`.
 </Prompt>
 
 <Steps>
@@ -18,7 +18,7 @@ Set up `provideStreamResource()` in your app config with the LangGraph API URL:
 ```typescript
 // app.config.ts
 import { ApplicationConfig } from '@angular/core';
-import { provideStreamResource } from '@cacheplane/stream-resource';
+import { provideStreamResource } from '@cacheplane/langchain';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -37,7 +37,7 @@ In your component, call `streamResource()` with the assistant ID pointing to you
 ```typescript
 // subgraphs.component.ts
 import { Component, computed } from '@angular/core';
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 
 export class SubgraphsComponent {
   protected readonly stream = streamResource({
@@ -114,7 +114,7 @@ parent_graph.add_edge("research", END)
 graph = parent_graph.compile()
 ```
 
-The child subgraph is compiled and passed as a node to the parent graph. LangGraph streams subgraph events separately, which `stream-resource` captures and exposes through `stream.subagents()`.
+The child subgraph is compiled and passed as a node to the parent graph. LangGraph streams subgraph events separately, which `@cacheplane/langchain` captures and exposes through `stream.subagents()`.
 
 <Tip>
 Child subgraphs can have their own state, checkpointers, and tools. This pattern is ideal for multi-agent systems where specialized agents handle distinct concerns.

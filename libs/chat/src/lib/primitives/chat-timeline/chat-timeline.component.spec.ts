@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { signal, computed } from '@angular/core';
 import { createMockStreamResourceRef } from '../../testing/mock-stream-resource-ref';
-import type { ThreadState } from '@cacheplane/stream-resource';
+import type { ThreadState } from '@cacheplane/langchain';
 
 const makeState = (id: string): ThreadState<any> =>
   ({ checkpoint_id: id, values: {}, next: [], metadata: {} } as any);

@@ -5,7 +5,7 @@
 When the `url` signal changes, the resource tears down the previous connection and opens a fresh one automatically. You never write subscription management or cleanup logic yourself.
 
 ```ts
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 
 // Inside a component or service with injection context
 const repo = streamResource<Repository>({
@@ -68,7 +68,7 @@ For plain HTTP requests that return a single value and complete, Angular's built
     icon="bolt"
     href="/docs-v2/concepts/angular-signals"
   >
-    Understand how stream-resource integrates with Angular's reactivity model.
+    Understand how @cacheplane/langchain integrates with Angular's reactivity model.
   </Card>
 </CardGroup>
 

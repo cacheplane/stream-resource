@@ -1,13 +1,13 @@
-# Task Decomposition with stream-resource
+# Task Decomposition with @cacheplane/langchain
 
 <Summary>
 Build a chat interface that shows real-time task decomposition using `streamResource()` from
-`@cacheplane/stream-resource`. The agent breaks complex requests into ordered steps, and the
+`@cacheplane/langchain`. The agent breaks complex requests into ordered steps, and the
 sidebar displays each step's status as the agent works through them.
 </Summary>
 
 <Prompt>
-Add a task planning sidebar to this Angular component using `streamResource()` from `@cacheplane/stream-resource`. Use `stream.value()` to access the agent's plan state, derive `planSteps` with `computed()`, and bind them to the sidebar via the `<cp-chat>` component from `@cacheplane/chat`.
+Add a task planning sidebar to this Angular component using `streamResource()` from `@cacheplane/langchain`. Use `stream.value()` to access the agent's plan state, derive `planSteps` with `computed()`, and bind them to the sidebar via the `<cp-chat>` component from `@cacheplane/chat`.
 </Prompt>
 
 <Steps>
@@ -18,7 +18,7 @@ Set up `provideStreamResource()` in your app config with the LangGraph API URL:
 ```typescript
 // app.config.ts
 import { ApplicationConfig } from '@angular/core';
-import { provideStreamResource } from '@cacheplane/stream-resource';
+import { provideStreamResource } from '@cacheplane/langchain';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -38,7 +38,7 @@ In your component, call `streamResource()` with the `assistantId` pointing to yo
 
 ```typescript
 // planning.component.ts
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 
 export class PlanningComponent {
   protected readonly stream = streamResource({

@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { signal, computed } from '@angular/core';
 import { createMockStreamResourceRef } from '../../testing/mock-stream-resource-ref';
-import type { SubagentStreamRef } from '@cacheplane/stream-resource';
+import type { SubagentStreamRef } from '@cacheplane/langchain';
 
 describe('ChatSubagentsComponent — activeSubagents computed', () => {
   it('returns empty array when no active subagents', () => {

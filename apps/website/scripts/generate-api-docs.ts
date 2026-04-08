@@ -120,8 +120,7 @@ function reflectionToEntry(ref: any): ApiDocEntry | null {
 
 async function main() {
   const candidates = [
-    'libs/stream-resource/src/public-api.ts',
-    'packages/stream-resource/src/public-api.ts',
+    'libs/langchain/src/public-api.ts',
   ];
   const entryPoint = candidates.find((p) => fs.existsSync(p));
   if (!entryPoint) {

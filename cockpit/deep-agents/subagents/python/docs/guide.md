@@ -1,13 +1,13 @@
-# Child Agent Delegation with stream-resource
+# Child Agent Delegation with @cacheplane/langchain
 
 <Summary>
 Build a chat interface that shows real-time subagent activity using `streamResource()` from
-`@cacheplane/stream-resource`. An orchestrator agent delegates subtasks to specialist child
+`@cacheplane/langchain`. An orchestrator agent delegates subtasks to specialist child
 agents, and the sidebar displays each subagent's status and message count as they stream.
 </Summary>
 
 <Prompt>
-Add a subagent activity sidebar to this Angular component using `streamResource()` from `@cacheplane/stream-resource`. Use `stream.subagents()` to access the live Map of child agent streams, derive `subagentEntries` with `computed()`, and render them in the `<cp-chat>` sidebar.
+Add a subagent activity sidebar to this Angular component using `streamResource()` from `@cacheplane/langchain`. Use `stream.subagents()` to access the live Map of child agent streams, derive `subagentEntries` with `computed()`, and render them in the `<cp-chat>` sidebar.
 </Prompt>
 
 <Steps>
@@ -18,7 +18,7 @@ Set up `provideStreamResource()` in your app config with the LangGraph API URL:
 ```typescript
 // app.config.ts
 import { ApplicationConfig } from '@angular/core';
-import { provideStreamResource } from '@cacheplane/stream-resource';
+import { provideStreamResource } from '@cacheplane/langchain';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -38,7 +38,7 @@ In your component, call `streamResource()` with the `assistantId` pointing to yo
 
 ```typescript
 // subagents.component.ts
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 
 export class SubagentsComponent {
   protected readonly stream = streamResource({

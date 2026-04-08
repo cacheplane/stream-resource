@@ -1,4 +1,4 @@
-Configure token-by-token streaming in my Angular component that uses stream-resource.
+Configure token-by-token streaming in my Angular component that uses @cacheplane/langchain.
 
 The component already has streamResource() set up. Now:
 

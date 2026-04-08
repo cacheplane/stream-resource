@@ -5,7 +5,7 @@ import {
   output,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import type { StreamResourceRef } from '@cacheplane/stream-resource';
+import type { StreamResourceRef } from '@cacheplane/langchain';
 
 @Component({
   selector: 'chat-debug-controls',

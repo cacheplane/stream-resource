@@ -56,7 +56,7 @@ export function Footer() {
                 aria-label="GitHub">
                 <GitHubIcon />
               </a>
-              <a href="https://www.npmjs.com/package/@cacheplane/stream-resource"
+              <a href="https://www.npmjs.com/package/@cacheplane/langchain"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transition-colors"
@@ -109,7 +109,7 @@ export function Footer() {
               onMouseLeave={(e) => (e.currentTarget.style.color = tokens.colors.textSecondary)}>
               Getting Started
             </Link>
-            <a href="https://www.npmjs.com/package/@cacheplane/stream-resource"
+            <a href="https://www.npmjs.com/package/@cacheplane/langchain"
               target="_blank" rel="noopener noreferrer"
               className="transition-colors" style={{ color: tokens.colors.textSecondary }}
               onMouseEnter={(e) => (e.currentTarget.style.color = tokens.colors.accent)}

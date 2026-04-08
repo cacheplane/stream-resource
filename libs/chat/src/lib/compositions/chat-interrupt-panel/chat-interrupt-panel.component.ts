@@ -6,7 +6,7 @@ import {
   output,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import type { StreamResourceRef } from '@cacheplane/stream-resource';
+import type { StreamResourceRef } from '@cacheplane/langchain';
 import { ICON_WARNING } from '../../styles/chat-icons';
 
 export type InterruptAction = 'accept' | 'edit' | 'respond' | 'ignore';

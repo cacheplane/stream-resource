@@ -36,9 +36,10 @@ This file is for agents working in this repository. It is contributor-facing, no
 
 ## Repo Layout
 
-- `libs/stream-resource`: main Angular library.
+- `libs/langchain`: main Angular library.
 - `apps/website`: docs and marketing site.
-- `e2e/stream-resource-e2e`: end-to-end coverage for the workspace.
+- `packages/mcp`: MCP server package.
+- `e2e/langchain-e2e`: end-to-end coverage for the workspace.
 - `apps/demo` and `apps/demo-e2e`: demo application and related end-to-end coverage.
 
 ## Working in This Repo

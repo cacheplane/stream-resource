@@ -1,4 +1,4 @@
-Add thread persistence to my Angular component that uses stream-resource, so conversations survive page refresh.
+Add thread persistence to my Angular component that uses @cacheplane/langchain, so conversations survive page refresh.
 
 1. On component init, read the stored thread ID: const storedId = localStorage.getItem('chat-thread-id').
 

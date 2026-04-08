@@ -10,7 +10,7 @@ Angular 20+ project with Node.js 18+. If you need setup help, see the [Installat
 <Step title="Install the package">
 
 ```bash
-npm install @cacheplane/stream-resource
+npm install @cacheplane/langchain
 ```
 
 </Step>
@@ -20,7 +20,7 @@ Add `provideStreamResource()` to your application config with your LangGraph Pla
 
 ```typescript
 // app.config.ts
-import { provideStreamResource } from '@cacheplane/stream-resource';
+import { provideStreamResource } from '@cacheplane/langchain';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -42,7 +42,7 @@ Use `streamResource()` in a component field initializer. Every property on the r
 ```typescript
 // chat.component.ts
 import { Component, ChangeDetectionStrategy, signal, computed } from '@angular/core';
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 import type { BaseMessage } from '@langchain/core/messages';
 
 @Component({

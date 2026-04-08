@@ -1,11 +1,11 @@
 # Getting Started
 
-Add stream-resource to your Angular 20+ application.
+Add @cacheplane/langchain to your Angular 20+ application.
 
 ## Installation
 
 ```bash
-npm install stream-resource@latest
+npm install @cacheplane/langchain@latest
 ```
 
 ## Setup
@@ -13,7 +13,7 @@ npm install stream-resource@latest
 In `app.config.ts`, add `provideStreamResource` to your providers:
 
 ```typescript
-import { provideStreamResource } from 'stream-resource';
+import { provideStreamResource } from '@cacheplane/langchain';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -25,7 +25,7 @@ export const appConfig: ApplicationConfig = {
 ## Your first component
 
 ```typescript
-import { streamResource } from 'stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 
 @Component({
   template: `

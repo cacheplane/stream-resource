@@ -1,7 +1,7 @@
-Configure stream-resource globally and per-component in my Angular application.
+Configure @cacheplane/langchain globally and per-component in my Angular application.
 
 Global config (applies to all streamResource() calls in the app):
-In app.config.ts, provideStreamResource({ apiUrl: 'https://my-langgraph-server.com', }) — import provideStreamResource from '@cacheplane/stream-resource'.
+In app.config.ts, provideStreamResource({ apiUrl: 'https://my-langgraph-server.com', }) — import provideStreamResource from '@cacheplane/langchain'.
 
 Per-call override (overrides global config for one component):
 Pass apiUrl directly to streamResource({ apiUrl: 'https://other-server.com', assistantId: 'my-agent' }) — per-call options take precedence over global config.

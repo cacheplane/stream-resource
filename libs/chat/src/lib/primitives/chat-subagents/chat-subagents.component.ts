@@ -8,7 +8,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import type { StreamResourceRef, SubagentStreamRef } from '@cacheplane/stream-resource';
+import type { StreamResourceRef, SubagentStreamRef } from '@cacheplane/langchain';
 
 @Component({
   selector: 'chat-subagents',

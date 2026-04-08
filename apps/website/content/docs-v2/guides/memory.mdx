@@ -75,7 +75,7 @@ graph = builder.compile()
 
 ```typescript
 import { Component, computed, ChangeDetectionStrategy } from '@angular/core';
-import { streamResource, BaseMessage } from '@cacheplane/stream-resource';
+import { streamResource, BaseMessage } from '@cacheplane/langchain';
 
 interface AgentState {
   messages: BaseMessage[];
@@ -267,7 +267,7 @@ graph = builder.compile()
 
 ```typescript
 import { Component, computed, signal, ChangeDetectionStrategy } from '@angular/core';
-import { streamResource, BaseMessage } from '@cacheplane/stream-resource';
+import { streamResource, BaseMessage } from '@cacheplane/langchain';
 
 @Component({
   selector: 'app-longterm-chat',

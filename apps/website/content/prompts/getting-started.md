@@ -1,8 +1,8 @@
-Add stream-resource to my Angular 20+ application.
+Add @cacheplane/langchain to my Angular 20+ application.
 
-Install: npm install @cacheplane/stream-resource@latest
+Install: npm install @cacheplane/langchain@latest
 
-1. In app.config.ts, add provideStreamResource({ apiUrl: 'http://localhost:2024' }) to the providers array. Import it from '@cacheplane/stream-resource'.
+1. In app.config.ts, add provideStreamResource({ apiUrl: 'http://localhost:2024' }) to the providers array. Import it from '@cacheplane/langchain'.
 
 2. Create a ChatComponent that calls streamResource<{ messages: BaseMessage[] }>({ assistantId: 'chat_agent' }) in the constructor or as a field initializer. streamResource() MUST be called inside an Angular injection context — constructor or field initializer is correct; ngOnInit is not.
 

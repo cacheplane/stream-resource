@@ -1,13 +1,13 @@
-# Code Execution Sandbox with stream-resource
+# Code Execution Sandbox with @cacheplane/langchain
 
 <Summary>
 Build a chat interface that shows real-time code execution logs using `streamResource()` from
-`@cacheplane/stream-resource`. The agent writes Python code and runs it in a sandbox, and the
+`@cacheplane/langchain`. The agent writes Python code and runs it in a sandbox, and the
 sidebar displays each execution as a log entry with code input, stdout output, and exit status.
 </Summary>
 
 <Prompt>
-Add a code execution log sidebar to this Angular component using `streamResource()` from `@cacheplane/stream-resource`. Use `stream.messages()` to access tool call data from the `run_code` tool, derive `executionLogs` with `computed()`, and bind them to the sidebar via the `<cp-chat>` component from `@cacheplane/chat`.
+Add a code execution log sidebar to this Angular component using `streamResource()` from `@cacheplane/langchain`. Use `stream.messages()` to access tool call data from the `run_code` tool, derive `executionLogs` with `computed()`, and bind them to the sidebar via the `<cp-chat>` component from `@cacheplane/chat`.
 </Prompt>
 
 <Steps>
@@ -18,7 +18,7 @@ Set up `provideStreamResource()` in your app config with the LangGraph API URL:
 ```typescript
 // app.config.ts
 import { ApplicationConfig } from '@angular/core';
-import { provideStreamResource } from '@cacheplane/stream-resource';
+import { provideStreamResource } from '@cacheplane/langchain';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -38,7 +38,7 @@ In your component, call `streamResource()` with the `assistantId` pointing to yo
 
 ```typescript
 // sandboxes.component.ts
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 
 export class SandboxesComponent {
   protected readonly stream = streamResource({

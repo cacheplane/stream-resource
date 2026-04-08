@@ -1,6 +1,6 @@
-Write unit tests for my Angular component that uses stream-resource, without hitting a real LangGraph server.
+Write unit tests for my Angular component that uses @cacheplane/langchain, without hitting a real LangGraph server.
 
-Use MockStreamTransport from '@cacheplane/stream-resource'. It implements StreamResourceTransport and lets you script exactly what events the stream emits.
+Use MockStreamTransport from '@cacheplane/langchain'. It implements StreamResourceTransport and lets you script exactly what events the stream emits.
 
 Test setup:
 const transport = new MockStreamTransport();

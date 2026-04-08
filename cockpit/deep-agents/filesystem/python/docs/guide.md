@@ -1,13 +1,13 @@
-# File Operations with stream-resource
+# File Operations with @cacheplane/langchain
 
 <Summary>
 Build a chat interface that shows real-time file operation logs using `streamResource()` from
-`@cacheplane/stream-resource`. The agent reads and writes files using tool calls, and the
+`@cacheplane/langchain`. The agent reads and writes files using tool calls, and the
 sidebar displays each operation as it happens.
 </Summary>
 
 <Prompt>
-Add a file operations sidebar to this Angular component using `streamResource()` from `@cacheplane/stream-resource`. Use `stream.messages()` to access tool call data, derive `toolCallEntries` with `computed()`, and bind them to the sidebar via the `<cp-chat>` component from `@cacheplane/chat`.
+Add a file operations sidebar to this Angular component using `streamResource()` from `@cacheplane/langchain`. Use `stream.messages()` to access tool call data, derive `toolCallEntries` with `computed()`, and bind them to the sidebar via the `<cp-chat>` component from `@cacheplane/chat`.
 </Prompt>
 
 <Steps>
@@ -18,7 +18,7 @@ Set up `provideStreamResource()` in your app config with the LangGraph API URL:
 ```typescript
 // app.config.ts
 import { ApplicationConfig } from '@angular/core';
-import { provideStreamResource } from '@cacheplane/stream-resource';
+import { provideStreamResource } from '@cacheplane/langchain';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -38,7 +38,7 @@ In your component, call `streamResource()` with the `assistantId` pointing to yo
 
 ```typescript
 // filesystem.component.ts
-import { streamResource } from '@cacheplane/stream-resource';
+import { streamResource } from '@cacheplane/langchain';
 
 export class FilesystemComponent {
   protected readonly stream = streamResource({

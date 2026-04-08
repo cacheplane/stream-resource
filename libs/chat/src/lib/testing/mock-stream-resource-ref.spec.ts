@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 import { describe, it, expect } from 'vitest';
 import { createMockStreamResourceRef } from './mock-stream-resource-ref';
-import { ResourceStatus } from '@cacheplane/stream-resource';
+import { ResourceStatus } from '@cacheplane/langchain';
 
 describe('createMockStreamResourceRef', () => {
   it('creates a mock with default values', () => {

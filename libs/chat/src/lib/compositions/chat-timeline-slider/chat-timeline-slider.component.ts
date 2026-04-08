@@ -7,7 +7,7 @@ import {
   signal,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import type { StreamResourceRef, ThreadState } from '@cacheplane/stream-resource';
+import type { StreamResourceRef, ThreadState } from '@cacheplane/langchain';
 
 @Component({
   selector: 'chat-timeline-slider',
