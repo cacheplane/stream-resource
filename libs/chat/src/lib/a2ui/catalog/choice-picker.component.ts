@@ -6,8 +6,8 @@ import { Component, input } from '@angular/core';
   standalone: true,
   template: `
     <div class="flex flex-col gap-1">
-      @if (label()) { <label class="text-xs text-white/60">{{ label() }}</label> }
-      <select class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" disabled>
+      @if (label()) { <label for="a2ui-cp" class="text-xs text-white/60">{{ label() }}</label> }
+      <select id="a2ui-cp" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" disabled>
         @for (opt of options(); track opt) {
           <option [selected]="opt === selected()">{{ opt }}</option>
         }

@@ -6,8 +6,9 @@ import { Component, input } from '@angular/core';
   standalone: true,
   template: `
     <div class="flex flex-col gap-1">
-      @if (label()) { <label class="text-xs text-white/60">{{ label() }}</label> }
+      @if (label()) { <label for="a2ui-tf" class="text-xs text-white/60">{{ label() }}</label> }
       <input
+        id="a2ui-tf"
         type="text"
         [value]="value()"
         [placeholder]="placeholder()"
