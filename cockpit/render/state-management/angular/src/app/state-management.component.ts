@@ -158,6 +158,39 @@ class DemoCardComponent {
           }
         </div>
 
+        <!-- Center: Controls panel -->
+        <div class="w-48 shrink-0 border-x border-gray-800 p-4 bg-gray-900/30">
+          <div class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-4">State Controls</div>
+          <div class="space-y-3">
+            <div>
+              <label class="text-[10px] text-gray-500 uppercase font-semibold block mb-1">Name</label>
+              <input type="text"
+                     class="w-full px-2 py-1 text-xs rounded bg-gray-800 border border-gray-700 text-gray-200 focus:border-indigo-500 focus:outline-none"
+                     [value]="getState('/user/name')"
+                     (input)="store.set('/user/name', $any($event.target).value)" />
+            </div>
+            <div>
+              <label class="text-[10px] text-gray-500 uppercase font-semibold block mb-1">Age</label>
+              <input type="number"
+                     class="w-full px-2 py-1 text-xs rounded bg-gray-800 border border-gray-700 text-gray-200 focus:border-indigo-500 focus:outline-none"
+                     [value]="getState('/user/age')"
+                     (input)="store.set('/user/age', +$any($event.target).value)" />
+            </div>
+            <div>
+              <label class="text-[10px] text-gray-500 uppercase font-semibold block mb-1">Theme</label>
+              <select class="w-full px-2 py-1 text-xs rounded bg-gray-800 border border-gray-700 text-gray-200 focus:border-indigo-500 focus:outline-none"
+                      [value]="getState('/settings/theme')"
+                      (change)="store.set('/settings/theme', $any($event.target).value)">
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+              </select>
+            </div>
+            <p class="text-[10px] text-gray-600 leading-relaxed">
+              Edit values to update the state store. Rendered elements with <code class="text-indigo-400/70 font-mono">$state</code> bindings react.
+            </p>
+          </div>
+        </div>
+
         <!-- Right: Streaming JSON -->
         <div class="w-80 shrink-0 overflow-y-auto p-4 bg-gray-900/50">
           <div class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-4">Streaming JSON</div>
@@ -188,6 +221,10 @@ export class StateManagementComponent implements OnDestroy {
   });
 
   protected readonly store = signalStateStore({ user: { name: 'Alice', age: 30 }, settings: { theme: 'dark' } });
+
+  protected getState(path: string): unknown {
+    return this.store.get(path);
+  }
 
   protected percent(): number {
     return Math.round(this.simulator.progress() * 100);

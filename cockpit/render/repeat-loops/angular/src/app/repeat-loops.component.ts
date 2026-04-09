@@ -131,6 +131,32 @@ class DemoCardComponent {
           }
         </div>
 
+        <!-- Center: Controls panel -->
+        <div class="w-48 shrink-0 border-x border-gray-800 p-4 bg-gray-900/30">
+          <div class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-4">List Controls</div>
+          <div class="space-y-3">
+            <button
+              class="w-full text-xs px-3 py-1.5 rounded-md bg-indigo-500 text-white font-semibold hover:bg-indigo-400 transition-colors"
+              (click)="addItem()">
+              + Add Item
+            </button>
+            @if (getItems().length) {
+              <div class="space-y-1">
+                @for (item of getItems(); track $index) {
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-300 truncate">{{ item }}</span>
+                    <button class="text-gray-500 hover:text-red-400 text-[10px] transition-colors"
+                            (click)="removeItem($index)">x</button>
+                  </div>
+                }
+              </div>
+            }
+            <p class="text-[10px] text-gray-600 leading-relaxed">
+              Modify <code class="text-indigo-400/70 font-mono">/items</code> array in the store.
+            </p>
+          </div>
+        </div>
+
         <!-- Right: Streaming JSON -->
         <div class="w-80 shrink-0 overflow-y-auto p-4 bg-gray-900/50">
           <div class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-4">Streaming JSON</div>
@@ -160,6 +186,23 @@ export class RepeatLoopsComponent implements OnDestroy {
   });
 
   protected readonly store = signalStateStore({ items: ['Alpha', 'Beta', 'Gamma'] });
+
+  private counter = 0;
+
+  protected getItems(): string[] {
+    return (this.store.get('/items') as string[]) ?? [];
+  }
+
+  protected addItem(): void {
+    this.counter++;
+    const items = this.getItems();
+    this.store.set('/items', [...items, `Item ${this.counter}`]);
+  }
+
+  protected removeItem(index: number): void {
+    const items = this.getItems();
+    this.store.set('/items', items.filter((_: string, i: number) => i !== index));
+  }
 
   protected percent(): number {
     return Math.round(this.simulator.progress() * 100);

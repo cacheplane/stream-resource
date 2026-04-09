@@ -131,6 +131,23 @@ class DemoCardComponent {
           }
         </div>
 
+        <!-- Center: Controls panel -->
+        <div class="w-48 shrink-0 border-x border-gray-800 p-4 bg-gray-900/30">
+          <div class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-4">Controls</div>
+          <div class="space-y-3">
+            <label class="flex items-center gap-2 cursor-pointer group">
+              <input type="checkbox"
+                     class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0 cursor-pointer"
+                     [checked]="showDetail()"
+                     (change)="toggleShowDetail()" />
+              <span class="text-xs text-gray-300 group-hover:text-gray-100 transition-colors">Show Detail</span>
+            </label>
+            <p class="text-[10px] text-gray-600 leading-relaxed">
+              Toggles <code class="text-indigo-400/70 font-mono">/showDetail</code> in the state store. Elements with <code class="text-indigo-400/70 font-mono">visible: bind</code> react instantly.
+            </p>
+          </div>
+        </div>
+
         <!-- Right: Streaming JSON -->
         <div class="w-80 shrink-0 overflow-y-auto p-4 bg-gray-900/50">
           <div class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-4">Streaming JSON</div>
@@ -160,6 +177,14 @@ export class ElementRenderingComponent implements OnDestroy {
   });
 
   protected readonly store = signalStateStore({ showDetail: true });
+
+  protected showDetail(): boolean {
+    return this.store.get('/showDetail') as boolean ?? true;
+  }
+
+  protected toggleShowDetail(): void {
+    this.store.set('/showDetail', !this.showDetail());
+  }
 
   protected percent(): number {
     return Math.round(this.simulator.progress() * 100);
