@@ -67,7 +67,7 @@ export class StreamingSimulator {
   }
 
   setSpeed(multiplier: number): void {
-    this.speed.set(multiplier);
+    this.speed.set(Math.max(1, Math.round(multiplier)));
   }
 
   setSource(json: string): void {
@@ -96,7 +96,7 @@ export class StreamingSimulator {
       const newEvents = this.parser.push(chunk);
       this.position.set(nextPos);
       this.rawJson.set(this.source.slice(0, nextPos));
-      this.events.update((prev) => [...prev, ...newEvents]);
+      this.events.set([...this.events(), ...newEvents]);
       this.spec.set(
         this.parser.root ? (materialize(this.parser.root) as Spec | null) : null
       );
