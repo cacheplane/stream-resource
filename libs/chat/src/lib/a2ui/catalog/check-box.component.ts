@@ -15,7 +15,7 @@ export class A2uiCheckBoxComponent {
   readonly label = input<string>('');
   readonly checked = input<boolean>(false);
   readonly _bindings = input<Record<string, string>>({});
-  readonly emit = input<(event: string) => void>(() => {});
+  readonly emit = input<(event: string) => void>(() => { /* noop */ });
 
   onChange(event: Event): void {
     const val = (event.target as HTMLInputElement).checked;

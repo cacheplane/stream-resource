@@ -21,7 +21,7 @@ export class A2uiButtonComponent {
   readonly disabled = input<boolean>(false);
   readonly action = input<A2uiAction | undefined>(undefined);
   readonly checks = input<A2uiCheck[]>([]);
-  readonly emit = input<(event: string) => void>(() => {});
+  readonly emit = input<(event: string) => void>(() => { /* noop */ });
 
   isValid(): boolean {
     const c = this.checks();

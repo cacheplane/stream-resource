@@ -20,7 +20,7 @@ export class A2uiChoicePickerComponent {
   readonly options = input<string[]>([]);
   readonly selected = input<string>('');
   readonly _bindings = input<Record<string, string>>({});
-  readonly emit = input<(event: string) => void>(() => {});
+  readonly emit = input<(event: string) => void>(() => { /* noop */ });
 
   onChange(event: Event): void {
     const val = (event.target as HTMLSelectElement).value;

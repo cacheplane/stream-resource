@@ -23,7 +23,7 @@ export class A2uiTextFieldComponent {
   readonly value = input<string>('');
   readonly placeholder = input<string>('');
   readonly _bindings = input<Record<string, string>>({});
-  readonly emit = input<(event: string) => void>(() => {});
+  readonly emit = input<(event: string) => void>(() => { /* noop */ });
 
   onInput(event: Event): void {
     const val = (event.target as HTMLInputElement).value;
