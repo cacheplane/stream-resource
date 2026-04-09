@@ -13,3 +13,4 @@ export { createA2uiMessageParser } from './lib/parser';
 export type { A2uiMessageParser } from './lib/parser';
 export { resolveDynamic } from './lib/resolve';
 export type { A2uiScope } from './lib/resolve';
+export { executeFunction } from './lib/functions';
