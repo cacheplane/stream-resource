@@ -17,10 +17,17 @@ import { COMPUTED_FUNCTIONS_SPECS } from './specs';
   selector: 'demo-value',
   standalone: true,
   template: `
-    <div class="flex items-center gap-2 py-1">
-      <span class="text-gray-500 text-xs uppercase font-semibold min-w-[120px]">{{ label() }}:</span>
-      <span class="text-gray-100 text-sm font-mono">{{ value() }}</span>
-    </div>
+    @if (label() || value()) {
+      <div class="flex items-center gap-2 py-1">
+        <span class="text-gray-500 text-xs uppercase font-semibold min-w-[120px]">{{ label() }}:</span>
+        <span class="text-gray-100 text-sm font-mono">{{ value() }}</span>
+      </div>
+    } @else if (loading()) {
+      <div class="space-y-1.5 py-1">
+        <div class="h-3 w-full bg-gray-800 rounded skeleton-shimmer"></div>
+        <div class="h-3 w-2/3 bg-gray-800 rounded skeleton-shimmer"></div>
+      </div>
+    }
   `,
 })
 class DemoValueComponent {
@@ -38,9 +45,19 @@ class DemoValueComponent {
   standalone: true,
   imports: [RenderElementComponent],
   template: `
-    <h2 class="text-lg font-bold text-gray-100 mb-2">{{ content() }}</h2>
+    @if (content()) {
+      <h2 class="text-lg font-bold text-gray-100 mb-2">{{ content() }}</h2>
+    } @else if (loading()) {
+      <div class="h-5 w-48 bg-gray-700 rounded skeleton-shimmer mb-2"></div>
+    }
     @for (key of childKeys(); track key) {
       <render-element [elementKey]="key" [spec]="spec()!" />
+    }
+    @if (!childKeys().length && loading()) {
+      <div class="space-y-2 mt-2">
+        <div class="h-3 w-full bg-gray-800 rounded skeleton-shimmer"></div>
+        <div class="h-3 w-5/6 bg-gray-800 rounded skeleton-shimmer"></div>
+      </div>
     }
   `,
 })
@@ -58,10 +75,22 @@ class DemoHeadingComponent {
   standalone: true,
   imports: [RenderElementComponent],
   template: `
-    <div class="rounded-lg border border-gray-800 bg-gray-900 p-4 mb-3">
-      <h3 class="text-sm font-semibold text-gray-200 mb-2">{{ title() }}</h3>
-      @for (key of childKeys(); track key) {
-        <render-element [elementKey]="key" [spec]="spec()!" />
+    <div class="rounded-lg border border-gray-800 bg-gray-900 p-4 mb-3 transition-opacity"
+         [class.animate-pulse]="loading() && !childKeys().length">
+      @if (title()) {
+        <h3 class="text-sm font-semibold text-gray-200 mb-2">{{ title() }}</h3>
+      } @else if (loading()) {
+        <div class="h-4 w-32 bg-gray-700 rounded skeleton-shimmer mb-2"></div>
+      }
+      @if (childKeys().length) {
+        @for (key of childKeys(); track key) {
+          <render-element [elementKey]="key" [spec]="spec()!" />
+        }
+      } @else if (loading()) {
+        <div class="space-y-2">
+          <div class="h-3 w-full bg-gray-800 rounded skeleton-shimmer"></div>
+          <div class="h-3 w-3/4 bg-gray-800 rounded skeleton-shimmer"></div>
+        </div>
       }
     </div>
   `,

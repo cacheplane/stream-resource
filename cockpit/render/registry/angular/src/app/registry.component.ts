@@ -16,7 +16,16 @@ import { REGISTRY_SPECS } from './specs';
 @Component({
   selector: 'demo-text',
   standalone: true,
-  template: `<p class="text-gray-100 text-sm">{{ content() }}</p>`,
+  template: `
+    @if (content()) {
+      <p class="text-gray-100 text-sm">{{ content() }}</p>
+    } @else if (loading()) {
+      <div class="space-y-1.5 py-1">
+        <div class="h-3 w-full bg-gray-800 rounded skeleton-shimmer"></div>
+        <div class="h-3 w-2/3 bg-gray-800 rounded skeleton-shimmer"></div>
+      </div>
+    }
+  `,
 })
 class DemoTextComponent {
   readonly content = input('');
@@ -32,9 +41,19 @@ class DemoTextComponent {
   standalone: true,
   imports: [RenderElementComponent],
   template: `
-    <h2 class="text-lg font-bold text-gray-100 mb-2">{{ content() }}</h2>
+    @if (content()) {
+      <h2 class="text-lg font-bold text-gray-100 mb-2">{{ content() }}</h2>
+    } @else if (loading()) {
+      <div class="h-5 w-48 bg-gray-700 rounded skeleton-shimmer mb-2"></div>
+    }
     @for (key of childKeys(); track key) {
       <render-element [elementKey]="key" [spec]="spec()!" />
+    }
+    @if (!childKeys().length && loading()) {
+      <div class="space-y-2 mt-2">
+        <div class="h-3 w-full bg-gray-800 rounded skeleton-shimmer"></div>
+        <div class="h-3 w-5/6 bg-gray-800 rounded skeleton-shimmer"></div>
+      </div>
     }
   `,
 })
@@ -50,7 +69,13 @@ class DemoHeadingComponent {
 @Component({
   selector: 'demo-badge',
   standalone: true,
-  template: `<span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-600 text-white">{{ label() }}</span>`,
+  template: `
+    @if (label()) {
+      <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-600 text-white">{{ label() }}</span>
+    } @else if (loading()) {
+      <div class="inline-block h-5 w-16 bg-gray-700 rounded-full skeleton-shimmer"></div>
+    }
+  `,
 })
 class DemoBadgeComponent {
   readonly label = input('');
@@ -66,10 +91,22 @@ class DemoBadgeComponent {
   standalone: true,
   imports: [RenderElementComponent],
   template: `
-    <div class="rounded-lg border border-gray-800 bg-gray-900 p-4 mb-3">
-      <h3 class="text-sm font-semibold text-gray-200 mb-2">{{ title() }}</h3>
-      @for (key of childKeys(); track key) {
-        <render-element [elementKey]="key" [spec]="spec()!" />
+    <div class="rounded-lg border border-gray-800 bg-gray-900 p-4 mb-3 transition-opacity"
+         [class.animate-pulse]="loading() && !childKeys().length">
+      @if (title()) {
+        <h3 class="text-sm font-semibold text-gray-200 mb-2">{{ title() }}</h3>
+      } @else if (loading()) {
+        <div class="h-4 w-32 bg-gray-700 rounded skeleton-shimmer mb-2"></div>
+      }
+      @if (childKeys().length) {
+        @for (key of childKeys(); track key) {
+          <render-element [elementKey]="key" [spec]="spec()!" />
+        }
+      } @else if (loading()) {
+        <div class="space-y-2">
+          <div class="h-3 w-full bg-gray-800 rounded skeleton-shimmer"></div>
+          <div class="h-3 w-3/4 bg-gray-800 rounded skeleton-shimmer"></div>
+        </div>
       }
     </div>
   `,
