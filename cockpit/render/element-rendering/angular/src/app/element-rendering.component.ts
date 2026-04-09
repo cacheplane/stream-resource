@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
-import { Component, input, OnDestroy, viewChild, ElementRef, effect } from '@angular/core';
+import { Component, input, OnDestroy, viewChild, ElementRef, effect, signal } from '@angular/core';
 import {
   RenderSpecComponent,
   RenderElementComponent,
@@ -175,7 +175,24 @@ export class ElementRenderingComponent implements OnDestroy {
 
   private readonly jsonPane = viewChild<ElementRef<HTMLElement>>('jsonPane');
 
+  protected readonly registry = defineAngularRegistry({
+    Text: DemoTextComponent,
+    Heading: DemoHeadingComponent,
+    Card: DemoCardComponent,
+  });
+
+  protected readonly store = signalStateStore({ showDetail: true });
+
+  /** Angular signal tracking store value for template reactivity. */
+  protected readonly showDetail = signal(true);
+
   constructor() {
+    // Sync store changes to Angular signal for change detection
+    this.store.subscribe(() => {
+      this.showDetail.set(this.store.get('/showDetail') as boolean ?? true);
+    });
+
+    // Auto-scroll JSON pane
     effect(() => {
       this.simulator.rawJson();
       const el = this.jsonPane()?.nativeElement;
@@ -187,20 +204,10 @@ export class ElementRenderingComponent implements OnDestroy {
     });
   }
 
-  protected readonly registry = defineAngularRegistry({
-    Text: DemoTextComponent,
-    Heading: DemoHeadingComponent,
-    Card: DemoCardComponent,
-  });
-
-  protected readonly store = signalStateStore({ showDetail: true });
-
-  protected showDetail(): boolean {
-    return this.store.get('/showDetail') as boolean ?? true;
-  }
-
   protected toggleShowDetail(): void {
-    this.store.set('/showDetail', !this.showDetail());
+    const current = this.showDetail();
+    this.store.set('/showDetail', !current);
+    this.showDetail.set(!current);
   }
 
   protected percent(): number {

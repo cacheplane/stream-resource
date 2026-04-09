@@ -62,7 +62,7 @@ export const ELEMENT_RENDERING_SPECS: DemoSpec[] = [
         conditional: {
           type: 'Text',
           props: { content: 'This element is conditionally visible based on /showDetail.' },
-          visible: { bind: '/showDetail' },
+          visible: { $state: '/showDetail' },
         },
       },
     }, null, 2),
