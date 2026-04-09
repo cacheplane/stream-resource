@@ -2,7 +2,7 @@
 import { Component, computed } from '@angular/core';
 import { ChatInputComponent as ChatInputPrimitive } from '@cacheplane/chat';
 import { ChatMessagesComponent } from '@cacheplane/chat';
-import { agent } from '@cacheplane/angular';
+import { agent, ResourceStatus } from '@cacheplane/angular';
 import { environment } from '../environments/environment';
 
 /**
@@ -58,7 +58,7 @@ export class InputComponent {
   });
 
   protected readonly streamStatus = computed(() => this.stream.status());
-  protected readonly isLoading = computed(() => this.stream.status() === 'streaming');
+  protected readonly isLoading = computed(() => this.stream.status() === ResourceStatus.Loading);
 
   submitMessage(content: string) {
     this.stream.submit([{ role: 'human', content }]);

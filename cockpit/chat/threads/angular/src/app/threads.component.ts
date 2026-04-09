@@ -18,7 +18,7 @@ import { environment } from '../environments/environment';
              style="border-color: var(--chat-border, #333); background: var(--chat-bg, #171717); color: var(--chat-text, #e0e0e0);">
         <h3 class="text-xs font-semibold uppercase tracking-wide"
             style="color: var(--chat-text-muted, #777);">Threads</h3>
-        <chat-thread-list [ref]="stream" />
+        <chat-thread-list [threads]="[]" />
       </aside>
       <chat [ref]="stream" class="flex-1 min-w-0" />
     </div>
