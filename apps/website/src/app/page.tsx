@@ -5,7 +5,7 @@ import { LangGraphShowcase } from '../components/landing/LangGraphShowcase';
 import { DeepAgentsShowcase } from '../components/landing/DeepAgentsShowcase';
 import { StatsStrip } from '../components/landing/StatsStrip';
 import { ProblemSection } from '../components/landing/ProblemSection';
-import { FullStackSection } from '../components/landing/FullStackSection';
+import { LibrariesSection } from '../components/landing/LibrariesSection';
 import { ChatFeaturesSection } from '../components/landing/ChatFeaturesSection';
 import { FairComparisonSection } from '../components/landing/FairComparisonSection';
 import { WhitePaperSection } from '../components/landing/WhitePaperSection';
@@ -30,8 +30,8 @@ export default async function HomePage() {
       <StatsStrip />
       {/* 3. Problem — last-mile gap narrative */}
       <ProblemSection />
-      {/* 4. Architecture — three-layer stack diagram */}
-      <FullStackSection />
+      {/* 4. Libraries — teaser cards for Angular, Render, Chat */}
+      <LibrariesSection />
       {/* 5. Chat features — interactive 4-tab scenarios */}
       <ChatFeaturesSection />
       {/* 6. Value — why this product, with interactive code tabs */}
