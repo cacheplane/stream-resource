@@ -26,7 +26,7 @@ def search(query: str) -> str:
 def calculator(expression: str) -> str:
     """Evaluate a mathematical expression."""
     try:
-        result = eval(expression)
+        result = eval(expression, {"__builtins__": {}}, {})
         return f"Result: {result}"
     except Exception as e:
         return f"Error: {str(e)}"

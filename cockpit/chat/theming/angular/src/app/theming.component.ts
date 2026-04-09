@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 import { Component, signal } from '@angular/core';
-import { ChatComponent, CHAT_THEME_STYLES } from '@cacheplane/chat';
+import { ChatComponent } from '@cacheplane/chat';
 import { agent } from '@cacheplane/angular';
 import { environment } from '../environments/environment';
 

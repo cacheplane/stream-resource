@@ -140,9 +140,9 @@ class DemoCardComponent {
       </div>
 
       <!-- Split panes -->
-      <div class="flex flex-1 min-h-0">
+      <div class="flex flex-col md:flex-row flex-1 min-h-0">
         <!-- Left: Live Render Output -->
-        <div class="flex-1 overflow-y-auto p-6">
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 min-h-[200px] md:min-h-0">
           <div class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-4">Live Render Output</div>
           @if (simulator.spec(); as renderedSpec) {
             <render-spec [spec]="renderedSpec" [registry]="registry" [store]="store" [loading]="simulator.playing()" />
@@ -152,7 +152,7 @@ class DemoCardComponent {
         </div>
 
         <!-- Right: JSON + Controls -->
-        <div class="w-80 shrink-0 flex flex-col border-l border-gray-800 bg-gray-900/50">
+        <div class="w-full md:w-80 shrink-0 flex flex-col border-t md:border-t-0 md:border-l border-gray-800 bg-gray-900/50">
           <!-- Streaming JSON (scrollable) -->
           <div class="flex-1 overflow-y-auto p-4" #jsonPane>
             <div class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-4">Streaming JSON</div>
