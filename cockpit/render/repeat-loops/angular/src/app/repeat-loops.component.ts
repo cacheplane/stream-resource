@@ -32,7 +32,7 @@ class DemoTextComponent {
   standalone: true,
   imports: [RenderElementComponent],
   template: `
-    <h2 class="text-lg font-bold text-gray-100">{{ content() }}</h2>
+    <h2 class="text-lg font-bold text-gray-100 mb-2">{{ content() }}</h2>
     @for (key of childKeys(); track key) {
       <render-element [elementKey]="key" [spec]="spec()!" />
     }
