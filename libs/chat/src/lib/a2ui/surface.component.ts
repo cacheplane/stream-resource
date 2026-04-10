@@ -41,10 +41,21 @@ export function surfaceToSpec(surface: A2uiSurface): Spec | null {
     if (comp.action) {
       if ('event' in comp.action) {
         const evt = comp.action.event;
+        const resolvedContext: Record<string, unknown> = {};
+        if (evt.context) {
+          for (const [key, value] of Object.entries(evt.context)) {
+            resolvedContext[key] = resolveDynamic(value, surface.dataModel);
+          }
+        }
         on = {
           click: {
             action: 'a2ui:event',
-            params: { surfaceId: surface.surfaceId, name: evt.name, context: evt.context },
+            params: {
+              surfaceId: surface.surfaceId,
+              sourceComponentId: id,
+              name: evt.name,
+              context: resolvedContext,
+            },
           },
         };
       } else if ('functionCall' in comp.action) {

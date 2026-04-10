@@ -79,7 +79,7 @@ describe('surfaceToSpec — action mapping', () => {
     expect(btnElement.on).toBeDefined();
     expect(btnElement.on!['click']).toEqual({
       action: 'a2ui:event',
-      params: { surfaceId: 's1', name: 'formSubmit', context: { formId: 'signup' } },
+      params: { surfaceId: 's1', sourceComponentId: 'btn', name: 'formSubmit', context: { formId: 'signup' } },
     });
     expect(btnElement.props['action']).toBeUndefined();
   });
@@ -151,6 +151,97 @@ describe('A2uiSurfaceComponent — consumer handlers', () => {
       action: 'a2ui:localAction',
       params: { call: 'addToCart', args: { sku: 'ABC' } },
     });
+  });
+});
+
+describe('surfaceToSpec — v0.9 event action', () => {
+  function makeSurface(components: A2uiComponent[], dataModel: Record<string, unknown> = {}): A2uiSurface {
+    const map = new Map<string, A2uiComponent>();
+    for (const c of components) map.set(c.id, c);
+    return { surfaceId: 's1', catalogId: 'basic', components: map, dataModel };
+  }
+
+  it('resolves context DynamicValue paths against data model', () => {
+    const surface = makeSurface(
+      [
+        { id: 'root', component: 'Column', children: ['btn'] },
+        {
+          id: 'btn',
+          component: 'Button',
+          label: 'Submit',
+          action: { event: { name: 'formSubmit', context: { email: { path: '/email' } } } },
+        },
+      ],
+      { email: 'alice@example.com' },
+    );
+    const spec = surfaceToSpec(surface)!;
+    const params = spec.elements['btn'].on!['click'].params;
+    expect(params['context']).toEqual({ email: 'alice@example.com' });
+  });
+
+  it('resolves context FunctionCall values', () => {
+    const surface = makeSurface(
+      [
+        { id: 'root', component: 'Column', children: ['btn'] },
+        {
+          id: 'btn',
+          component: 'Button',
+          label: 'Format',
+          action: { event: { name: 'show', context: { price: { call: 'formatCurrency', args: { value: { path: '/amount' } } } } } },
+        },
+      ],
+      { amount: 42 },
+    );
+    const spec = surfaceToSpec(surface)!;
+    const params = spec.elements['btn'].on!['click'].params;
+    expect(params['context']).toEqual({ price: '$42.00' });
+  });
+
+  it('passes literal context values through unchanged', () => {
+    const surface = makeSurface(
+      [
+        { id: 'root', component: 'Column', children: ['btn'] },
+        {
+          id: 'btn',
+          component: 'Button',
+          label: 'Go',
+          action: { event: { name: 'navigate', context: { page: 'home' } } },
+        },
+      ],
+    );
+    const spec = surfaceToSpec(surface)!;
+    const params = spec.elements['btn'].on!['click'].params;
+    expect(params['context']).toEqual({ page: 'home' });
+  });
+
+  it('includes sourceComponentId in event action params', () => {
+    const surface = makeSurface([
+      { id: 'root', component: 'Column', children: ['submit-btn'] },
+      {
+        id: 'submit-btn',
+        component: 'Button',
+        label: 'Submit',
+        action: { event: { name: 'formSubmit' } },
+      },
+    ]);
+    const spec = surfaceToSpec(surface)!;
+    const params = spec.elements['submit-btn'].on!['click'].params;
+    expect(params['sourceComponentId']).toBe('submit-btn');
+  });
+
+  it('defaults context to empty object when not specified', () => {
+    const surface = makeSurface([
+      { id: 'root', component: 'Column', children: ['btn'] },
+      {
+        id: 'btn',
+        component: 'Button',
+        label: 'Click',
+        action: { event: { name: 'clicked' } },
+      },
+    ]);
+    const spec = surfaceToSpec(surface)!;
+    const params = spec.elements['btn'].on!['click'].params;
+    expect(params['context']).toEqual({});
   });
 });
 
