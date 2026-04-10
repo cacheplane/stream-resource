@@ -1,25 +1,11 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { CockpitManifestEntry } from '@cacheplane/cockpit-registry';
 import type { NavigationProduct } from '../lib/route-resolution';
 import { toCockpitPath } from '../lib/route-resolution';
+import { PRODUCT_LABELS, stripProductPrefix } from '../lib/navigation-labels';
 import { LanguagePicker } from './sidebar/language-picker';
-
-const PRODUCT_LABELS: Record<string, string> = {
-  'deep-agents': 'Deep Agents',
-  'langgraph': 'LangGraph',
-  'render': 'Render',
-  'chat': 'Chat',
-};
-
-function stripProductPrefix(title: string): string {
-  const prefixes = ['Deep Agents ', 'LangGraph ', 'Render ', 'Chat '];
-  for (const p of prefixes) {
-    if (title.startsWith(p)) return title.slice(p.length);
-  }
-  return title;
-}
 
 function CloseIcon() {
   return (
@@ -44,7 +30,6 @@ export function MobileNavOverlay({
   isOpen,
   onClose,
 }: MobileNavOverlayProps) {
-  const overlayRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<'closed' | 'open' | 'closing'>(
     isOpen ? 'open' : 'closed'
   );
@@ -77,7 +62,6 @@ export function MobileNavOverlay({
 
   return (
     <div
-      ref={overlayRef}
       data-state={state}
       className="fixed inset-0 z-50 md:hidden flex flex-col"
       style={{

@@ -97,7 +97,10 @@ describe('MobileNavOverlay', () => {
         onClose={() => {}}
       />
     );
-    expect(html).not.toMatch(/data-topic="overview"/);
+    // No chip should link to an overview topic (topic segment = "overview")
+    const hrefMatches = html.match(/href="[^"]+"/g) || [];
+    const overviewHrefs = hrefMatches.filter((h) => /\/overview\/overview\//.test(h));
+    expect(overviewHrefs).toHaveLength(0);
   });
 
   it('includes the language picker', () => {
