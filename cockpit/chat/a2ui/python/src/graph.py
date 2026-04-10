@@ -93,8 +93,9 @@ def build_a2ui_graph():
         email = context.get("email", "not provided")
         department = context.get("department", "not specified")
 
-        # Data model is available via metadata when sendDataModel is true
-        data_model = (
+        # Full data model is available via metadata when sendDataModel is true.
+        # Use it when you need values beyond what context provides.
+        data_model = (  # noqa: F841
             payload.get("metadata", {})
             .get("a2uiClientDataModel", {})
             .get("surfaces", {})
