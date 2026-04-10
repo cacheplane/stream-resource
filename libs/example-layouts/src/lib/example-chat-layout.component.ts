@@ -1,4 +1,4 @@
-import { Component, computed, Input, signal } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 
 /**
  * Responsive chat-style layout with a main content area and optional sidebar.
@@ -35,29 +35,19 @@ import { Component, computed, Input, signal } from '@angular/core';
   `,
 })
 export class ExampleChatLayoutComponent {
-  private readonly _sidebarPosition = signal<'left' | 'right'>('right');
-  private readonly _sidebarWidth = signal('w-72');
-
-  @Input()
-  set sidebarPosition(value: 'left' | 'right') {
-    this._sidebarPosition.set(value);
-  }
-
-  @Input()
-  set sidebarWidth(value: string) {
-    this._sidebarWidth.set(value);
-  }
+  readonly sidebarPosition = input<'left' | 'right'>('right');
+  readonly sidebarWidth = input('w-72');
 
   protected readonly containerClasses = computed(() => {
     const base = 'flex flex-col md:flex-row flex-1 min-h-0';
-    return this._sidebarPosition() === 'left'
+    return this.sidebarPosition() === 'left'
       ? `${base} md:flex-row-reverse`
       : base;
   });
 
   protected readonly sidebarClasses = computed(() => {
-    const width = this._sidebarWidth();
-    const position = this._sidebarPosition();
+    const width = this.sidebarWidth();
+    const position = this.sidebarPosition();
     const borderClass = position === 'left' ? 'md:border-r' : 'md:border-l';
     return `w-full md:${width} shrink-0 border-t md:border-t-0 ${borderClass} border-gray-800 overflow-y-auto`;
   });
