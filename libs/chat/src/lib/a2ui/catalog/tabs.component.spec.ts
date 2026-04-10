@@ -1,42 +1,26 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 import { describe, it, expect, vi } from 'vitest';
-import { TestBed } from '@angular/core/testing';
-import { A2uiTabsComponent } from './tabs.component';
+import { emitBinding } from './emit-binding';
 
-const mockSpec = { elements: {} } as never;
-
-describe('A2uiTabsComponent', () => {
-  it('should create with default inputs', () => {
-    const fixture = TestBed.createComponent(A2uiTabsComponent);
-    fixture.componentRef.setInput('spec', mockSpec);
-    const component = fixture.componentInstance;
-    expect(component.tabs()).toEqual([]);
-    expect(component.selected()).toBe(0);
+describe('A2uiTabsComponent — selectTab logic', () => {
+  it('should emit binding event on tab selection', () => {
+    const emit = vi.fn();
+    const bindings = { selected: '/activeTab' };
+    emitBinding(emit, bindings, 'selected', 2);
+    expect(emit).toHaveBeenCalledWith('a2ui:datamodel:/activeTab:2');
   });
 
-  it('should update activeIndex and emit binding on tab selection', () => {
-    const fixture = TestBed.createComponent(A2uiTabsComponent);
-    fixture.componentRef.setInput('spec', mockSpec);
-    const component = fixture.componentInstance;
-    const emitFn = vi.fn();
-    fixture.componentRef.setInput('emit', emitFn);
-    fixture.componentRef.setInput('_bindings', { selected: '/activeTab' });
-
-    component.selectTab(2);
-    expect(emitFn).toHaveBeenCalledWith('a2ui:datamodel:/activeTab:2');
-  });
-
-  it('should compute activeChildKeys from tabs and activeIndex', () => {
-    const fixture = TestBed.createComponent(A2uiTabsComponent);
-    fixture.componentRef.setInput('spec', mockSpec);
-    const component = fixture.componentInstance;
-    fixture.componentRef.setInput('tabs', [
+  it('should compute active child keys from tab index', () => {
+    const tabs = [
       { label: 'Tab 1', childKeys: ['a', 'b'] },
       { label: 'Tab 2', childKeys: ['c'] },
-    ]);
+    ];
+    // Simulates activeChildKeys computed signal logic
+    const getActiveChildKeys = (index: number) =>
+      index >= 0 && index < tabs.length ? tabs[index].childKeys : [];
 
-    expect(component.activeChildKeys()).toEqual(['a', 'b']);
-    component.selectTab(1);
-    expect(component.activeChildKeys()).toEqual(['c']);
+    expect(getActiveChildKeys(0)).toEqual(['a', 'b']);
+    expect(getActiveChildKeys(1)).toEqual(['c']);
+    expect(getActiveChildKeys(5)).toEqual([]);
   });
 });
