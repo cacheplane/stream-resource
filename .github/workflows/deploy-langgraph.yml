@@ -17,6 +17,7 @@ jobs:
     name: Deploy to LangGraph Cloud
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - name: streaming
