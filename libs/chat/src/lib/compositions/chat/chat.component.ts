@@ -264,7 +264,7 @@ export class ChatComponent {
    * Route `state_update` custom events from the agent stream to the render
    * state store so that components bound to `$state` paths reactively update.
    */
-  private readonly customEventEffect = effect(() => {
+  protected readonly customEventEffect = effect(() => {
     const events = this.ref().customEvents();
     const store = this.resolvedStore();
     if (!store || events.length === 0) return;
