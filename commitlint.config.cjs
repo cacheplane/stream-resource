@@ -1,6 +1,8 @@
 module.exports = {
   extends: ['@commitlint/config-conventional'],
   rules: {
+    // Require a scope on every commit (paired with scope-enum below).
+    'scope-empty': [2, 'never'],
     // Require a scope on every commit. Allowlist maps to the monorepo's public
     // surface area; `repo` and `deps` are escape hatches for cross-cutting or
     // dependency-bump commits.
