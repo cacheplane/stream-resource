@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'agent@v*'
+      - 'render@v*'
+      - 'chat@v*'
+  workflow_dispatch:
+    inputs:
+      version-spec:
+        description: 'Version spec (e.g., "patch", "minor", "major", "1.0.0"). Omit to use conventional commits.'
+        required: false
+        default: ''
+      dry-run:
+        description: 'Dry run (no publish, no tag push)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write      # push tags + create GitHub Release
+  id-token: write      # npm provenance via OIDC
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v6.3.0
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - run: npm ci
+
+      - name: Git identity (for version commits)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # ── Manual dispatch: run version + changelog, create tags ────────────
+      - name: Nx release version (manual dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          SPEC="${{ github.event.inputs.version-spec }}"
+          DRY="${{ github.event.inputs.dry-run }}"
+          ARGS=""
+          if [ -n "$SPEC" ]; then ARGS="$ARGS $SPEC"; fi
+          if [ "$DRY" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          npx nx release $ARGS --yes
+
+      # ── Tag-push: build + publish the tagged packages ────────────────────
+      - name: Build libs (tag push)
+        if: github.event_name == 'push'
+        run: npx nx run-many -t build -p agent,render,chat
+
+      - name: Nx release publish (tag push)
+        if: github.event_name == 'push'
+        run: npx nx release publish --yes
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
