@@ -1,6 +1,10 @@
 {
   "name": "@cacheplane/angular",
   "version": "0.0.1",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "peerDependencies": {
     "@angular/core": "^20.0.0 || ^21.0.0",
     "@langchain/core": "^1.1.33",

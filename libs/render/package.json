@@ -1,6 +1,10 @@
 {
   "name": "@cacheplane/render",
   "version": "0.0.1",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "peerDependencies": {
     "@angular/core": "^20.0.0 || ^21.0.0",
     "@angular/common": "^20.0.0 || ^21.0.0",
