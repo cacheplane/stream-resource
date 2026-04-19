@@ -57,6 +57,10 @@ jobs:
           npx nx release $ARGS --yes
 
       # ── Tag-push: build + publish the tagged packages ────────────────────
+      - name: Build libs (tag push)
+        if: github.event_name == 'push'
+        run: npx nx run-many -t build -p agent,render,chat
+
       - name: Nx release publish (tag push)
         if: github.event_name == 'push'
         run: npx nx release publish --yes
