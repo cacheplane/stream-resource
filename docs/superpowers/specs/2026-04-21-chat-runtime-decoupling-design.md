@@ -54,6 +54,12 @@ Data shapes mirror AG-UI's event/data model structurally (same field names and s
 
 export type ChatStatus = 'idle' | 'running' | 'error';
 
+export type ChatContentBlock =
+  | { type: 'text'; text: string }
+  | { type: 'image'; url: string; alt?: string }
+  | { type: 'tool_use'; id: string; name: string; args: unknown }
+  | { type: 'tool_result'; toolCallId: string; result: unknown; isError?: boolean };
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system' | 'tool';
