@@ -89,7 +89,7 @@ function toChatMessage(m: BaseMessage): ChatMessage {
     typeVal === 'system' ? 'system' :
     'assistant';
   return {
-    id: (m.id as string | undefined) ?? (raw['id'] as string | undefined) ?? cryptoRandom(),
+    id: (m.id as string | undefined) ?? (raw['id'] as string | undefined) ?? randomId(),
     role,
     content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content),
     toolCallId: raw['tool_call_id'] as string | undefined,
@@ -119,7 +119,7 @@ function toChatToolCall(tc: ToolCallWithResult): ChatToolCall {
 function toChatInterrupt(ix: Interrupt<unknown>): ChatInterrupt {
   const raw = ix as unknown as Record<string, unknown>;
   return {
-    id: (raw['id'] as string | undefined) ?? 'interrupt',
+    id: (raw['id'] as string | undefined) ?? randomId(),
     value: raw['value'] ?? ix,
     resumable: true,
   };
@@ -145,6 +145,6 @@ function buildSubmitPayload(input: ChatSubmitInput): unknown {
   return input.state ?? {};
 }
 
-function cryptoRandom(): string {
+function randomId(): string {
   return Math.random().toString(36).slice(2);
 }
