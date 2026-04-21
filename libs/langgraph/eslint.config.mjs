@@ -27,7 +27,7 @@ export default [
         'error',
         {
           type: 'attribute',
-          prefix: 'lib',
+          prefix: ['lib', 'chat', 'debug'],
           style: 'camelCase',
         },
       ],
@@ -35,7 +35,7 @@ export default [
         'error',
         {
           type: 'element',
-          prefix: 'lib',
+          prefix: ['lib', 'chat', 'debug'],
           style: 'kebab-case',
         },
       ],

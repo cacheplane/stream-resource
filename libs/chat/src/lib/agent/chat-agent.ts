@@ -12,8 +12,8 @@ import type { ChatSubmitInput, ChatSubmitOptions } from './chat-submit';
 /**
  * Runtime-neutral contract chat primitives consume.
  *
- * Implementations are produced by adapters (e.g. `@cacheplane/langgraph`,
- * `@cacheplane/ag-ui`) or by user code for custom backends.
+ * Implementations are produced by runtime adapters (e.g. a LangGraph or
+ * AG-UI adapter) or by user code for custom backends.
  *
  * `interrupt`, `subagents`, and `customEvents$` are optional: runtimes that
  * do not support these concepts should leave them undefined, and primitives
