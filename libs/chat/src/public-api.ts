@@ -128,3 +128,4 @@ export { isPathRef, isFunctionCall } from '@cacheplane/a2ui';
 export { createMockAgentRef } from './lib/testing/mock-agent-ref';
 export { mockChatAgent } from './lib/testing/mock-chat-agent';
 export type { MockChatAgent, MockChatAgentOptions } from './lib/testing/mock-chat-agent';
+export { runChatAgentConformance } from './lib/testing/chat-agent-conformance';
