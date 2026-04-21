@@ -4,6 +4,28 @@
 export type { ChatConfig } from './lib/provide-chat';
 export type { MessageTemplateType } from './lib/chat.types';
 
+// ChatAgent contract (runtime-neutral)
+export type {
+  ChatAgent,
+  ChatMessage,
+  ChatRole,
+  ChatContentBlock,
+  ChatToolCall,
+  ChatToolCallStatus,
+  ChatStatus,
+  ChatInterrupt,
+  ChatSubagent,
+  ChatSubagentStatus,
+  ChatSubmitInput,
+  ChatSubmitOptions,
+} from './lib/agent';
+export {
+  isUserMessage,
+  isAssistantMessage,
+  isToolMessage,
+  isSystemMessage,
+} from './lib/agent';
+
 // Primitives
 export { ChatMessagesComponent } from './lib/primitives/chat-messages/chat-messages.component';
 export { MessageTemplateDirective } from './lib/primitives/chat-messages/message-template.directive';
