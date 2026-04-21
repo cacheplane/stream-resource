@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 import { Component } from '@angular/core';
-import { ChatDebugComponent } from '@cacheplane/chat';
+import { ChatDebugComponent } from '@cacheplane/langgraph';
 import { agent } from '@cacheplane/langgraph';
 import { ExampleChatLayoutComponent } from '@cacheplane/example-layouts';
 import { environment } from '../environments/environment';
