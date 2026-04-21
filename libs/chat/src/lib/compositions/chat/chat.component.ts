@@ -10,9 +10,11 @@ import {
   viewChild,
   ElementRef,
   ChangeDetectionStrategy,
+  DestroyRef,
+  inject,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import type { ChatAgent } from '../../agent';
-import type { AgentRef } from '@cacheplane/langgraph';
 import type { ViewRegistry, RenderEvent } from '@cacheplane/render';
 import type { A2uiActionMessage } from '@cacheplane/a2ui';
 import type { StateStore } from '@json-render/core';
@@ -190,8 +192,8 @@ import { KeyValuePipe } from '@angular/common';
         </div>
 
         <!-- Interrupt banner -->
-        @if (langgraphRef()) {
-          <chat-interrupt [ref]="langgraphRef()!">
+        @if (agent().interrupt) {
+          <chat-interrupt [agent]="agent()">
             <ng-template let-interrupt>
               <div class="px-5 py-3 border-t" style="background: var(--chat-warning-bg); border-color: var(--chat-border);">
                 <p class="text-sm m-0" style="color: var(--chat-warning-text);">Agent paused: {{ interrupt.value }}</p>
@@ -223,16 +225,6 @@ export class ChatComponent {
 
   readonly agent = input.required<ChatAgent>();
 
-  /**
-   * TEMPORARY escape hatch for Phase-1: primitives not yet migrated
-   * (chat-interrupt, chat-subagents, a2ui surfaces relying on customEvents)
-   * still require an AgentRef. Pass the same underlying LangGraph ref alongside
-   * `agent`. Remove once Phase-2 migrates these primitives.
-   * TODO(phase-2): remove langgraphRef input once chat-interrupt and
-   * customEvents are migrated to the ChatAgent contract.
-   */
-  readonly langgraphRef = input<AgentRef<any, any> | undefined>(undefined);
-
   readonly views = input<ViewRegistry | undefined>(undefined);
   readonly store = input<StateStore | undefined>(undefined);
   readonly handlers = input<Record<string, (params: Record<string, unknown>) => unknown | Promise<unknown>>>({});
@@ -257,6 +249,9 @@ export class ChatComponent {
     return undefined;
   });
 
+  private readonly destroyRef = inject(DestroyRef);
+  private customEventsSubscribed = false;
+
   private readonly classifiers = new Map<number, ContentClassifier>();
 
   /** Convert ViewRegistry → AngularRegistry for ChatGenerativeUiComponent. */
@@ -274,33 +269,52 @@ export class ChatComponent {
 
   private prevMessageCount = 0;
 
-  // TODO(phase-2): move state_update events onto the ChatAgent custom-event surface
-  /**
-   * Route `state_update` custom events from the agent stream to the render
-   * state store so that components bound to `$state` paths reactively update.
-   */
-  protected readonly customEventEffect = effect(() => {
-    const ref = this.langgraphRef();
-    if (!ref) return;
-    const events = ref.customEvents();
-    const store = this.resolvedStore();
-    if (!store || events.length === 0) return;
-
-    for (const event of events) {
-      if (event.name === 'state_update' && event.data && typeof event.data === 'object') {
-        store.update(event.data as Record<string, unknown>);
-      }
-    }
-  });
-
   constructor() {
+    // Route `state_update` custom events from the agent stream to the render
+    // state store so components bound to `$state` paths reactively update.
+    // customEvents$ is optional — runtimes without custom-event support leave
+    // it undefined and this wiring becomes a no-op after the first effect run.
+    // Guard with customEventsSubscribed so we subscribe at most once even if
+    // the effect re-runs due to other reactive reads. We only set the flag
+    // after successfully reading the required `agent` input, so it remains
+    // false until Angular has satisfied the required-input contract.
+    effect(() => {
+      if (this.customEventsSubscribed) return;
+      let agent: ReturnType<typeof this.agent>;
+      try {
+        agent = this.agent();
+      } catch {
+        // Required input not yet available — skip this run; effect will retry.
+        return;
+      }
+      this.customEventsSubscribed = true;
+      const stream$ = agent.customEvents$;
+      if (!stream$) return;
+      stream$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+        if (event.type !== 'state_update') return;
+        const data = event['data'];
+        if (!data || typeof data !== 'object') return;
+        const store = this.resolvedStore();
+        if (!store) return;
+        store.update(data as Record<string, unknown>);
+      });
+    });
+
     // Auto-scroll to bottom:
     // - Always scroll when message count increases (new message sent/received)
     // - During streaming partials, only scroll if user is near bottom
     effect(() => {
-      const count = this.messageCount();
+      // Guard against required `agent` input not yet being set (can fire
+      // during initial change detection before input signals are populated).
+      let count: number;
+      let msgs: ReturnType<ReturnType<typeof this.agent>['messages']>;
+      try {
+        count = this.messageCount();
+        msgs = this.agent().messages();
+      } catch {
+        return;
+      }
       // Track last message content to trigger scroll during streaming partials
-      const msgs = this.agent().messages();
       const lastContent = msgs.length > 0
         ? (msgs[msgs.length - 1] as unknown as Record<string, unknown>)['content']
         : undefined;
