@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 import { signal } from '@angular/core';
 import type { ChatAgent } from './chat-agent';
 
