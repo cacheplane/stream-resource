@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
-// TODO(phase-2): migrate from AgentRef to ChatAgent contract.
 import {
   Component,
   computed,
@@ -9,15 +8,16 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import type { Interrupt } from '@cacheplane/langgraph';
-import type { AgentRef } from '@cacheplane/langgraph';
+import type { ChatAgent } from '../../agent';
+import type { ChatInterrupt } from '../../agent/chat-interrupt';
 
 /**
- * Retrieves the current interrupt value from a AgentRef.
+ * Retrieves the current interrupt value from a ChatAgent, or undefined when
+ * the runtime does not expose interrupts.
  * Exported for unit testing without DOM rendering.
  */
-export function getInterrupt(ref: AgentRef<any, any>): Interrupt<any> | undefined {
-  return ref.interrupt();
+export function getInterrupt(agent: ChatAgent): ChatInterrupt | undefined {
+  return agent.interrupt?.();
 }
 
 @Component({
@@ -37,9 +37,9 @@ export function getInterrupt(ref: AgentRef<any, any>): Interrupt<any> | undefine
   `,
 })
 export class ChatInterruptComponent {
-  readonly ref = input.required<AgentRef<any, any>>();
+  readonly agent = input.required<ChatAgent>();
 
   readonly templateRef = contentChild(TemplateRef);
 
-  readonly interrupt = computed(() => this.ref().interrupt());
+  readonly interrupt = computed(() => getInterrupt(this.agent()));
 }
