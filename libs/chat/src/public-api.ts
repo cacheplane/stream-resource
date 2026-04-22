@@ -55,6 +55,7 @@ export { ChatToolCallCardComponent } from './lib/compositions/chat-tool-call-car
 export type { ToolCallInfo } from './lib/compositions/chat-tool-call-card/chat-tool-call-card.component';
 export { ChatSubagentCardComponent } from './lib/compositions/chat-subagent-card/chat-subagent-card.component';
 export { ChatTimelineSliderComponent } from './lib/compositions/chat-timeline-slider/chat-timeline-slider.component';
+export { ChatDebugComponent } from './lib/compositions/chat-debug/chat-debug.component';
 
 // Shared styles & utilities
 export { CHAT_THEME_STYLES } from './lib/styles/chat-theme';
