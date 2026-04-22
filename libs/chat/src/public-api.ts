@@ -19,6 +19,8 @@ export type {
   ChatSubmitInput,
   ChatSubmitOptions,
   ChatCustomEvent,
+  ChatCheckpoint,
+  ChatAgentWithHistory,
 } from './lib/agent';
 export {
   isUserMessage,
