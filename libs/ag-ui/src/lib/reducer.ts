@@ -66,7 +66,7 @@ export function reduceEvent(event: BaseEvent, store: ReducerStore): void {
       return;
     }
     case 'TOOL_CALL_START': {
-      const e = event as { toolCallId: string; toolCallName: string };
+      const e = event as unknown as { toolCallId: string; toolCallName: string };
       store.toolCalls.update((prev) => [
         ...prev,
         { id: e.toolCallId, name: e.toolCallName, args: {}, status: 'running' },
@@ -74,7 +74,7 @@ export function reduceEvent(event: BaseEvent, store: ReducerStore): void {
       return;
     }
     case 'TOOL_CALL_ARGS': {
-      const e = event as { toolCallId: string; delta: string };
+      const e = event as unknown as { toolCallId: string; delta: string };
       const args = safeParseArgs(e.delta);
       store.toolCalls.update((prev) =>
         prev.map((t) => t.id === e.toolCallId ? { ...t, args } : t),
@@ -82,37 +82,37 @@ export function reduceEvent(event: BaseEvent, store: ReducerStore): void {
       return;
     }
     case 'TOOL_CALL_END': {
-      const e = event as { toolCallId: string };
+      const e = event as unknown as { toolCallId: string };
       store.toolCalls.update((prev) =>
         prev.map((t) => t.id === e.toolCallId ? { ...t, status: 'complete' } : t),
       );
       return;
     }
     case 'TOOL_CALL_RESULT': {
-      const e = event as { toolCallId: string; content: unknown };
+      const e = event as unknown as { toolCallId: string; content: unknown };
       store.toolCalls.update((prev) =>
         prev.map((t) => t.id === e.toolCallId ? { ...t, result: e.content } : t),
       );
       return;
     }
     case 'STATE_SNAPSHOT': {
-      const e = event as { snapshot: Record<string, unknown> };
+      const e = event as unknown as { snapshot: Record<string, unknown> };
       store.state.set(e.snapshot ?? {});
       return;
     }
     case 'STATE_DELTA': {
-      const e = event as { delta: Operation[] };
+      const e = event as unknown as { delta: Operation[] };
       const next = applyPatch(deepClone(store.state()), e.delta).newDocument;
       store.state.set(next);
       return;
     }
     case 'MESSAGES_SNAPSHOT': {
-      const e = event as { messages: Message[] };
+      const e = event as unknown as { messages: Message[] };
       store.messages.set(e.messages ?? []);
       return;
     }
     case 'CUSTOM': {
-      const e = event as { name: string; value: unknown };
+      const e = event as unknown as { name: string; value: unknown };
       if (e.name === 'state_update' && isRecord(e.value)) {
         store.events$.next({ type: 'state_update', data: e.value });
       } else {
