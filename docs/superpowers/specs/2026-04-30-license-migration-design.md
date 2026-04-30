@@ -20,22 +20,53 @@ The existing `@cacheplane/licensing` verification client and the `@cacheplane/mi
 
 ## Final License Map
 
-| Path | Today | After |
+### Libraries (`libs/*`)
+
+| Path | After | Notes |
 |---|---|---|
-| `libs/chat/` | PolyForm-NC | **MIT** |
-| `libs/langgraph/` | PolyForm-NC | **MIT** |
-| `libs/ag-ui/` | PolyForm-NC | **MIT** |
-| `libs/render/` | PolyForm-NC | **MIT** |
-| `libs/a2ui/` | PolyForm-NC | **MIT** |
-| `libs/partial-json/` | PolyForm-NC | **MIT** |
-| `libs/licensing/` | PolyForm-NC | **MIT** (verification client; consumers must be able to use it from MIT code) |
-| `cockpit/**` (per-feature demos) | PolyForm-NC | **MIT** |
-| `apps/cockpit/` (cockpit shell) | PolyForm-NC | **MIT** |
-| `apps/website/` | PolyForm-NC | **MIT** |
-| `apps/demo/`, `apps/demo-e2e/` | PolyForm-NC | **MIT** |
-| `apps/minting-service/` | PolyForm-NC | **STAYS proprietary** (separate LICENSE; not on npm) |
-| Root `LICENSE` | PolyForm-NC | **MIT** |
-| Root `LICENSE-COMMERCIAL` | exists | **deleted** (no longer needed; nothing is dual-licensed for-sale) |
+| `libs/chat/` | **MIT** | user-facing SDK |
+| `libs/langgraph/` | **MIT** | adapter |
+| `libs/ag-ui/` | **MIT** | adapter |
+| `libs/render/` | **MIT** | utility |
+| `libs/a2ui/` | **MIT** | catalog |
+| `libs/partial-json/` | **MIT** | utility |
+| `libs/licensing/` | **MIT** | verification client; consumers must use it from MIT code |
+| `libs/cockpit-registry/` | **MIT** | cockpit infra |
+| `libs/cockpit-shell/` | **MIT** | cockpit infra |
+| `libs/cockpit-testing/` | **MIT** | cockpit infra |
+| `libs/cockpit-ui/` | **MIT** | cockpit infra |
+| `libs/cockpit-docs/` | **MIT** | cockpit infra |
+| `libs/db/` | **MIT** | shared utility |
+| `libs/design-tokens/` | **MIT** | shared utility |
+| `libs/example-layouts/` | **MIT** | shared example layouts |
+| `libs/ui-react/` | **MIT** | shared utility |
+
+### External package (`packages/*`)
+
+| Path | After | Notes |
+|---|---|---|
+| `packages/mcp/` | **MIT** | MCP integration |
+
+### Apps
+
+| Path | After | Notes |
+|---|---|---|
+| `apps/cockpit/` | **MIT** | cockpit shell app |
+| `apps/website/` | **MIT** | marketing/docs site |
+| `apps/demo/`, `apps/demo-e2e/` | **MIT** | demo + e2e |
+| `apps/minting-service/` | **PROPRIETARY** (stays as-is) | entitlement-issuing service; not on npm |
+
+### Cockpit per-feature demos
+
+All paths under `cockpit/**/package.json` (~60 packages spanning `cockpit/chat/`, `cockpit/langgraph/`, `cockpit/render/`, `cockpit/deep-agents/`, `cockpit/ag-ui/`): **MIT**.
+
+### Root files
+
+| Path | After |
+|---|---|
+| `LICENSE` (root) | **MIT** text |
+| `LICENSE-COMMERCIAL` (root) | **deleted** |
+| `apps/minting-service/LICENSE` | **created** with proprietary terms (port from current root `LICENSE-COMMERCIAL` with appropriate scoping) |
 
 ## File-Level Changes
 
@@ -72,7 +103,7 @@ Bulk-replace to:
 
 EXCEPT: files under `apps/minting-service/` keep the original SPDX header.
 
-Affected file count: ~470+ files (the audit found 478 references; minus the minting-service directory leaves ~450).
+Affected file count (re-audited): **370 source files** with the `SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0` header outside `apps/minting-service/`. Minting-service has ~16 such headers that are preserved. Plus **77 `package.json` files** with the `"license": "PolyForm-Noncommercial-1.0.0"` declaration outside minting-service (root + 76 lib/cockpit/app packages).
 
 ## Migration Mechanics
 
