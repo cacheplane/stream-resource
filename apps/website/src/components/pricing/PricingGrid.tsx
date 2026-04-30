@@ -6,7 +6,7 @@ const PLANS = [
     name: 'Community',
     price: 'Free',
     period: 'noncommercial use',
-    features: ['PolyForm Noncommercial 1.0.0', 'Personal projects', 'Academic & research', 'Non-profit internal use'],
+    features: ['MIT License', 'Personal projects', 'Academic & research', 'Commercial use welcome'],
     highlight: false,
     cta: 'Get Started',
     ctaHref: 'https://www.npmjs.com/package/@cacheplane/langgraph',
