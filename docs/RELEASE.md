@@ -1,6 +1,6 @@
 # Release Process
 
-The eight publishable libraries (`@cacheplane/chat`, `@cacheplane/langgraph`, `@cacheplane/ag-ui`, `@cacheplane/render`, `@cacheplane/a2ui`, `@cacheplane/partial-json`, `@cacheplane/licensing`, `@cacheplane/langgraph-mcp`) ship together at a synchronized version via Nx Release. During the `0.0.x` exploratory phase, only patch bumps are used.
+The eight publishable libraries (`@ngaf/chat`, `@ngaf/langgraph`, `@ngaf/ag-ui`, `@ngaf/render`, `@ngaf/a2ui`, `@ngaf/partial-json`, `@ngaf/licensing`, `@ngaf/langgraph-mcp`) ship together at a synchronized version via Nx Release. During the `0.0.x` exploratory phase, only patch bumps are used.
 
 ## One-shot release (recommended; second release onward)
 
