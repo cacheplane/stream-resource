@@ -1,6 +1,7 @@
 {
   "name": "@ngaf/langgraph-mcp",
   "version": "0.0.1",
+  "private": true,
   "description": "MCP server for the @ngaf/langgraph library",
   "license": "MIT",
   "repository": {
