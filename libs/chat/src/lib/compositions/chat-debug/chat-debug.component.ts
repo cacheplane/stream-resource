@@ -19,7 +19,7 @@ import { ChatTypingIndicatorComponent } from '../../primitives/chat-typing-indic
 import { ChatErrorComponent } from '../../primitives/chat-error/chat-error.component';
 import { messageContent } from '../shared/message-utils';
 import { CHAT_HOST_TOKENS } from '../../styles/chat-tokens';
-import { renderMarkdown } from '../../styles/chat-markdown';
+import { renderMarkdown } from '../../streaming/markdown-render';
 import { DebugTimelineComponent } from './debug-timeline.component';
 import { DebugDetailComponent } from './debug-detail.component';
 import { DebugControlsComponent } from './debug-controls.component';

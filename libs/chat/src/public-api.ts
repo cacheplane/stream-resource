@@ -60,8 +60,8 @@ export { ChatTimelineSliderComponent } from './lib/compositions/chat-timeline-sl
 export { ChatDebugComponent } from './lib/compositions/chat-debug/chat-debug.component';
 
 // Shared styles & utilities
-export { CHAT_THEME_STYLES } from './lib/styles/chat-theme';
-export { CHAT_MARKDOWN_STYLES, renderMarkdown } from './lib/styles/chat-markdown';
+export { CHAT_MARKDOWN_STYLES } from './lib/styles/chat-markdown.styles';
+export { renderMarkdown } from './lib/streaming/markdown-render';
 export { messageContent } from './lib/compositions/shared/message-utils';
 export {
   ICON_CHEVRON_DOWN, ICON_CHEVRON_UP, ICON_TOOL,
