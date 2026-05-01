@@ -47,9 +47,23 @@ const CARDS: Card[] = [
 export function PositioningStrip() {
   return (
     <section
+      className="positioning-strip"
       aria-labelledby="positioning-heading"
       style={{ maxWidth: 1040, margin: '0 auto', padding: '64px 32px' }}
     >
+      <style>{`
+        .positioning-strip .positioning-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        @media (min-width: 640px) {
+          .positioning-strip .positioning-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (min-width: 1024px) {
+          .positioning-strip .positioning-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+      `}</style>
       <h2
         id="positioning-heading"
         style={{
@@ -67,13 +81,7 @@ export function PositioningStrip() {
         What makes the Angular Agent Framework different
       </h2>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: 16,
-        }}
-      >
+      <div className="positioning-grid">
         {CARDS.map((card, i) => (
           <motion.article
             key={card.eyebrow}
