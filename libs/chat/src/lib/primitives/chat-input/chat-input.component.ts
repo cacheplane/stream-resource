@@ -39,7 +39,7 @@ export function submitMessage(
     <div class="chat-input__container">
       <ng-content select="[chatInputBanner]" />
       <ng-content select="[chatInputAttachments]" />
-      <div class="chat-input__pill" (click)="focusTextarea()">
+      <div class="chat-input__pill">
         <ng-content select="[chatInputLeading]" />
         <textarea
           #textareaEl
