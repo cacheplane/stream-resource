@@ -153,7 +153,7 @@ import type { ChatRenderEvent } from './chat-render-event';
                     [content]="content"
                     (regenerate)="onRegenerate()"
                     (rate)="onRate(message, $event)"
-                    (copy)="onCopy(message, $event)"
+                    (copied)="onCopy(message, $event)"
                   />
                 </chat-message>
               </ng-template>
