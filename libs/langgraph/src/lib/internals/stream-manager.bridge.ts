@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+import { signal } from '@angular/core';
 import { Observable, takeUntil } from 'rxjs';
 import {
   ResourceStatus,
@@ -6,12 +7,20 @@ import {
   StreamSubjects,
   StreamEvent,
   AgentTransport,
+  SubagentStreamRef,
 } from '../agent.types';
 import { FetchStreamTransport } from '../transport/fetch-stream.transport';
 import { BagTemplate } from '@langchain/langgraph-sdk';
 import { getToolCallsWithResults } from '@langchain/langgraph-sdk/utils';
+import {
+  SubagentManager,
+  extractToolCallIdFromNamespace,
+  isSubagentNamespace,
+} from '@langchain/langgraph-sdk/ui';
 import type { BaseMessage } from '@langchain/core/messages';
+import type { Message as SdkMessage } from '@langchain/langgraph-sdk';
 import type { Interrupt, Message as LangGraphMessage, ToolCallWithResult, ToolProgress } from '@langchain/langgraph-sdk';
+import type { SubagentStreamInterface } from '@langchain/langgraph-sdk/ui';
 
 export interface StreamManagerBridgeOptions<T, ResolvedBag extends BagTemplate = BagTemplate> {
   options:   AgentOptions<T, ResolvedBag>;
@@ -47,6 +56,10 @@ export function createStreamManagerBridge<T, ResolvedBag extends BagTemplate = B
   let abortController: AbortController | null = null;
   let hasSeenThreadId = false;
   const toolProgressMap = new Map<string, ToolProgress>();
+  const subagentManager = new SubagentManager({
+    subagentToolNames: options.subagentToolNames,
+    onSubagentChange: publishSubagents,
+  });
 
   function resetThreadState(): void {
     subjects.values$.next({} as T);
@@ -57,9 +70,11 @@ export function createStreamManagerBridge<T, ResolvedBag extends BagTemplate = B
     subjects.toolProgress$.next([]);
     subjects.toolCalls$.next([]);
     subjects.messageMetadata$.next(new Map());
+    subjects.subagents$.next(new Map());
     subjects.custom$.next([]);
     subjects.isThreadLoading$.next(false);
     toolProgressMap.clear();
+    subagentManager.clear();
   }
 
   function setThreadId(id: string | null, resetState: boolean): void {
@@ -125,6 +140,9 @@ export function createStreamManagerBridge<T, ResolvedBag extends BagTemplate = B
   }
 
   function processEvent(event: StreamEvent): void {
+    const baseType = getBaseEventType(event.type);
+    const namespace = getEventNamespace(event);
+
     if (isMessagesEvent(event.type)) {
       const msgs = normalizeMessages(event);
       if (!msgs) return;
@@ -132,6 +150,24 @@ export function createStreamManagerBridge<T, ResolvedBag extends BagTemplate = B
       const normalized = options.toMessage
         ? msgs.map(options.toMessage)
         : msgs as BaseMessage[];
+
+      if (isSubagentNamespace(namespace)) {
+        const namespaceId = namespace ? extractToolCallIdFromNamespace(namespace) : undefined;
+        if (namespaceId) {
+          for (const msg of normalized) {
+            subagentManager.addMessageToSubagent(
+              namespaceId,
+              msg as unknown as SdkMessage,
+              event.messageMetadata,
+            );
+          }
+          publishSubagents();
+        }
+
+        if (options.filterSubagentMessages) {
+          return;
+        }
+      }
 
       // Partial and message-tuple events are incremental. Merge them by id
       // so optimistic human messages and earlier tool messages are preserved.
@@ -141,6 +177,7 @@ export function createStreamManagerBridge<T, ResolvedBag extends BagTemplate = B
         subjects.messages$.next(normalized);
       }
       storeMessageMetadata(normalized, event);
+      syncSubagentsFromMessages(normalized);
       syncToolCallsFromMessages();
       return;
     }
@@ -148,9 +185,13 @@ export function createStreamManagerBridge<T, ResolvedBag extends BagTemplate = B
     // normalizeSdkEvent spreads event data directly into the event object,
     // so the values/updates payload is at event['data'] (the original data object),
     // NOT at event['values'] or event['updates'].
-    switch (event.type) {
+    switch (baseType) {
       case 'values': {
         const vals = extractEventData(event);
+        if (isSubagentNamespace(namespace) && isRecord(vals)) {
+          updateSubagentValues(namespace, vals);
+          break;
+        }
         if (vals != null) {
           subjects.values$.next(vals as T);
           // Also sync messages$ from the values state so the full message
@@ -162,6 +203,12 @@ export function createStreamManagerBridge<T, ResolvedBag extends BagTemplate = B
             } else {
               subjects.messages$.next(stateMessages as BaseMessage[]);
             }
+            syncSubagentsFromMessages(stateMessages as BaseMessage[]);
+            subagentManager.reconstructFromMessages(
+              stateMessages as unknown as SdkMessage[],
+              { skipIfPopulated: true },
+            );
+            publishSubagents();
             syncToolCallsFromMessages();
           }
         }
@@ -169,6 +216,10 @@ export function createStreamManagerBridge<T, ResolvedBag extends BagTemplate = B
       }
       case 'updates': {
         const upd = extractEventData(event);
+        if (isSubagentNamespace(namespace)) {
+          markSubagentRunning(namespace);
+          break;
+        }
         if (upd != null) {
           subjects.values$.next({
             ...subjects.values$.value,
@@ -206,6 +257,52 @@ export function createStreamManagerBridge<T, ResolvedBag extends BagTemplate = B
       subjects.messages$.value as unknown as LangGraphMessage[],
     ) as ToolCallWithResult[];
     subjects.toolCalls$.next(toolCalls);
+  }
+
+  function syncSubagentsFromMessages(messages: BaseMessage[]): void {
+    for (const message of messages) {
+      const raw = message as unknown as Record<string, unknown>;
+      if (isAiMessageWithToolCalls(raw)) {
+        subagentManager.registerFromToolCalls(
+          raw['tool_calls'] as Array<{ id?: string; name: string; args: Record<string, unknown> | string }>,
+          typeof raw['id'] === 'string' ? raw['id'] : null,
+        );
+      }
+      if (isToolMessage(raw)) {
+        const content = typeof raw['content'] === 'string'
+          ? raw['content']
+          : JSON.stringify(raw['content']);
+        const status = raw['status'] === 'error' ? 'error' : 'success';
+        subagentManager.processToolMessage(raw['tool_call_id'], content, status);
+      }
+    }
+    publishSubagents();
+  }
+
+  function updateSubagentValues(namespace: string[] | undefined, values: Record<string, unknown>): void {
+    const namespaceId = namespace ? extractToolCallIdFromNamespace(namespace) : undefined;
+    if (!namespaceId) return;
+
+    const messages = values['messages'];
+    if (Array.isArray(messages) && messages.length > 0) {
+      const first = messages[0];
+      if (isRecord(first) && (first['type'] === 'human' || first['type'] === 'user') && typeof first['content'] === 'string') {
+        subagentManager.matchSubgraphToSubagent(namespaceId, first['content']);
+      }
+    }
+    subagentManager.updateSubagentValues(namespaceId, values);
+    publishSubagents();
+  }
+
+  function markSubagentRunning(namespace: string[] | undefined): void {
+    const namespaceId = namespace ? extractToolCallIdFromNamespace(namespace) : undefined;
+    if (!namespaceId) return;
+    subagentManager.markRunningFromNamespace(namespaceId, namespace);
+    publishSubagents();
+  }
+
+  function publishSubagents(): void {
+    subjects.subagents$.next(toSubagentRefs(subagentManager.getSubagents()));
   }
 
   function storeMessageMetadata(messages: BaseMessage[], event: StreamEvent): void {
@@ -348,7 +445,18 @@ function extractEventData(event: StreamEvent): unknown {
 }
 
 function isMessagesEvent(type: StreamEvent['type']): boolean {
-  return type === 'messages' || type.startsWith('messages/');
+  const baseType = getBaseEventType(type);
+  return baseType === 'messages' || baseType.startsWith('messages/');
+}
+
+function getBaseEventType(type: StreamEvent['type']): string {
+  return String(type).split('|')[0];
+}
+
+function getEventNamespace(event: StreamEvent): string[] | undefined {
+  if (Array.isArray(event.namespace)) return event.namespace;
+  const parts = String(event.type).split('|');
+  return parts.length > 1 ? parts.slice(1) : undefined;
 }
 
 function normalizeMessages(event: StreamEvent): unknown[] | null {
@@ -397,6 +505,31 @@ function mergeMessages(existing: BaseMessage[], incoming: BaseMessage[]): BaseMe
     }
   }
   return merged;
+}
+
+function toSubagentRefs(
+  subagents: Map<string, SubagentStreamInterface>,
+): Map<string, SubagentStreamRef> {
+  const refs = new Map<string, SubagentStreamRef>();
+  subagents.forEach((subagent, key) => {
+    refs.set(key, {
+      toolCallId: subagent.id,
+      name: subagent.toolCall.args.subagent_type,
+      status: signal(subagent.status),
+      values: signal(subagent.values),
+      messages: signal(subagent.messages as unknown as BaseMessage[]),
+    });
+  });
+  return refs;
+}
+
+function isAiMessageWithToolCalls(value: Record<string, unknown>): boolean {
+  return (value['type'] === 'ai' || value['type'] === 'assistant')
+    && Array.isArray(value['tool_calls']);
+}
+
+function isToolMessage(value: Record<string, unknown>): value is Record<string, unknown> & { tool_call_id: string } {
+  return value['type'] === 'tool' && typeof value['tool_call_id'] === 'string';
 }
 
 function isMessageLike(value: unknown): value is Record<string, unknown> {
