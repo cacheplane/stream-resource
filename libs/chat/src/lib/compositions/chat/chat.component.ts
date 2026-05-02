@@ -42,8 +42,17 @@ import type { ChatRenderEvent } from './chat-render-event';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [CHAT_HOST_TOKENS, `
-    :host { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--ngaf-chat-bg); }
-    .chat-shell { display: flex; flex: 1; min-height: 0; }
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      height: 100%;
+      min-height: 0;
+      max-height: 100%;
+      overflow: hidden;
+      background: var(--ngaf-chat-bg);
+    }
+    .chat-shell { display: flex; flex: 1; min-height: 0; overflow: hidden; }
     .chat-shell__sidebar {
       width: 240px;
       flex-shrink: 0;
