@@ -43,7 +43,7 @@ describe('ChatWelcomeSuggestionComponent', () => {
 
   it('emits select with the value on click', () => {
     let emitted: string | undefined;
-    fixture.componentInstance.select.subscribe((v: string) => {
+    fixture.componentInstance.selected.subscribe((v: string) => {
       emitted = v;
     });
     const button = (fixture.nativeElement as HTMLElement).querySelector('button');

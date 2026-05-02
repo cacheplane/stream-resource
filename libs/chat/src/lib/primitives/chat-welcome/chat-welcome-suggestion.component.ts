@@ -9,7 +9,7 @@ import { CHAT_WELCOME_SUGGESTION_STYLES } from '../../styles/chat-welcome.styles
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [CHAT_HOST_TOKENS, CHAT_WELCOME_SUGGESTION_STYLES],
   template: `
-    <button type="button" class="chat-welcome-suggestion" (click)="select.emit(value())">
+    <button type="button" class="chat-welcome-suggestion" (click)="selected.emit(value())">
       <ng-content select="[chatWelcomeSuggestionIcon]" />
       <span class="chat-welcome-suggestion__label">{{ label() }}</span>
       <span class="chat-welcome-suggestion__chevron" aria-hidden="true">›</span>
@@ -19,5 +19,5 @@ import { CHAT_WELCOME_SUGGESTION_STYLES } from '../../styles/chat-welcome.styles
 export class ChatWelcomeSuggestionComponent {
   readonly label = input.required<string>();
   readonly value = input.required<string>();
-  readonly select = output<string>();
+  readonly selected = output<string>();
 }
