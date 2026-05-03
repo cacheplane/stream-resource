@@ -10,13 +10,24 @@ const OPTS: readonly ChatSelectOption[] = [
   { value: 'c', label: 'Charlie', disabled: true },
 ];
 
+// SIGNAL-symbol writer for input signals (canonical pattern; setInput()
+// silently no-ops with NG0303 under vitest JIT).
 function setSignalInput<T>(fixture: ComponentFixture<unknown>, name: string, value: T): void {
-  try {
-    fixture.componentRef.setInput(name, value);
-  } catch {
-    const inputs = fixture.componentInstance as Record<string, unknown>;
-    const sig = inputs[name] as { set?: (v: T) => void };
-    sig?.set?.(value);
+  const inputs = fixture.componentInstance as Record<string, unknown>;
+  const sig = inputs[name];
+  const obj = sig as Record<symbol, unknown>;
+  const signalSymbol = Object.getOwnPropertySymbols(obj).find(
+    (s) => s.description === 'SIGNAL',
+  );
+  if (!signalSymbol) throw new Error(`Could not find SIGNAL symbol on input "${name}"`);
+  const node = obj[signalSymbol] as {
+    applyValueToInputSignal?: (n: unknown, v: T) => void;
+    value?: T;
+  };
+  if (typeof node.applyValueToInputSignal === 'function') {
+    node.applyValueToInputSignal(node, value);
+  } else {
+    node.value = value;
   }
 }
 
