@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 import {
   ChangeDetectionStrategy, Component, ContentChild, Directive, TemplateRef,
-  computed, input,
+  computed, inject, input,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import type { Message } from '../../agent/message';
@@ -15,7 +15,7 @@ import { ChatCitationsCardComponent } from './chat-citations-card.component';
  */
 @Directive({ selector: 'ng-template[chatCitationCard]', standalone: true })
 export class ChatCitationCardTemplateDirective {
-  constructor(public readonly tpl: TemplateRef<{ $implicit: Citation }>) {}
+  readonly tpl = inject<TemplateRef<{ $implicit: Citation }>>(TemplateRef);
 }
 
 @Component({
