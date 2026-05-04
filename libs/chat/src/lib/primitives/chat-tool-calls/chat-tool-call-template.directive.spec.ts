@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { Component, contentChildren, TemplateRef } from '@angular/core';
+import { Component, viewChildren, TemplateRef } from '@angular/core';
 import { ChatToolCallTemplateDirective } from './chat-tool-call-template.directive';
 
 @Component({
@@ -20,7 +20,7 @@ import { ChatToolCallTemplateDirective } from './chat-tool-call-template.directi
   `,
 })
 class HostComponent {
-  readonly templates = contentChildren(ChatToolCallTemplateDirective);
+  readonly templates = viewChildren(ChatToolCallTemplateDirective);
 }
 
 describe('ChatToolCallTemplateDirective', () => {
@@ -31,18 +31,15 @@ describe('ChatToolCallTemplateDirective', () => {
   it('exposes the tool name via the input alias', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    const directives = fixture.debugElement
-      .queryAll((e) => e.injector.get(ChatToolCallTemplateDirective, null) !== null)
-      .map((e) => e.injector.get(ChatToolCallTemplateDirective));
+    const directives = fixture.componentInstance.templates();
     expect(directives.map((d) => d.name())).toEqual(['search_web', 'generate_image', '*']);
   });
 
   it('captures the TemplateRef', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    const directive = fixture.debugElement
-      .query((e) => e.injector.get(ChatToolCallTemplateDirective, null) !== null)
-      .injector.get(ChatToolCallTemplateDirective);
-    expect(directive.templateRef).toBeInstanceOf(TemplateRef);
+    const directives = fixture.componentInstance.templates();
+    expect(directives.length).toBe(3);
+    expect(directives[0].templateRef).toBeInstanceOf(TemplateRef);
   });
 });
