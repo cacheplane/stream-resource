@@ -5,11 +5,11 @@ import {
   ChangeDetectionStrategy,
   ViewEncapsulation,
   computed,
-  inject,
   input,
 } from '@angular/core';
 import {
   createPartialMarkdownParser,
+  materialize,
   type MarkdownDocumentNode,
   type PartialMarkdownParser,
 } from '@cacheplane/partial-markdown';
@@ -21,9 +21,16 @@ import { cacheplaneMarkdownViews } from '../markdown/cacheplane-markdown-views';
 
 /**
  * Renders streaming markdown by walking a @cacheplane/partial-markdown AST
- * through @ngaf/render's view registry. Identity preservation in the parser
- * propagates through Angular's `track $any($node)` so unchanged subtrees
- * never re-render.
+ * through @ngaf/render's view registry.
+ *
+ * Reactivity model: the live `parser.root` keeps a stable JS reference
+ * across pushes (partial-markdown's identity guarantee). To make Angular
+ * signals propagate downstream when the underlying tree changes, we surface
+ * a materialized snapshot via `materialize()`. The snapshot shares
+ * structurally — unchanged subtrees keep the SAME reference, and any
+ * descendant change yields a NEW root reference. This lets Angular's
+ * `Object.is` equality check both detect changes (root reference differs)
+ * and short-circuit unchanged subtrees (per-node references stable).
  *
  * Override per-node-type renderers via the `[viewRegistry]` input or by
  * supplying a different `MARKDOWN_VIEW_REGISTRY` provider in the injector
@@ -87,6 +94,10 @@ export class ChatStreamingMdComponent {
       this.parser.finish();
       this.finished = true;
     }
-    return this.parser.root;
+    // Materialize for Angular reactivity: produces a NEW root reference when
+    // any descendant subtree changed; same reference when nothing changed
+    // (structural sharing). This is what makes signal-based CD propagate
+    // downstream changes despite the parser preserving identity.
+    return materialize(this.parser.root) as MarkdownDocumentNode | null;
   });
 }

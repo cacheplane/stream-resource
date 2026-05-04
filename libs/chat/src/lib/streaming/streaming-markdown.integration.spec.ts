@@ -85,24 +85,15 @@ describe('chat-streaming-md integration', () => {
       sample.assertDom(fixture.nativeElement);
     });
 
-    it(`renders ${sample.name} (chunked)`, () => {
+    it(`renders ${sample.name} (chunked with per-chunk CD)`, () => {
       const fixture = TestBed.createComponent(HostComponent);
-      // Simulate streaming: accumulate all chunks without triggering change
-      // detection. Angular's signal equality check means intermediate pushes
-      // on the same mutable root object would not propagate through the view
-      // tree — so we defer detectChanges until finalization. This is equivalent
-      // to how the component is used in production: many rapid content updates
-      // during streaming, then a final detectChanges once streaming=false.
       fixture.componentInstance.streaming.set(true);
       let acc = '';
       for (const ch of sample.markdown) {
         acc += ch;
         fixture.componentInstance.content.set(acc);
+        fixture.detectChanges();  // per-chunk CD must work — materialize() gives new root ref when tree changes
       }
-      // Finalize: flip streaming off. Since content is the same as prior, the
-      // computed's else-if branch fires parser.finish(). detectChanges then
-      // evaluates the @if(root()) for the first time — root goes from the
-      // initial null (no prior detectChanges) to the populated parser.root.
       fixture.componentInstance.streaming.set(false);
       fixture.detectChanges();
       sample.assertDom(fixture.nativeElement);
