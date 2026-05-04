@@ -3,86 +3,90 @@
 import {
   Component,
   ChangeDetectionStrategy,
-  DestroyRef,
-  ElementRef,
   ViewEncapsulation,
-  effect,
+  computed,
   inject,
   input,
-  untracked,
 } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
-import { renderMarkdownToString } from './markdown-render';
-import { isTraceEnabled, trace } from './trace';
+import {
+  createPartialMarkdownParser,
+  type MarkdownDocumentNode,
+  type PartialMarkdownParser,
+} from '@cacheplane/partial-markdown';
+import type { ViewRegistry } from '@ngaf/render';
 import { CHAT_MARKDOWN_STYLES } from '../styles/chat-markdown.styles';
+import { MARKDOWN_VIEW_REGISTRY } from '../markdown/markdown-view-registry';
+import { MarkdownChildrenComponent } from '../markdown/markdown-children.component';
+import { cacheplaneMarkdownViews } from '../markdown/cacheplane-markdown-views';
 
 /**
- * Renders markdown content via marked.parse + sanitized innerHTML, coalesced
- * to one render per animation frame. No incremental renderer state, no delta
- * math — just write the latest content. Idempotent within a frame.
+ * Renders streaming markdown by walking a @cacheplane/partial-markdown AST
+ * through @ngaf/render's view registry. Identity preservation in the parser
+ * propagates through Angular's `track $any($node)` so unchanged subtrees
+ * never re-render.
  *
- * The `streaming` input is informational (it can drive parent-level decisions
- * like showing a caret), but doesn't change the render strategy here.
+ * Override per-node-type renderers via the `[viewRegistry]` input or by
+ * supplying a different `MARKDOWN_VIEW_REGISTRY` provider in the injector
+ * tree.
  */
 @Component({
   selector: 'chat-streaming-md',
   standalone: true,
+  imports: [MarkdownChildrenComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // Disable emulated view encapsulation. The component sets its content via
-  // `innerHTML` (Angular's sanitized markdown render), so the resulting DOM
-  // nodes never carry the `_ngcontent-xxx` attribute that emulated styles
-  // require to match descendants. Without this, `chat-streaming-md ul` and
-  // friends in CHAT_MARKDOWN_STYLES never apply, and bullets/headings/code
-  // blocks render unstyled. We scope every selector to `chat-streaming-md`
-  // in CHAT_MARKDOWN_STYLES so the rules don't leak globally.
   encapsulation: ViewEncapsulation.None,
-  template: '',
   styles: CHAT_MARKDOWN_STYLES,
+  template: `
+    @if (root(); as r) {
+      <md-children [parent]="r" />
+    }
+  `,
+  providers: [
+    {
+      provide: MARKDOWN_VIEW_REGISTRY,
+      useFactory: (host: ChatStreamingMdComponent) => host.resolvedRegistry(),
+      deps: [ChatStreamingMdComponent],
+    },
+  ],
 })
 export class ChatStreamingMdComponent {
-  readonly content = input.required<string>();
+  readonly content = input<string>('');
   readonly streaming = input<boolean>(false);
+  readonly viewRegistry = input<ViewRegistry | undefined>(undefined);
 
-  private readonly el = inject(ElementRef).nativeElement as HTMLElement;
-  private readonly sanitizer = inject(DomSanitizer);
-  private readonly destroyRef = inject(DestroyRef);
+  readonly resolvedRegistry = computed(
+    () => this.viewRegistry() ?? cacheplaneMarkdownViews,
+  );
 
-  private rafHandle = 0;
-  private pendingContent = '';
+  // Parser instance is rebuilt only when content diverges from the prior
+  // prefix (rare). For the common streaming case where content extends the
+  // prior content, we push the delta and reuse the existing parser tree.
+  private parser: PartialMarkdownParser = createPartialMarkdownParser();
+  private prior = '';
+  private finished = false;
 
-  constructor() {
-    effect(() => {
-      const next = this.content();
-      untracked(() => this.schedule(next));
-    });
-
-    this.destroyRef.onDestroy(() => {
-      if (this.rafHandle) {
-        cancelAnimationFrame(this.rafHandle);
-        this.rafHandle = 0;
+  readonly root = computed<MarkdownDocumentNode | null>(() => {
+    const c = this.content();
+    const isStreaming = this.streaming();
+    if (c !== this.prior) {
+      if (c.startsWith(this.prior)) {
+        this.parser.push(c.slice(this.prior.length));
+      } else {
+        // Content shrank or diverged — reset.
+        this.parser = createPartialMarkdownParser();
+        this.finished = false;
+        if (c.length > 0) this.parser.push(c);
       }
-    });
-  }
-
-  private schedule(content: string): void {
-    this.pendingContent = content;
-    if (this.rafHandle !== 0) return;
-    this.rafHandle = requestAnimationFrame(() => {
-      this.rafHandle = 0;
-      this.flush();
-    });
-  }
-
-  private flush(): void {
-    const content = this.pendingContent;
-    if (!content) {
-      this.el.innerHTML = '';
-      return;
+      if (!isStreaming && !this.finished) {
+        this.parser.finish();
+        this.finished = true;
+      }
+      this.prior = c;
+    } else if (!isStreaming && !this.finished) {
+      // Streaming flipped to false without new content; ensure parser is finalized.
+      this.parser.finish();
+      this.finished = true;
     }
-    const start = isTraceEnabled() ? performance.now() : 0;
-    this.el.innerHTML = renderMarkdownToString(content, this.sanitizer);
-    if (isTraceEnabled()) {
-      trace('streaming-md.flush', { contentLength: content.length, durationMs: performance.now() - start });
-    }
-  }
+    return this.parser.root;
+  });
 }
