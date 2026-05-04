@@ -8,6 +8,7 @@ export type { MessageTemplateType } from './lib/chat.types';
 export type {
   Agent,
   AgentWithHistory,
+  Citation,
   Message,
   Role,
   ContentBlock,
