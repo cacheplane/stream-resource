@@ -5,11 +5,11 @@ import type { MarkdownStrikethroughNode } from '@cacheplane/partial-markdown';
 import { MarkdownChildrenComponent } from '../markdown-children.component';
 
 @Component({
-  selector: 'md-strikethrough',
+  selector: 'chat-md-strikethrough',
   standalone: true,
   imports: [MarkdownChildrenComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<del><md-children [parent]="node()" /></del>`,
+  template: `<del><chat-md-children [parent]="node()" /></del>`,
 })
 export class MarkdownStrikethroughComponent {
   readonly node = input.required<MarkdownStrikethroughNode>();

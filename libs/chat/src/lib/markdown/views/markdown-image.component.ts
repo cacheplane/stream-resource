@@ -4,7 +4,7 @@ import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import type { MarkdownImageNode } from '@cacheplane/partial-markdown';
 
 @Component({
-  selector: 'md-image',
+  selector: 'chat-md-image',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<img [src]="node().url" [alt]="node().alt" [attr.title]="node().title || null" />`,

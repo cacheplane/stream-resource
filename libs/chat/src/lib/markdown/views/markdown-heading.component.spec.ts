@@ -12,7 +12,7 @@ import { MARKDOWN_VIEW_REGISTRY } from '../markdown-view-registry';
 @Component({
   standalone: true,
   imports: [MarkdownHeadingComponent],
-  template: `<md-heading [node]="node()" />`,
+  template: `<chat-md-heading [node]="node()" />`,
 })
 class HostComponent {
   node = signal<MarkdownHeadingNode>({

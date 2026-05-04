@@ -9,7 +9,7 @@ import { MarkdownTextComponent } from './markdown-text.component';
 @Component({
   standalone: true,
   imports: [MarkdownTextComponent],
-  template: `<md-text [node]="node()" />`,
+  template: `<chat-md-text [node]="node()" />`,
 })
 class HostComponent {
   node = signal<MarkdownTextNode>({
@@ -24,7 +24,7 @@ describe('MarkdownTextComponent', () => {
   it('renders the node text', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('md-text')?.textContent).toBe('hello');
+    expect(fixture.nativeElement.querySelector('chat-md-text')?.textContent).toBe('hello');
   });
 
   it('updates when the text changes', () => {
@@ -35,6 +35,6 @@ describe('MarkdownTextComponent', () => {
       parent: null, index: null, text: 'hello world',
     });
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('md-text')?.textContent).toBe('hello world');
+    expect(fixture.nativeElement.querySelector('chat-md-text')?.textContent).toBe('hello world');
   });
 });

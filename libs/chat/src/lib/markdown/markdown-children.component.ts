@@ -23,7 +23,7 @@ import { MARKDOWN_VIEW_REGISTRY } from './markdown-view-registry';
  * across pushes, unchanged subtrees never re-render.
  */
 @Component({
-  selector: 'md-children',
+  selector: 'chat-md-children',
   standalone: true,
   imports: [NgComponentOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,

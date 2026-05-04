@@ -45,7 +45,7 @@ import { cacheplaneMarkdownViews } from '../markdown/cacheplane-markdown-views';
   styles: CHAT_MARKDOWN_STYLES,
   template: `
     @if (root(); as r) {
-      <md-children [parent]="r" />
+      <chat-md-children [parent]="r" />
     }
   `,
   providers: [

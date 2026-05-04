@@ -5,11 +5,11 @@ import type { MarkdownListItemNode } from '@cacheplane/partial-markdown';
 import { MarkdownChildrenComponent } from '../markdown-children.component';
 
 @Component({
-  selector: 'md-list-item',
+  selector: 'chat-md-list-item',
   standalone: true,
   imports: [MarkdownChildrenComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<li><md-children [parent]="node()" /></li>`,
+  template: `<li><chat-md-children [parent]="node()" /></li>`,
 })
 export class MarkdownListItemComponent {
   readonly node = input.required<MarkdownListItemNode>();

@@ -4,7 +4,7 @@ import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import type { MarkdownThematicBreakNode } from '@cacheplane/partial-markdown';
 
 @Component({
-  selector: 'md-thematic-break',
+  selector: 'chat-md-thematic-break',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<hr>`,

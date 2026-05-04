@@ -5,11 +5,11 @@ import type { MarkdownBlockquoteNode } from '@cacheplane/partial-markdown';
 import { MarkdownChildrenComponent } from '../markdown-children.component';
 
 @Component({
-  selector: 'md-blockquote',
+  selector: 'chat-md-blockquote',
   standalone: true,
   imports: [MarkdownChildrenComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<blockquote><md-children [parent]="node()" /></blockquote>`,
+  template: `<blockquote><chat-md-children [parent]="node()" /></blockquote>`,
 })
 export class MarkdownBlockquoteComponent {
   readonly node = input.required<MarkdownBlockquoteNode>();

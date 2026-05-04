@@ -4,7 +4,7 @@ import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import type { MarkdownTextNode } from '@cacheplane/partial-markdown';
 
 @Component({
-  selector: 'md-text',
+  selector: 'chat-md-text',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `{{ node().text }}`,

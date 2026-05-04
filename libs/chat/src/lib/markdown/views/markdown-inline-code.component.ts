@@ -4,7 +4,7 @@ import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import type { MarkdownInlineCodeNode } from '@cacheplane/partial-markdown';
 
 @Component({
-  selector: 'md-inline-code',
+  selector: 'chat-md-inline-code',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<code>{{ node().text }}</code>`,

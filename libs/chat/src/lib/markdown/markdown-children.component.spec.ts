@@ -10,7 +10,7 @@ import { MARKDOWN_VIEW_REGISTRY } from './markdown-view-registry';
 
 @Component({
   standalone: true,
-  selector: 'md-text-stub',
+  selector: 'chat-md-text-stub',
   template: `<span data-test="text">{{ node().text }}</span>`,
 })
 class TextStub {
@@ -19,9 +19,9 @@ class TextStub {
 
 @Component({
   standalone: true,
-  selector: 'md-paragraph-stub',
+  selector: 'chat-md-paragraph-stub',
   imports: [MarkdownChildrenComponent],
-  template: `<p data-test="paragraph"><md-children [parent]="node()" /></p>`,
+  template: `<p data-test="paragraph"><chat-md-children [parent]="node()" /></p>`,
 })
 class ParagraphStub {
   readonly node = input.required<MarkdownParagraphNode>();
@@ -30,7 +30,7 @@ class ParagraphStub {
 @Component({
   standalone: true,
   imports: [MarkdownChildrenComponent],
-  template: `<md-children [parent]="parent()" />`,
+  template: `<chat-md-children [parent]="parent()" />`,
 })
 class HostComponent {
   parent = signal<MarkdownNode>({

@@ -5,11 +5,11 @@ import type { MarkdownLinkNode } from '@cacheplane/partial-markdown';
 import { MarkdownChildrenComponent } from '../markdown-children.component';
 
 @Component({
-  selector: 'md-link',
+  selector: 'chat-md-link',
   standalone: true,
   imports: [MarkdownChildrenComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<a [href]="node().url" [attr.title]="node().title || null"><md-children [parent]="node()" /></a>`,
+  template: `<a [href]="node().url" [attr.title]="node().title || null"><chat-md-children [parent]="node()" /></a>`,
 })
 export class MarkdownLinkComponent {
   readonly node = input.required<MarkdownLinkNode>();

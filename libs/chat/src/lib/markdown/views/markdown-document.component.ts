@@ -5,11 +5,11 @@ import type { MarkdownDocumentNode } from '@cacheplane/partial-markdown';
 import { MarkdownChildrenComponent } from '../markdown-children.component';
 
 @Component({
-  selector: 'md-document',
+  selector: 'chat-md-document',
   standalone: true,
   imports: [MarkdownChildrenComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<md-children [parent]="node()" />`,
+  template: `<chat-md-children [parent]="node()" />`,
 })
 export class MarkdownDocumentComponent {
   readonly node = input.required<MarkdownDocumentNode>();

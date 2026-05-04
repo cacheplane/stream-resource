@@ -5,18 +5,18 @@ import type { MarkdownHeadingNode } from '@cacheplane/partial-markdown';
 import { MarkdownChildrenComponent } from '../markdown-children.component';
 
 @Component({
-  selector: 'md-heading',
+  selector: 'chat-md-heading',
   standalone: true,
   imports: [MarkdownChildrenComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @switch (node().level) {
-      @case (1) { <h1><md-children [parent]="node()" /></h1> }
-      @case (2) { <h2><md-children [parent]="node()" /></h2> }
-      @case (3) { <h3><md-children [parent]="node()" /></h3> }
-      @case (4) { <h4><md-children [parent]="node()" /></h4> }
-      @case (5) { <h5><md-children [parent]="node()" /></h5> }
-      @case (6) { <h6><md-children [parent]="node()" /></h6> }
+      @case (1) { <h1><chat-md-children [parent]="node()" /></h1> }
+      @case (2) { <h2><chat-md-children [parent]="node()" /></h2> }
+      @case (3) { <h3><chat-md-children [parent]="node()" /></h3> }
+      @case (4) { <h4><chat-md-children [parent]="node()" /></h4> }
+      @case (5) { <h5><chat-md-children [parent]="node()" /></h5> }
+      @case (6) { <h6><chat-md-children [parent]="node()" /></h6> }
     }
   `,
 })

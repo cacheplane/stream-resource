@@ -9,7 +9,7 @@ import { MarkdownImageComponent } from './markdown-image.component';
 @Component({
   standalone: true,
   imports: [MarkdownImageComponent],
-  template: `<md-image [node]="node()" />`,
+  template: `<chat-md-image [node]="node()" />`,
 })
 class HostComponent {
   node = signal<MarkdownImageNode>({

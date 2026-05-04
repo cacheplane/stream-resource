@@ -9,7 +9,7 @@ import { MarkdownCodeBlockComponent } from './markdown-code-block.component';
 @Component({
   standalone: true,
   imports: [MarkdownCodeBlockComponent],
-  template: `<md-code-block [node]="node()" />`,
+  template: `<chat-md-code-block [node]="node()" />`,
 })
 class HostComponent {
   node = signal<MarkdownCodeBlockNode>({

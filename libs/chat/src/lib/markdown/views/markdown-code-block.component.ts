@@ -4,7 +4,7 @@ import { Component, ChangeDetectionStrategy, input, computed } from '@angular/co
 import type { MarkdownCodeBlockNode } from '@cacheplane/partial-markdown';
 
 @Component({
-  selector: 'md-code-block',
+  selector: 'chat-md-code-block',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<pre><code [class]="languageClass()">{{ node().text }}</code></pre>`,

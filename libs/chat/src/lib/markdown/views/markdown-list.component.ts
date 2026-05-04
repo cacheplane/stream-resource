@@ -5,15 +5,15 @@ import type { MarkdownListNode } from '@cacheplane/partial-markdown';
 import { MarkdownChildrenComponent } from '../markdown-children.component';
 
 @Component({
-  selector: 'md-list',
+  selector: 'chat-md-list',
   standalone: true,
   imports: [MarkdownChildrenComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (node().ordered) {
-      <ol [attr.start]="node().start ?? null"><md-children [parent]="node()" /></ol>
+      <ol [attr.start]="node().start ?? null"><chat-md-children [parent]="node()" /></ol>
     } @else {
-      <ul><md-children [parent]="node()" /></ul>
+      <ul><chat-md-children [parent]="node()" /></ul>
     }
   `,
 })

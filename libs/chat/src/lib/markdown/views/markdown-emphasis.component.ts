@@ -5,11 +5,11 @@ import type { MarkdownEmphasisNode } from '@cacheplane/partial-markdown';
 import { MarkdownChildrenComponent } from '../markdown-children.component';
 
 @Component({
-  selector: 'md-emphasis',
+  selector: 'chat-md-emphasis',
   standalone: true,
   imports: [MarkdownChildrenComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<em><md-children [parent]="node()" /></em>`,
+  template: `<em><chat-md-children [parent]="node()" /></em>`,
 })
 export class MarkdownEmphasisComponent {
   readonly node = input.required<MarkdownEmphasisNode>();
