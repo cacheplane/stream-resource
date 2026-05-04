@@ -77,6 +77,10 @@ export { ChatToolCallCardComponent } from './lib/compositions/chat-tool-call-car
 export type { ToolCallInfo } from './lib/compositions/chat-tool-call-card/chat-tool-call-card.component';
 export { ChatSubagentCardComponent, statusColor } from './lib/compositions/chat-subagent-card/chat-subagent-card.component';
 
+// Citations resolver
+export { CitationsResolverService } from './lib/markdown/citations-resolver.service';
+export type { ResolvedCitation } from './lib/markdown/citations-resolver.service';
+
 // Streaming
 export { ChatStreamingMdComponent } from './lib/streaming/streaming-markdown.component';
 
