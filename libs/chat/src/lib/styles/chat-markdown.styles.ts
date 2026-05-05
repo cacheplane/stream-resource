@@ -134,8 +134,10 @@ export const CHAT_MARKDOWN_STYLES = `
     flex: 1 1 auto;
     min-width: 0;
   }
-  /* Tight task items: collapse the wrapping <p> margins so the line aligns. */
-  chat-streaming-md li.chat-md-list-item--task chat-md-paragraph > p {
+  /* Tight task items: only the FIRST paragraph aligns inline with the
+     checkbox (margin collapsed). Subsequent paragraphs/blocks keep their
+     normal vertical spacing so multi-block items render readably. */
+  chat-streaming-md li.chat-md-list-item--task > chat-md-children > chat-md-paragraph:first-child > p {
     margin: 0;
   }
 
