@@ -12,7 +12,16 @@ import {
 import { takeUntil } from 'rxjs/operators';
 import type { Observable } from 'rxjs';
 import type { BaseMessage, AIMessage as CoreAIMessage } from '@langchain/core/messages';
-import { RemoveMessage } from '@langchain/core/messages';
+
+/**
+ * Wire-shape of a `RemoveMessage` instruction — LangGraph's `add_messages`
+ * reducer recognises this plain-object shape and removes the matching
+ * message id from server state. Used by `regenerate()`. We construct the
+ * shape directly instead of importing the `RemoveMessage` class from
+ * `@langchain/core/messages` because that pulls in the full BaseMessage
+ * class hierarchy (~30-50 kB) which Cockpit's bundle-size budget rejects.
+ */
+type RemoveMessageInstruction = { type: 'remove'; id: string };
 import type { Command, Interrupt, ToolCallWithResult } from '@langchain/langgraph-sdk';
 import type { BagTemplate, InferBag } from '@langchain/langgraph-sdk';
 import type {
@@ -278,17 +287,18 @@ export function agent<
       // preserved in the UI while the new response streams in.
       messages$.next(messages$.value.slice(0, userIdx + 1));
 
-      // Build RemoveMessage instances for server-side rollback. LangGraph's
-      // add_messages reducer recognises RemoveMessage(id=...) and removes those
-      // entries from the thread state — ensuring the runtime re-runs against the
-      // same trimmed state rather than appending new messages on top.
-      const removeList = rawToRemove
+      // Build RemoveMessage wire-shape instructions for server-side rollback.
+      // LangGraph's add_messages reducer recognises `{ type: 'remove', id }`
+      // and removes those entries from the thread state — ensuring the
+      // runtime re-runs against the same trimmed state rather than appending
+      // new messages on top.
+      const removeList: RemoveMessageInstruction[] = rawToRemove
         .map(m => {
           const raw = m as unknown as Record<string, unknown>;
           const id = typeof raw['id'] === 'string' ? raw['id'] : undefined;
-          return id ? new RemoveMessage({ id }) : null;
+          return id ? { type: 'remove' as const, id } : null;
         })
-        .filter((rm): rm is RemoveMessage => rm !== null);
+        .filter((rm): rm is RemoveMessageInstruction => rm !== null);
 
       if (removeList.length > 0) {
         // updateState is a no-op when the transport doesn't support it
