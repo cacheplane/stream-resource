@@ -6,7 +6,6 @@
     "@ngaf/licensing": "*",
     "@angular/core": "^20.0.0 || ^21.0.0",
     "@ag-ui/client": "*",
-    "fast-json-patch": "*",
     "rxjs": "~7.8.0"
   },
   "license": "MIT",
