@@ -9,8 +9,8 @@ import { CHAT_MESSAGE_ACTIONS_STYLES } from '../../styles/chat-message-actions.s
  * regenerate, copy-to-clipboard, thumbs up, thumbs down.
  *
  * Hidden by default, fades in on `:hover`/`:focus-within` of the parent
- * `chat-message` (and is always visible on the current/last assistant
- * message and on mobile). Mirrors copilotkit's AssistantMessage controls.
+ * `chat-message`, and stays visible on the current/last assistant message
+ * and on mobile.
  */
 @Component({
   selector: 'chat-message-actions',
