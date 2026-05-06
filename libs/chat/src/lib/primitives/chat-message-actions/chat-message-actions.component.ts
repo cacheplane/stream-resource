@@ -27,6 +27,8 @@ import { CHAT_MESSAGE_ACTIONS_STYLES } from '../../styles/chat-message-actions.s
       class="chat-message-actions__btn"
       aria-label="Regenerate response"
       title="Regenerate"
+      [disabled]="disabled()"
+      [attr.aria-disabled]="disabled() || null"
       (click)="regenerate.emit()"
     >
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -86,6 +88,8 @@ import { CHAT_MESSAGE_ACTIONS_STYLES } from '../../styles/chat-message-actions.s
 export class ChatMessageActionsComponent {
   /** Plain text content to copy. Required for the copy button to function. */
   readonly content = input<string>('');
+  /** When true, the regenerate button is disabled (e.g. while the agent is streaming). */
+  readonly disabled = input<boolean>(false);
 
   /** Emitted when the user clicks regenerate. Wire this to `agent.reload()`. */
   readonly regenerate = output<void>();

@@ -184,6 +184,7 @@ import type { ChatRenderEvent } from './chat-render-event';
                   <chat-message-actions
                     chatMessageControls
                     [content]="content"
+                    [disabled]="agent().isLoading()"
                     (regenerate)="onRegenerate(i)"
                     (rate)="onRate(message, $event)"
                     (contentCopied)="onCopy(message, $event)"
