@@ -50,9 +50,9 @@
       "defaultConfiguration": "development"
     },
     "test": {
-      "executor": "@nx/vite:test",
+      "executor": "@nx/vitest:test",
       "options": {
-        "config": "examples/chat/angular/vite.config.mts"
+        "configFile": "examples/chat/angular/vite.config.mts"
       }
     },
     "lint": {
