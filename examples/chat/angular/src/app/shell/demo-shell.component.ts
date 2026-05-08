@@ -12,7 +12,7 @@ import { agent } from '@ngaf/langgraph';
 import { ChatDebugComponent } from '@ngaf/chat';
 import { ControlPalette } from './control-palette.component';
 import { PalettePersistence } from './palette-persistence.service';
-import { DEMO_AGENT, DEMO_MODEL } from './shell-tokens';
+import { DEMO_AGENT } from './shell-tokens';
 
 export type DemoMode = 'embed' | 'popup' | 'sidebar';
 
@@ -32,7 +32,6 @@ function modeFromUrl(url: string): DemoMode {
   styleUrl: './demo-shell.component.css',
   providers: [
     { provide: DEMO_AGENT, useFactory: () => inject(DemoShell).agent },
-    { provide: DEMO_MODEL, useFactory: () => inject(DemoShell).model },
   ],
 })
 export class DemoShell {
@@ -49,7 +48,7 @@ export class DemoShell {
     { initialValue: modeFromUrl(this.router.url) },
   );
 
-  /** Source of truth for the model picker. Mode components read it via DEMO_MODEL. */
+  /** Source of truth for the model picker. Injected into submit() via the patched agent. */
   readonly model = signal<string>(this.persistence.read('model') ?? 'gpt-5-mini');
 
   protected readonly debugOpen = signal<boolean>(this.persistence.read('debug') ?? false);

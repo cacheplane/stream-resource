@@ -12,7 +12,7 @@ describe('DemoShell — mode signal', () => {
           { path: 'popup', component: DemoShell },
           { path: 'sidebar', component: DemoShell },
           { path: '', pathMatch: 'full', redirectTo: 'embed' },
-          { path: '**', component: DemoShell },
+          { path: '**', redirectTo: 'embed' },
         ]),
       ],
     });
