@@ -1164,6 +1164,29 @@ describe('stream-manager.bridge — mergeMessages', () => {
   });
 });
 
+describe('stream-manager.bridge — collapseAdjacentAi', () => {
+  const { collapseAdjacentAi } = _internalsForTesting;
+
+  function aiMessage(opts: { id?: string; content: unknown }): unknown {
+    return { type: 'ai', id: opts.id, content: opts.content, _getType: () => 'ai' };
+  }
+
+  it('collapses two adjacent AI messages with identical text into one', () => {
+    const a = aiMessage({ id: 'a', content: 'hello world' });
+    const b = aiMessage({ id: 'b', content: 'hello world' });
+    const out = collapseAdjacentAi([a, b] as never);
+    expect(out.length).toBe(1);
+    expect((out[0] as { content?: unknown }).content).toBe('hello world');
+  });
+
+  it('keeps two adjacent AI messages with non-prefix-related text', () => {
+    const a = aiMessage({ id: 'a', content: 'hello' });
+    const b = aiMessage({ id: 'b', content: 'goodbye' });
+    const out = collapseAdjacentAi([a, b] as never);
+    expect(out.length).toBe(2);
+  });
+});
+
 describe('stream-manager.bridge — captured streaming replay (Finding C)', () => {
   const { mergeMessages, extractText, normalizeMessageType } = _internalsForTesting;
 
