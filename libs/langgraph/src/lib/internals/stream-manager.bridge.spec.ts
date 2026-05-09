@@ -1096,6 +1096,33 @@ describe('stream-manager.bridge — reasoning extraction', () => {
   });
 });
 
+describe('stream-manager.bridge — accumulateContent', () => {
+  const { accumulateContent, isFinalCanonicalReasoningContent } = _internalsForTesting;
+
+  it('returns incoming when existing is empty', () => {
+    expect(accumulateContent('', 'hello')).toBe('hello');
+    expect(accumulateContent(undefined, 'hello')).toBe('hello');
+  });
+
+  it('appends sequential string deltas (the legitimate delta path)', () => {
+    expect(accumulateContent('hello', 'world')).toBe('helloworld');
+  });
+
+  it('replaces partial accumulator when final canonical reasoning+text array arrives', () => {
+    const existing = 'partial answer';
+    const incoming = [
+      { type: 'reasoning', summary: [{ type: 'summary_text', text: 'I thought about it.' }] },
+      { type: 'text', text: 'CANONICAL ANSWER' },
+    ];
+    expect(accumulateContent(existing, incoming)).toBe('CANONICAL ANSWER');
+    expect(isFinalCanonicalReasoningContent(incoming)).toBe(true);
+  });
+
+  it('takes incoming when it is a strict superset of existing', () => {
+    expect(accumulateContent('Step 1', 'Step 1: define')).toBe('Step 1: define');
+  });
+});
+
 describe('stream-manager.bridge — captured streaming replay (Finding C)', () => {
   const { mergeMessages, extractText, normalizeMessageType } = _internalsForTesting;
 
