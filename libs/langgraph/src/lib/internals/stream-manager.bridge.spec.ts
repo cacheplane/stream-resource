@@ -232,6 +232,71 @@ describe('createStreamManagerBridge', () => {
     destroy$.next();
   });
 
+  it('does not clobber local optimistic messages if a submit beats the history fetch', async () => {
+    const historyFetched: ThreadState<Record<string, unknown>>[] = [
+      {
+        values: {
+          messages: [
+            { type: 'human', id: 'old-u', content: 'old prompt', _getType: () => 'human' },
+          ],
+        },
+        next: [],
+        checkpoint: {
+          thread_id: 'persisted-thread-2',
+          checkpoint_ns: '',
+          checkpoint_id: 'cp-old',
+          checkpoint_map: null,
+        },
+        metadata: null,
+        created_at: '2026-05-08T12:00:00.000Z',
+        parent_checkpoint: null,
+        tasks: [],
+      } as never,
+    ];
+
+    // Inline mock transport with a delayed getHistory so we can observe
+    // a state mutation between threadId-set and history resolution.
+    const transport: AgentTransport & {
+      getHistory: (
+        threadId: string,
+        signal: AbortSignal,
+      ) => Promise<ThreadState<Record<string, unknown>>[]>;
+    } = {
+      async *stream() {
+        yield* [];
+      },
+      async getHistory(_threadId, _signal) {
+        await new Promise(r => setTimeout(r, 50));
+        return historyFetched;
+      },
+    };
+
+    const subjects = makeSubjects();
+    const destroy$ = new Subject<void>();
+
+    createStreamManagerBridge({
+      options: { apiUrl: '', assistantId: 'chat', transport },
+      subjects,
+      threadId$: of('persisted-thread-2'),
+      destroy$: destroy$.asObservable(),
+    });
+
+    // Synchronously simulate an optimistic local submit BEFORE history
+    // resolves: the user clicks Send during the 50ms history fetch.
+    subjects.messages$.next([
+      { type: 'human', id: 'fresh', content: 'fresh prompt', _getType: () => 'human' },
+    ] as never);
+
+    // Wait past the history fetch delay.
+    await new Promise(r => setTimeout(r, 80));
+
+    // Local optimistic message preserved; history projection skipped.
+    expect(subjects.messages$.value.length).toBe(1);
+    expect((subjects.messages$.value[0] as { content: unknown }).content).toBe('fresh prompt');
+
+    destroy$.next();
+  });
+
   it('refreshes history after a stream completes', async () => {
     const firstHistory = [makeThreadState('checkpoint-1')];
     const secondHistory = [
