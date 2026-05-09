@@ -1123,6 +1123,47 @@ describe('stream-manager.bridge — accumulateContent', () => {
   });
 });
 
+describe('stream-manager.bridge — mergeMessages', () => {
+  const { mergeMessages } = _internalsForTesting;
+
+  function aiMessage(opts: { id?: string; content: unknown }): unknown {
+    return { type: 'ai', id: opts.id, content: opts.content, _getType: () => 'ai' };
+  }
+
+  it('accumulates same-id chunks into a single AI message', () => {
+    const c1 = aiMessage({ id: 'run-1', content: 'Hello' });
+    const c2 = aiMessage({ id: 'run-1', content: 'Hello world' });
+    const merged = mergeMessages([] as never, [c1] as never);
+    const merged2 = mergeMessages(merged, [c2] as never);
+    expect(merged2.length).toBe(1);
+    expect((merged2[0] as { content?: unknown }).content).toBe('Hello world');
+  });
+
+  it('chunk without id falls into the trailing AI message', () => {
+    const initial = aiMessage({ id: 'run-1', content: 'Hello' });
+    const chunk = aiMessage({ content: ' world' });
+    const merged = mergeMessages([initial] as never, [chunk] as never);
+    expect(merged.length).toBe(1);
+    expect((merged[0] as { content?: unknown }).content).toBe('Hello world');
+  });
+
+  it('reasoning+text content array sets next.reasoning AND replaces partial content', () => {
+    const initial = aiMessage({ id: 'run-1', content: 'partial' });
+    const finalCanonical = aiMessage({
+      id: 'run-1',
+      content: [
+        { type: 'reasoning', summary: [{ type: 'summary_text', text: 'thinking…' }] },
+        { type: 'text', text: 'final answer' },
+      ],
+    });
+    const merged = mergeMessages([initial] as never, [finalCanonical] as never);
+    expect(merged.length).toBe(1);
+    const r = merged[0] as { content?: unknown; reasoning?: unknown };
+    expect(r.content).toBe('final answer');
+    expect(r.reasoning).toBe('thinking…');
+  });
+});
+
 describe('stream-manager.bridge — captured streaming replay (Finding C)', () => {
   const { mergeMessages, extractText, normalizeMessageType } = _internalsForTesting;
 
