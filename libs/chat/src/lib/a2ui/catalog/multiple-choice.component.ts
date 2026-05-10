@@ -15,7 +15,7 @@ interface ResolvedOption {
   template: `
     <div class="flex flex-col gap-1">
       @if (label()) {
-        <label class="text-xs" style="color: var(--a2ui-label, rgba(255,255,255,0.6));">{{ label() }}</label>
+        <span class="text-xs" style="color: var(--a2ui-label, rgba(255,255,255,0.6));">{{ label() }}</span>
       }
 
       @if (isSingleSelect()) {
