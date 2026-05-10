@@ -65,17 +65,16 @@ SYSTEM_PROMPT = (
     "lookups — those are handled by `search_documents`. "
     " "
     "When the user asks to see, build, or render a UI / form / card / "
-    "interactive component, dispatch one of the schema-generation tools "
-    "based on the conversation's `gen_ui_mode` (visible in state if you "
-    "received it; default is 'a2ui'): "
-    "  - 'a2ui'        -> call `generate_a2ui_schema(request)` "
-    "  - 'json-render' -> call `generate_json_render_spec(request)` "
-    "Pass the user's request verbatim as the `request` argument. The "
-    "tool returns a wire-format payload that the chat composition "
-    "renders directly. Do NOT describe the UI in prose — the tool "
-    "dispatches the actual rendering. Briefly acknowledge the dispatch "
-    "in your conversational reply, but keep the prose short — the user "
-    "sees the rendered surface."
+    "interactive component, immediately dispatch the schema-generation "
+    "tool that's bound (one of `generate_a2ui_schema` or "
+    "`generate_json_render_spec`, depending on the user's GenUI palette "
+    "selection). Pass the user's request VERBATIM as the `request` "
+    "argument — do NOT ask clarifying questions, do NOT describe the UI "
+    "in prose, do NOT add fields or design choices the user did not ask "
+    "for. The tool dispatches the actual rendering; your job is just to "
+    "route the request. After the tool returns, briefly acknowledge the "
+    "dispatch in one short sentence — the user sees the rendered "
+    "surface directly."
 )
 
 # Reasoning-capable model prefixes. We only attach the ``reasoning``
@@ -297,28 +296,52 @@ async def generate(state: State) -> dict:
         # to render). The adapter's `extractReasoning` reads either the
         # legacy `block.text` field or the modern `block.summary[].text`.
         kwargs["reasoning"] = {"effort": effort, "summary": "auto"}
+    # Pick the GenUI tool matching the user's palette dropdown. Only ONE
+    # is bound per request so the parent LLM has a single, unambiguous
+    # render tool to choose. ToolNode below is bound to BOTH so either
+    # side of the conditional resolves at execution time.
+    gen_ui_mode = state.get("gen_ui_mode") or "a2ui"
+    gen_ui_tool = (
+        generate_a2ui_schema if gen_ui_mode == "a2ui"
+        else generate_json_render_spec
+    )
     llm = ChatOpenAI(**kwargs).bind_tools([
-        search_documents, request_approval, research,
-        generate_a2ui_schema, generate_json_render_spec,
+        search_documents, request_approval, research, gen_ui_tool,
     ])
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
     response = await llm.ainvoke(messages)
     return {"messages": [response]}
 
 
-def should_continue(state: State) -> Literal["tools", "emit_generated_surface", "attach_citations"]:
-    """Conditional edge: route from generate to:
-    - `emit_generated_surface` if any tool_call is generate_a2ui_schema or generate_json_render_spec
-    - `tools` for any other tool_call (search_documents, request_approval, research)
-    - `attach_citations` (terminal) when there are no tool_calls
-    """
+def should_continue(state: State) -> Literal["tools", "attach_citations"]:
+    """Conditional edge from generate: route to tools node when any
+    tool_call is present (GenUI tools, search, approval, research),
+    otherwise route to attach_citations terminal post-process."""
     last = state["messages"][-1]
     if isinstance(last, AIMessage) and last.tool_calls:
-        for tc in last.tool_calls:
-            if tc["name"] in ("generate_a2ui_schema", "generate_json_render_spec"):
-                return "emit_generated_surface"
         return "tools"
     return "attach_citations"
+
+
+def after_tools(state: State) -> Literal["emit_generated_surface", "generate"]:
+    """Conditional edge from tools: if the most recent ToolMessage came
+    from a GenUI tool, route to emit_generated_surface (terminal
+    post-process that wraps the sub-LLM payload). Otherwise loop back
+    to generate so the parent LLM can incorporate the tool result."""
+    msgs = state["messages"]
+    # Find the most recent ToolMessage and its originating tool_call name
+    for m in reversed(msgs):
+        if isinstance(m, ToolMessage):
+            for prior in reversed(msgs):
+                if isinstance(prior, AIMessage) and prior.tool_calls:
+                    for tc in prior.tool_calls:
+                        if tc.get("id") == m.tool_call_id and tc.get("name") in (
+                            "generate_a2ui_schema", "generate_json_render_spec",
+                        ):
+                            return "emit_generated_surface"
+                    break
+            break
+    return "generate"
 
 
 async def emit_generated_surface(state: State) -> dict:
@@ -462,11 +485,17 @@ _builder.add_conditional_edges(
     should_continue,
     {
         "tools": "tools",
-        "emit_generated_surface": "emit_generated_surface",
         "attach_citations": "attach_citations",
     },
 )
-_builder.add_edge("tools", "generate")
+_builder.add_conditional_edges(
+    "tools",
+    after_tools,
+    {
+        "emit_generated_surface": "emit_generated_surface",
+        "generate": "generate",
+    },
+)
 _builder.add_edge("emit_generated_surface", "attach_citations")
 _builder.add_edge("attach_citations", END)
 
