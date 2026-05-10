@@ -74,7 +74,7 @@ export class A2uiTextFieldComponent {
   /** v1 prop: text (resolved string value). */
   readonly text = input<string>('');
   /** Back-compat alias: value. surface-to-spec resolves DynamicString → plain string. */
-  readonly value = computed(() => this.text());
+  readonly value = computed(() => this.text() ?? '');
   readonly placeholder = input<string>('');
   readonly textFieldType = input<TextFieldType>('shortText');
   readonly validationRegexp = input<string>('');
