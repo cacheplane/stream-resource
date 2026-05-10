@@ -99,8 +99,12 @@ export function surfaceToSpec(surface: A2uiSurface): Spec | null {
       if (m.contentChild) ids.push(m.contentChild);
       children = ids;
     } else if (type === 'Tabs') {
-      const items = (rawProps as { tabItems?: { child: string }[] }).tabItems ?? [];
+      const items = (rawProps as { tabItems?: { title?: unknown; child: string }[] }).tabItems ?? [];
       children = items.map(t => t.child);
+      // Resolve tab titles and pass them as a plain string array for the Tabs component's tab bar.
+      resolvedProps['tabTitles'] = items.map(t =>
+        t.title !== undefined ? String(resolveDynamic(t.title, surface.dataModel)) : '',
+      );
     } else {
       const childInfo = childrenToList((rawProps as { children?: A2uiChildren }).children, surface);
       if (childInfo) {
