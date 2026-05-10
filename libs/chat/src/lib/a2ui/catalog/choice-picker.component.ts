@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import type { A2uiValidationResult } from '@ngaf/a2ui';
+// TODO(Phase 3): ChoicePicker will be replaced by MultipleChoice component — remove this file entirely.
+interface A2uiValidationResult { valid: boolean; errors: string[] }
 import { A2uiValidationErrorsComponent } from './validation-errors.component';
 import { emitBinding } from './emit-binding';
 

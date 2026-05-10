@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import type { A2uiValidationResult } from '@ngaf/a2ui';
+// TODO(Phase 3): Remove validationResult input when TextField is ported to v1 (uses validationRegexp instead).
+interface A2uiValidationResult { valid: boolean; errors: string[] }
 import { A2uiValidationErrorsComponent } from './validation-errors.component';
 import { emitBinding } from './emit-binding';
 

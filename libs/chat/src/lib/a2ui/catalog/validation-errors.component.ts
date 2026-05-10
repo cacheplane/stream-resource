@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import type { A2uiValidationResult } from '@ngaf/a2ui';
+// TODO(Phase 3): Remove when catalog components are ported to v1 — validation-errors is also being retired.
+interface A2uiValidationResult { valid: boolean; errors: string[] }
 
 @Component({
   selector: 'a2ui-validation-errors',

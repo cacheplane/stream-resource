@@ -172,11 +172,11 @@ export { A2uiVideoComponent } from './lib/a2ui/catalog/video.component';
 export type {
   A2uiActionMessage, A2uiClientDataModel,
   A2uiSurface, A2uiComponent, A2uiTheme,
-  DynamicValue, DynamicString, DynamicNumber, DynamicBoolean,
-  A2uiPathRef, A2uiFunctionCall,
-  A2uiCheckRule, A2uiValidationResult,
+  DynamicString, DynamicNumber, DynamicBoolean,
+  A2uiChildren, A2uiAction, A2uiActionContextEntry,
+  A2uiComponentDef,
 } from '@ngaf/a2ui';
-export { isPathRef, isFunctionCall } from '@ngaf/a2ui';
+export { isPathRef, isLiteralString, isLiteralNumber, isLiteralBoolean } from '@ngaf/a2ui';
 
 // Test utilities (no vitest dep — safe to ship in the main runtime bundle)
 export { mockAgent } from './lib/testing/mock-agent';
