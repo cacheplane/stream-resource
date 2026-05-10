@@ -11,7 +11,14 @@ import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs/operators';
 import { agent } from '@ngaf/langgraph';
-import { ChatDebugComponent, ChatInterruptPanelComponent, ChatSubagentsComponent, ChatThreadListComponent, type InterruptAction } from '@ngaf/chat';
+import {
+  ChatDebugComponent,
+  ChatInterruptPanelComponent,
+  ChatSubagentsComponent,
+  ChatThreadListComponent,
+  ChatTimelineSliderComponent,
+  type InterruptAction,
+} from '@ngaf/chat';
 import { ControlPalette } from './control-palette.component';
 import { PalettePersistence } from './palette-persistence.service';
 import { ThreadsService } from './threads.service';
@@ -29,7 +36,15 @@ function modeFromUrl(url: string): DemoMode {
 @Component({
   selector: 'demo-shell',
   standalone: true,
-  imports: [RouterOutlet, ControlPalette, ChatDebugComponent, ChatInterruptPanelComponent, ChatSubagentsComponent, ChatThreadListComponent],
+  imports: [
+    RouterOutlet,
+    ControlPalette,
+    ChatDebugComponent,
+    ChatInterruptPanelComponent,
+    ChatSubagentsComponent,
+    ChatThreadListComponent,
+    ChatTimelineSliderComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './demo-shell.component.html',
   styleUrl: './demo-shell.component.css',
@@ -94,6 +109,8 @@ export class DemoShell {
   readonly theme = signal<string>(this.persistence.read('theme') ?? 'default-dark');
 
   protected readonly debugOpen = signal<boolean>(this.persistence.read('debug') ?? false);
+
+  protected readonly timelineOpen = signal<boolean>(this.persistence.read('timeline') ?? false);
 
   protected readonly modelOptions = signal<readonly { value: string; label: string }[]>([
     { value: 'gpt-5', label: 'gpt-5' },
@@ -192,6 +209,29 @@ export class DemoShell {
   protected onDebugChange(next: boolean): void {
     this.debugOpen.set(next);
     this.persistence.write('debug', next);
+  }
+
+  protected onTimelineChange(next: boolean): void {
+    this.timelineOpen.set(next);
+    this.persistence.write('timeline', next);
+  }
+
+  protected onTimelineReplay(checkpointId: string): void {
+    void this.agent.submit(null as never, { checkpointId } as never);
+  }
+
+  protected async onTimelineFork(checkpointId: string): Promise<void> {
+    await fetch('http://localhost:2024/threads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+    })
+      .then((r) => r.json())
+      .then((t: { thread_id: string }) => {
+        this.threadIdSignal.set(t.thread_id);
+        this.persistence.write('threadId', t.thread_id);
+        void this.agent.submit(null as never, { checkpointId } as never);
+      });
   }
 
   protected onThreadsChange(next: boolean): void {

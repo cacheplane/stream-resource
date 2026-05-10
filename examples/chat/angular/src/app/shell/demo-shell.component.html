@@ -12,6 +12,7 @@
     [theme]="theme()"
     [themeOptions]="themeOptions()"
     [debugOpen]="debugOpen()"
+    [timelineOpen]="timelineOpen()"
     [threadsOpen]="threadsOpen()"
     (modeChange)="onModeChange($event)"
     (modelChange)="onModelChange($event)"
@@ -19,6 +20,7 @@
     (genUiModeChange)="onGenUiModeChange($event)"
     (themeChange)="onThemeChange($event)"
     (debugOpenChange)="onDebugChange($event)"
+    (timelineOpenChange)="onTimelineChange($event)"
     (threadsOpenChange)="onThreadsChange($event)"
     (newConversation)="onNewConversation()"
   />
@@ -50,6 +52,16 @@
   @if (debugOpen()) {
     <div class="demo-shell__debug" role="region" aria-label="Debug overlay">
       <chat-debug [agent]="agent" />
+    </div>
+  }
+
+  @if (timelineOpen()) {
+    <div class="demo-shell__timeline-panel" role="region" aria-label="Conversation timeline">
+      <chat-timeline-slider
+        [agent]="agent"
+        (replayRequested)="onTimelineReplay($event)"
+        (forkRequested)="onTimelineFork($event)"
+      />
     </div>
   }
 </div>
