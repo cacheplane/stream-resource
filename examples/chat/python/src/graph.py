@@ -64,17 +64,28 @@ SYSTEM_PROMPT = (
     "final answer. Do not call `research` for trivial chit-chat or simple "
     "lookups — those are handled by `search_documents`. "
     " "
-    "When the user asks to see, build, or render a UI / form / card / "
-    "interactive component, immediately dispatch the schema-generation "
-    "tool that's bound (one of `generate_a2ui_schema` or "
-    "`generate_json_render_spec`, depending on the user's GenUI palette "
-    "selection). Pass the user's request VERBATIM as the `request` "
-    "argument — do NOT ask clarifying questions, do NOT describe the UI "
-    "in prose, do NOT add fields or design choices the user did not ask "
-    "for. The tool dispatches the actual rendering; your job is just to "
-    "route the request. After the tool returns, briefly acknowledge the "
-    "dispatch in one short sentence — the user sees the rendered "
-    "surface directly."
+    "If the user asks to see / build / render / show / display a UI, "
+    "form, card, panel, button, picker, slider, table, list, or any "
+    "other interactive surface — INCLUDING phrases like 'build me X', "
+    "'render Y', 'show a Z', 'create a form for', 'make a card with' — "
+    "you MUST IMMEDIATELY dispatch the schema-generation tool bound "
+    "to the conversation. Exactly ONE such tool is bound per request: "
+    "either `generate_a2ui_schema` or `generate_json_render_spec`. "
+    "Do NOT ask clarifying questions about platform, framework, fields, "
+    "validation, styling, or anything else. Do NOT describe the UI in "
+    "prose. Do NOT request more details from the user. The tool ITSELF "
+    "is responsible for filling in reasonable defaults from the user's "
+    "request. Pass the user's request VERBATIM as the `request` "
+    "argument. Your only job for UI-rendering requests is to route "
+    "them to the tool. After the tool returns its payload (a wire-"
+    "format string the chat composition renders directly), respond with "
+    "at most ONE short sentence acknowledging the dispatch — the user "
+    "sees the rendered surface, not your prose. Examples of prompts "
+    "that MUST dispatch the tool: 'build a feedback form', 'render a "
+    "settings card', 'show me a poll', 'make a contact form'. If the "
+    "user is having a casual conversation or asking factual questions, "
+    "do NOT dispatch the UI tool — only dispatch when they explicitly "
+    "ask for a UI / form / card / interactive surface."
 )
 
 # Reasoning-capable model prefixes. We only attach the ``reasoning``
@@ -349,12 +360,14 @@ async def emit_generated_surface(state: State) -> dict:
     ToolMessage carrying the sub-LLM's wire-format payload, identifies
     which protocol the AI dispatched (by tool_call name), wraps the
     payload with the chat composition's content-classifier sentinel,
-    and emits a fresh AIMessage. The original AI tool-call message and
-    ToolMessage stay in history (visible in chat-debug)."""
+    emits a fresh AIMessage carrying the wrapped content, and REMOVES
+    the AI tool-call message + ToolMessage from history so the chat UI
+    doesn't render the raw schema JSON dump alongside the surface."""
     msgs = state["messages"]
 
-    # Find the most recent ToolMessage and the originating tool_call name
+    # Find the most recent ToolMessage + its originating AI tool-call message
     tool_msg = None
+    ai_tool_call_msg = None
     tool_name = None
     for m in reversed(msgs):
         if isinstance(m, ToolMessage):
@@ -364,6 +377,7 @@ async def emit_generated_surface(state: State) -> dict:
                     for tc in prior.tool_calls:
                         if tc.get("id") == tool_msg.tool_call_id:
                             tool_name = tc.get("name")
+                            ai_tool_call_msg = prior
                             break
                     if tool_name:
                         break
@@ -411,7 +425,23 @@ async def emit_generated_surface(state: State) -> dict:
     else:
         return {}
 
-    return {"messages": [AIMessage(content=wrapped)]}
+    # In-place replace the ToolMessage with a tiny "rendered" placeholder
+    # (langgraph add_messages reducer matches by id and replaces). This
+    # collapses the chat-tool-calls result panel from a multi-KB schema
+    # dump to a single word. The AI tool-call message stays — its small
+    # tool-call card chrome is fine. We append the wrapped surface
+    # AIMessage as the final message; the chat composition's content
+    # classifier picks up the prefix and mounts <a2ui-surface> /
+    # <chat-generative-ui>.
+    out = []
+    if getattr(tool_msg, "id", None):
+        out.append(ToolMessage(
+            id=tool_msg.id,
+            content="rendered",
+            tool_call_id=tool_msg.tool_call_id,
+        ))
+    out.append(AIMessage(content=wrapped))
+    return {"messages": out}
 
 
 async def attach_citations(state: State) -> dict:
@@ -438,6 +468,12 @@ async def attach_citations(state: State) -> dict:
             if isinstance(hits, list):
                 for i, h in enumerate(hits):
                     if not isinstance(h, dict):
+                        continue
+                    # Only treat dicts that look like citation hits — must
+                    # carry at least one of title/url/snippet. Skips unrelated
+                    # JSON arrays (e.g. A2UI envelope arrays) that the
+                    # search_documents tool would never produce.
+                    if not any(k in h for k in ("title", "url", "snippet")):
                         continue
                     citations.append(
                         {
@@ -496,7 +532,7 @@ _builder.add_conditional_edges(
         "generate": "generate",
     },
 )
-_builder.add_edge("emit_generated_surface", "attach_citations")
+_builder.add_edge("emit_generated_surface", END)
 _builder.add_edge("attach_citations", END)
 
 # LangGraph API manages persistence for the deployed graph; keep the
