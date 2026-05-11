@@ -15,8 +15,6 @@ import {
   ChatDebugComponent,
   ChatInterruptPanelComponent,
   ChatSubagentsComponent,
-  ChatThreadListComponent,
-  ChatTimelineSliderComponent,
   type InterruptAction,
 } from '@ngaf/chat';
 import { ControlPalette } from './control-palette.component';
@@ -42,8 +40,6 @@ function modeFromUrl(url: string): DemoMode {
     ChatDebugComponent,
     ChatInterruptPanelComponent,
     ChatSubagentsComponent,
-    ChatThreadListComponent,
-    ChatTimelineSliderComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './demo-shell.component.html',
@@ -110,8 +106,6 @@ export class DemoShell {
 
   protected readonly debugOpen = signal<boolean>(this.persistence.read('debug') ?? false);
 
-  protected readonly timelineOpen = signal<boolean>(this.persistence.read('timeline') ?? false);
-
   protected readonly modelOptions = signal<readonly { value: string; label: string }[]>([
     { value: 'gpt-5', label: 'gpt-5' },
     { value: 'gpt-5-mini', label: 'gpt-5-mini' },
@@ -139,9 +133,6 @@ export class DemoShell {
 
   /** Persisted thread id (null on first run). Reactive so reload reconnects to the same thread. */
   protected readonly threadIdSignal = signal<string | null>(this.persistence.read('threadId') ?? null);
-
-  /** Whether the threads panel is open. Persisted across reloads. */
-  protected readonly threadsOpen = signal<boolean>(this.persistence.read('threads') ?? false);
 
   /**
    * Shared agent instance. Patched submit injects state.model on every
@@ -211,11 +202,6 @@ export class DemoShell {
     this.persistence.write('debug', next);
   }
 
-  protected onTimelineChange(next: boolean): void {
-    this.timelineOpen.set(next);
-    this.persistence.write('timeline', next);
-  }
-
   protected onTimelineReplay(checkpointId: string): void {
     void this.agent.submit(null as never, { checkpointId } as never);
   }
@@ -232,11 +218,6 @@ export class DemoShell {
         this.persistence.write('threadId', t.thread_id);
         void this.agent.submit(null as never, { checkpointId } as never);
       });
-  }
-
-  protected onThreadsChange(next: boolean): void {
-    this.threadsOpen.set(next);
-    this.persistence.write('threads', next);
   }
 
   /** Switch to an existing thread selected from the threads panel. */
