@@ -355,8 +355,8 @@ export class ChatComponent {
   private readonly messageCount = computed(() => this.agent().messages().length);
   private prevMessageCount = 0;
   private wasLoading = false;
-  readonly pinned = signal<boolean>(true);
-  private programmaticScroll = false;
+  protected readonly pinned = signal<boolean>(true);
+  private programmaticScrollCount: number = 0;
   private static readonly PIN_TOLERANCE_PX = 150;
 
   constructor() {
@@ -390,9 +390,9 @@ export class ChatComponent {
       const isNewMessage = count !== this.prevMessageCount;
       this.prevMessageCount = count;
       if (isNewMessage || this.pinned()) {
-        this.programmaticScroll = true;
+        this.programmaticScrollCount++;
         el.scrollTop = el.scrollHeight;
-        requestAnimationFrame(() => { this.programmaticScroll = false; });
+        requestAnimationFrame(() => { this.programmaticScrollCount--; });
         if (isNewMessage) untracked(() => this.pinned.set(true));
       }
     });
@@ -414,9 +414,9 @@ export class ChatComponent {
         requestAnimationFrame(() => {
           const el2 = this.scrollContainer()?.nativeElement;
           if (!el2) return;
-          this.programmaticScroll = true;
+          this.programmaticScrollCount++;
           el2.scrollTop = el2.scrollHeight;
-          requestAnimationFrame(() => { this.programmaticScroll = false; });
+          requestAnimationFrame(() => { this.programmaticScrollCount--; });
         });
       }
     });
@@ -453,7 +453,7 @@ export class ChatComponent {
   }
 
   protected onScroll(): void {
-    if (this.programmaticScroll) return;
+    if (this.programmaticScrollCount > 0) return;
     const el = this.scrollContainer()?.nativeElement;
     if (!el) return;
     const nextPinned = isPinned(el.scrollHeight, el.scrollTop, el.clientHeight, ChatComponent.PIN_TOLERANCE_PX);
@@ -463,9 +463,9 @@ export class ChatComponent {
   protected onScrollBubbleClick(): void {
     const el = this.scrollContainer()?.nativeElement;
     if (!el) return;
-    this.programmaticScroll = true;
+    this.programmaticScrollCount++;
     el.scrollTop = el.scrollHeight;
-    requestAnimationFrame(() => { this.programmaticScroll = false; });
+    requestAnimationFrame(() => { this.programmaticScrollCount--; });
     this.pinned.set(true);
   }
 
