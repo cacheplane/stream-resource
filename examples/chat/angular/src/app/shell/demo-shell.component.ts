@@ -23,8 +23,10 @@ import {
   ChatInterruptPanelComponent,
   ChatSubagentsComponent,
   ChatSidenavComponent,
+  ChatHistorySearchPaletteComponent,
   type ChatSidenavMode,
   type InterruptAction,
+  type ThreadMatch,
 } from '@ngaf/chat';
 import { PalettePersistence } from './palette-persistence.service';
 import { ThreadsService } from './threads.service';
@@ -53,6 +55,7 @@ function modeFromUrl(url: string): DemoMode {
     ChatInterruptPanelComponent,
     ChatSubagentsComponent,
     ChatSidenavComponent,
+    ChatHistorySearchPaletteComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './demo-shell.component.html',
@@ -101,6 +104,14 @@ export class DemoShell {
       window.addEventListener('resize', onResize);
       inject(DestroyRef).onDestroy(() => window.removeEventListener('resize', onResize));
     }
+
+    effect(() => {
+      const q = this.searchQuery();
+      if (this.searchDebounceTimer !== null) clearTimeout(this.searchDebounceTimer);
+      this.searchDebounceTimer = setTimeout(() => {
+        this.searchQueryDebounced.set(q);
+      }, 150);
+    });
   }
 
   protected readonly mode = toSignal(
@@ -139,6 +150,17 @@ export class DemoShell {
   /** Whether the threads drawer is open. Persisted across reloads. */
   protected readonly drawerOpen = signal<boolean>(this.persistence.read('drawerOpen') ?? false);
 
+  /** Whether the Cmd+K search palette is open. */
+  protected readonly paletteOpen = signal<boolean>(false);
+
+  /** Current palette query. Two-way bound. */
+  protected readonly searchQuery = signal<string>('');
+
+  /** Debounced query — applied 150ms after the last keystroke. */
+  private readonly searchQueryDebounced = signal<string>('');
+
+  private searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
   /** Viewport width, refreshed on window resize. Drives drawer push/overlay decision. */
   private readonly viewportWidth = signal<number>(
     typeof window !== 'undefined' ? window.innerWidth : 1440,
@@ -148,6 +170,16 @@ export class DemoShell {
   protected readonly sidenavMode = computed<ChatSidenavMode>(() =>
     this.viewportWidth() >= 1024 ? 'expanded' : 'drawer',
   );
+
+  /** Client-side title filter over the loaded threads. */
+  protected readonly searchResults = computed<ThreadMatch[]>(() => {
+    const q = this.searchQueryDebounced().toLowerCase().trim();
+    if (!q) return [];
+    return this.threadsSvc.threads()
+      .filter((t) => (t.title ?? '').toLowerCase().includes(q))
+      .slice(0, 50)
+      .map((t) => ({ id: t.id, title: t.title ?? t.id }));
+  });
 
   protected readonly modeOptions = [
     { value: 'embed', label: 'Embed' },
@@ -277,6 +309,12 @@ export class DemoShell {
   protected onThreadSelected(threadId: string): void {
     this.threadIdSignal.set(threadId);
     this.persistence.write('threadId', threadId);
+  }
+
+  protected onSearchSelect(threadId: string): void {
+    this.onThreadSelected(threadId);
+    this.paletteOpen.set(false);
+    this.searchQuery.set('');
   }
 
   /** Create a new thread via the backend and switch to it. */

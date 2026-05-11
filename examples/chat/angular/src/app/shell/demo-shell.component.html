@@ -14,6 +14,7 @@
     [(open)]="drawerOpen"
     (newChat)="onNewThread()"
     (threadSelected)="onThreadSelected($event)"
+    (searchOpened)="paletteOpen.set(true)"
     (openChange)="onSidenavOpenChange($event)"
   />
 
@@ -33,6 +34,14 @@
       </div>
     }
   </div>
+
+  <chat-history-search-palette
+    [(open)]="paletteOpen"
+    [(query)]="searchQuery"
+    [results]="searchResults()"
+    (threadSelected)="onSearchSelect($event)"
+    (close)="paletteOpen.set(false)"
+  />
 
   <chat-debug
     [agent]="agent"
