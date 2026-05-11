@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   Injector,
   input,
@@ -109,6 +110,20 @@ export class RenderElementComponent implements OnInit {
         });
       }
     });
+
+    // Latch mountedReal=true once the real component is selected. Lives in
+    // an effect (not the computed) because Angular forbids signal writes
+    // inside computed — they're for derivation only. Effects are the
+    // idiomatic place for "signal change → signal write" side effects.
+    effect(() => {
+      if (this.mountedReal()) return;
+      const el = this.element();
+      if (!el) return;
+      // Only latch when notReady is false AND a real component is registered.
+      if (!this.notReady() && this.ctx.registry.get(el.type)) {
+        this.mountedReal.set(true);
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -165,17 +180,15 @@ export class RenderElementComponent implements OnInit {
     return false;
   });
 
-  /** Picks fallback or real based on notReady; flips mountedReal once. */
+  /** Picks fallback or real based on notReady. The mountedReal latch is
+   *  driven by a constructor effect (not this computed) — Angular forbids
+   *  signal writes inside computed. */
   readonly mountClass = computed<AngularComponentRenderer | null>(() => {
     const el = this.element();
     if (!el) return null;
     const real = this.ctx.registry.get(el.type) ?? null;
     if (this.notReady()) {
       return this.ctx.registry.getFallback(el.type) ?? null;
-    }
-    if (real && !this.mountedReal()) {
-      // Latch — once we pick real, stay real for the rest of the lifecycle.
-      queueMicrotask(() => this.mountedReal.set(true));
     }
     return real;
   });
