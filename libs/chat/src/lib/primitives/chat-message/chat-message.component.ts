@@ -5,15 +5,23 @@ import { CHAT_HOST_TOKENS } from '../../styles/chat-tokens';
 import { CHAT_MESSAGE_STYLES } from '../../styles/chat-message.styles';
 import { ChatCitationsComponent } from '../chat-citations/chat-citations.component';
 import { ChatCheckpointMarkerComponent } from '../chat-checkpoint-marker/chat-checkpoint-marker.component';
+import { ChatGenuiSkeletonComponent } from '../chat-genui-skeleton/chat-genui-skeleton.component';
 import { CitationsResolverService } from '../../markdown/citations-resolver.service';
 import type { Message } from '../../agent/message';
 
 export type ChatMessageRole = 'user' | 'assistant' | 'system' | 'tool';
 
+/** Default set of tool names that produce a rendered surface rather than
+ *  visible text. Consumers can override via the `genuiToolNames` input. */
+const DEFAULT_GENUI_TOOL_NAMES: readonly string[] = [
+  'generate_a2ui_schema',
+  'generate_json_render_spec',
+];
+
 @Component({
   selector: 'chat-message',
   standalone: true,
-  imports: [ChatCitationsComponent, ChatCheckpointMarkerComponent],
+  imports: [ChatCitationsComponent, ChatCheckpointMarkerComponent, ChatGenuiSkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [CHAT_HOST_TOKENS, CHAT_MESSAGE_STYLES, `
     .chat-message__layout { display: flex; gap: 8px; align-items: flex-start; }
@@ -41,16 +49,20 @@ export type ChatMessageRole = 'user' | 'assistant' | 'system' | 'tool';
         }
       </div>
       <div class="chat-message__main">
-        <div [class]="bodyClass()">
-          <ng-content />
-          <span class="chat-message__caret" aria-hidden="true"></span>
-        </div>
-        @if (message()?.role === 'assistant' && message(); as msg) {
-          <chat-citations [message]="msg" />
+        @if (isGenUiToolCall()) {
+          <chat-genui-skeleton />
+        } @else {
+          <div [class]="bodyClass()">
+            <ng-content />
+            <span class="chat-message__caret" aria-hidden="true"></span>
+          </div>
+          @if (message()?.role === 'assistant' && message(); as msg) {
+            <chat-citations [message]="msg" />
+          }
+          <div class="chat-message__controls">
+            <ng-content select="[chatMessageControls]" />
+          </div>
         }
-        <div class="chat-message__controls">
-          <ng-content select="[chatMessageControls]" />
-        </div>
       </div>
     </div>
   `,
@@ -67,6 +79,11 @@ export class ChatMessageComponent {
    *  bubble through this component's replayRequested / forkRequested outputs. */
   readonly checkpointId = input<string | undefined>(undefined);
   readonly checkpointActive = input<boolean>(false);
+
+  /** Tool names whose call/result messages should render a skeleton in
+   *  place of the streaming body. Defaults to the A2UI / json-render
+   *  pair; consumers can override or extend. */
+  readonly genuiToolNames = input<readonly string[]>(DEFAULT_GENUI_TOOL_NAMES);
 
   readonly replayRequested = output<string>();
   readonly forkRequested = output<string>();
@@ -88,5 +105,28 @@ export class ChatMessageComponent {
       case 'assistant': return 'chat-message__assistant-body';
       default: return 'chat-message__plain';
     }
+  });
+
+  /** True when this message represents (or results from) a GenUI tool
+   *  call whose body should be suppressed in favor of a skeleton. */
+  readonly isGenUiToolCall = computed<boolean>(() => {
+    const m = this.message();
+    if (!m) return false;
+    const names = new Set(this.genuiToolNames());
+
+    // Case 1: assistant message with tool_calls referencing a GenUI tool.
+    if (m.role === 'assistant') {
+      const calls = (m.extra?.['tool_calls'] as Array<{ name?: string }> | undefined) ?? [];
+      if (calls.some(c => c.name != null && names.has(c.name))) return true;
+    }
+
+    // Case 2: tool message whose `name` matches a GenUI tool. (The tool
+    // result message carries `name` set to the tool's name.)
+    if (m.role === 'tool') {
+      const name = (m.extra?.['name'] as string | undefined) ?? m.name;
+      if (typeof name === 'string' && names.has(name)) return true;
+    }
+
+    return false;
   });
 }
