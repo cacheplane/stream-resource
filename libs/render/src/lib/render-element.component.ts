@@ -9,6 +9,7 @@ import {
   input,
   OnInit,
   runInInjectionContext,
+  signal,
   type Signal,
 } from '@angular/core';
 import { NgComponentOutlet } from '@angular/common';
@@ -74,13 +75,13 @@ function coerceValue(raw: string): unknown {
     @if (!element()?.repeat) {
       @if (visible()) {
         <ng-container
-          *ngComponentOutlet="componentClass(); inputs: resolvedInputs(); injector: parentInjector"
+          *ngComponentOutlet="mountClass(); inputs: resolvedInputs(); injector: parentInjector"
         />
       }
     } @else {
       @for (repeatInjector of repeatInjectors(); track $index) {
         <ng-container
-          *ngComponentOutlet="componentClass(); inputs: repeatInputs()[$index]; injector: repeatInjector"
+          *ngComponentOutlet="mountClass(); inputs: repeatInputs()[$index]; injector: repeatInjector"
         />
       }
     }
@@ -145,11 +146,45 @@ export class RenderElementComponent implements OnInit {
     ),
   );
 
+  /** Once real mounts, never revert to fallback even if a state-bound
+   *  prop later becomes undefined. Per-instance monotonic gate. */
+  private readonly mountedReal = signal<boolean>(false);
+
+  /** True when ANY resolved prop value is undefined (i.e. a state
+   *  binding points at a path the store hasn't populated). Framework-
+   *  injected keys (bindings, emit, loading, childKeys, spec) are
+   *  excluded — only consumer-resolved props matter for readiness. */
+  readonly notReady = computed<boolean>(() => {
+    if (this.mountedReal()) return false;
+    const el = this.element();
+    if (!el || !el.props) return false;
+    const resolved = resolveElementProps(el.props, this.propCtx());
+    for (const v of Object.values(resolved)) {
+      if (v === undefined) return true;
+    }
+    return false;
+  });
+
+  /** Picks fallback or real based on notReady; flips mountedReal once. */
+  readonly mountClass = computed<AngularComponentRenderer | null>(() => {
+    const el = this.element();
+    if (!el) return null;
+    const real = this.ctx.registry.get(el.type) ?? null;
+    if (this.notReady()) {
+      return this.ctx.registry.getFallback(el.type) ?? null;
+    }
+    if (real && !this.mountedReal()) {
+      // Latch — once we pick real, stay real for the rest of the lifecycle.
+      queueMicrotask(() => this.mountedReal.set(true));
+    }
+    return real;
+  });
+
   /** Whether the element is visible (non-repeat path). */
   readonly visible = computed(() => {
     const el = this.element();
     if (!el) return false;
-    if (this.componentClass() === null) return false;
+    if (this.mountClass() === null) return false;
     return evaluateVisibility(el.visible, this.propCtx());
   });
 
