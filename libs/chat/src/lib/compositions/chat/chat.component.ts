@@ -1,7 +1,7 @@
 // libs/chat/src/lib/compositions/chat/chat.component.ts
 // SPDX-License-Identifier: MIT
 import {
-  Component, ChangeDetectionStrategy, input, model, output, computed, effect, viewChild, ElementRef,
+  Component, ChangeDetectionStrategy, input, model, output, computed, effect, signal, viewChild, ElementRef,
   DestroyRef, inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -130,7 +130,7 @@ import type { ChatRenderEvent } from './chat-render-event';
       <div class="chat-shell__main">
         <chat-window>
           <ng-content select="[chatHeader]" chatHeader />
-          <div chatBody class="chat-scroll" #scrollContainer>
+          <div chatBody class="chat-scroll" #scrollContainer (scroll)="onScroll()">
             <chat-message-list [agent]="agent()">
               <ng-template chatMessageTemplate="human" let-message let-i="index">
                 <chat-message [role]="'user'" [prevRole]="prevRole(i)">{{ messageContent(message) }}</chat-message>
@@ -332,6 +332,9 @@ export class ChatComponent {
   private readonly messageCount = computed(() => this.agent().messages().length);
   private prevMessageCount = 0;
   private wasLoading = false;
+  readonly pinned = signal<boolean>(true);
+  private programmaticScroll = false;
+  private static readonly PIN_TOLERANCE_PX = 150;
 
   constructor() {
     effect(() => {
@@ -363,12 +366,11 @@ export class ChatComponent {
       if (!el) return;
       const isNewMessage = count !== this.prevMessageCount;
       this.prevMessageCount = count;
-      // Tolerance: if the user has scrolled up more than 150px from the
-      // bottom, treat it as "parked reading" and don't auto-scroll. Once
-      // they scroll back near the bottom, streaming resumes pushing.
-      const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
-      if (isNewMessage || isNearBottom) {
+      if (isNewMessage || this.pinned()) {
+        this.programmaticScroll = true;
         el.scrollTop = el.scrollHeight;
+        requestAnimationFrame(() => { this.programmaticScroll = false; });
+        if (isNewMessage) this.pinned.set(true);
       }
     });
 
@@ -384,14 +386,14 @@ export class ChatComponent {
       }
       if (!this.wasLoading) return;
       this.wasLoading = false;
-      const el = this.scrollContainer()?.nativeElement;
-      if (!el) return;
-      const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
-      if (isNearBottom) {
+      if (this.pinned()) {
         // Defer one frame so message-actions have rendered.
         requestAnimationFrame(() => {
           const el2 = this.scrollContainer()?.nativeElement;
-          if (el2) el2.scrollTop = el2.scrollHeight;
+          if (!el2) return;
+          this.programmaticScroll = true;
+          el2.scrollTop = el2.scrollHeight;
+          requestAnimationFrame(() => { this.programmaticScroll = false; });
         });
       }
     });
@@ -425,6 +427,15 @@ export class ChatComponent {
     if (role === 'system') return 'system';
     if (role === 'tool') return 'tool';
     return undefined;
+  }
+
+  protected onScroll(): void {
+    if (this.programmaticScroll) return;
+    const el = this.scrollContainer()?.nativeElement;
+    if (!el) return;
+    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const nextPinned = distance < ChatComponent.PIN_TOLERANCE_PX;
+    if (nextPinned !== this.pinned()) this.pinned.set(nextPinned);
   }
 
   /**
