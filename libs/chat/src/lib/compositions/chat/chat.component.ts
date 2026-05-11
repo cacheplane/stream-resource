@@ -376,7 +376,8 @@ export class ChatComponent {
     // fires on every token but stops when streaming ends; action buttons
     // (reload, copy) render on idle and can land below the fold without this.
     effect(() => {
-      const loading = this.agent().isLoading();
+      let loading: boolean;
+      try { loading = this.agent().isLoading(); } catch { return; }
       if (loading) {
         this.wasLoading = true;
         return;
