@@ -21,6 +21,9 @@ export type ChatThreadDrawerMode = 'push' | 'overlay';
       inset: 0;
       background: rgba(0, 0, 0, 0.4);
       z-index: 1000;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
     }
     .chat-thread-drawer {
       position: fixed;
@@ -44,7 +47,12 @@ export type ChatThreadDrawerMode = 'push' | 'overlay';
   `],
   template: `
     @if (open() && mode() === 'overlay') {
-      <div class="chat-thread-drawer__scrim" (click)="openChange.emit(false)"></div>
+      <button
+        type="button"
+        class="chat-thread-drawer__scrim"
+        aria-label="Close conversations"
+        (click)="openChange.emit(false)"
+      ></button>
     }
     <aside
       class="chat-thread-drawer"

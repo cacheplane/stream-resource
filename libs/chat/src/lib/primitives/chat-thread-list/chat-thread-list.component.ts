@@ -50,7 +50,7 @@ export type Thread = {
               (click)="selectThread(thread.id)"
             >
               <span class="chat-thread-list__item-title">{{ threadLabel(thread) }}</span>
-              @if (thread.updatedAt != null) {
+              @if (thread.updatedAt !== undefined) {
                 <span class="chat-thread-list__item-time">{{ relativeTime(thread.updatedAt) }}</span>
               }
             </button>
