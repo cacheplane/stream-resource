@@ -77,6 +77,14 @@ return {"messages": [updated_tool_msg, replacement]}
 
 Post-emit thread state: `[user, ai(tool_calls + wrapped_content), tool(rendered)]` — three messages, not four.
 
+**Envelope ordering inside `wrapped`** — the surface store gates `surface()` materialization on the `beginRendering` envelope (current behavior, protocol-conformant). To enable per-component progressive rendering, `emit_generated_surface` reorders the JSONL envelope sequence so `beginRendering` lands **before** the bulk of `dataModelUpdate` envelopes. New order:
+
+1. `surfaceUpdate` — defines the component tree shape, extracts per-component bindings.
+2. `beginRendering` — surface becomes visible; per-component fallback renders for each node (no bindings populated yet).
+3. `dataModelUpdate` × N — bindings populate progressively; per-component fallback → real swap fires as each component's bindings complete.
+
+If the sub-LLM emits a single `beginRendering` envelope at the end (current behavior), the reorder pass moves it to position 2. If multiple `beginRendering` envelopes are present (rare; multi-surface), the first one moves; subsequent ones stay in place.
+
 **Preserved fields:**
 - `tool_calls` — survives the replacement so time-travel, regenerate, fork, citations linkage all still work.
 - `additional_kwargs` — token counts, reasoning blocks, citations stay attached.
@@ -203,8 +211,13 @@ T+~3s   Sub-LLM completes. emit_generated_surface returns AIMessage
           'pending' → 'a2ui'. Parser feeds envelopes into the
           surface store.
 
-T+~3.05s  First envelope is surfaceUpdate. Store builds the component
-          tree, extracts bindings per component, all ready=false.
+T+~3.05s  First envelope is surfaceUpdate. Store buffers the component
+          tree, extracts bindings per component. Surface not yet in
+          surfacesSignal — store gates on beginRendering.
+
+T+~3.1s   beginRendering arrives next (reordered by emit_generated_surface).
+          Store materializes the surface entry: components populated,
+          dataModel empty, all components ready=false.
           
           <a2ui-surface> mounts. surface.components.size > 0 → skips
           top-level fallback. a2uiSlot directive walks the tree and
@@ -214,7 +227,7 @@ T+~3.05s  First envelope is surfaceUpdate. Store builds the component
           eventual UI (a header-shaped skeleton, a row of input-shaped
           skeletons, a button-shaped skeleton).
 
-T+~3.1s   First dataModelUpdate. Store applies; readiness recomputes.
+T+~3.2s   First dataModelUpdate. Store applies; readiness recomputes.
           Components whose bindings are now all populated flip
           ready: false → true.
           
@@ -224,11 +237,8 @@ T+~3.1s   First dataModelUpdate. Store applies; readiness recomputes.
           Visible: skeletons swap to real components in place, one or
           several at a time as data envelopes arrive.
 
-T+~3.2s   More dataModelUpdates. Components already real receive new
+T+~3.3s   More dataModelUpdates. Components already real receive new
           prop values reactively (Angular input updates) — no remount.
-
-T+~5s     beginRendering arrives. Recorded by the store (informational).
-          No visual change (rendering already in progress).
 
 T+~6s    Streaming completes. status → 'idle'. typing indicator hides.
          M1 is the sole assistant bubble; surface is rendered.
