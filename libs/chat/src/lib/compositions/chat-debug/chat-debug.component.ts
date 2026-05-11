@@ -289,7 +289,7 @@ export class ChatDebugComponent {
   }
 
   @HostListener('document:keydown.escape', ['$event'])
-  protected onEsc(_ev: KeyboardEvent): void {
+  protected onEsc(_ev: Event): void {
     if (this.open()) {
       this.setOpen(false);
     }
