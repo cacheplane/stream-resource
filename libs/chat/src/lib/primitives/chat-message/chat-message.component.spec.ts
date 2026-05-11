@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { Component } from '@angular/core';
 import { ChatMessageComponent } from './chat-message.component';
 import { CitationsResolverService } from '../../markdown/citations-resolver.service';
+import type { Message } from '../../agent/message';
 
 describe('ChatMessageComponent', () => {
   it('instantiates without error', () => {
@@ -66,5 +67,78 @@ describe('ChatMessageComponent — gutter checkpoint marker', () => {
     fx.detectChanges();
     (fx.nativeElement.querySelector('[data-action="fork"]') as HTMLButtonElement).click();
     expect(fx.componentInstance.forked).toEqual(['cp-99']);
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [ChatMessageComponent],
+  template: `<chat-message
+    role="assistant"
+    [message]="msg"
+    [streaming]="streaming"
+  >Streaming body</chat-message>`,
+})
+class GenuiHost {
+  msg: Message | undefined = undefined;
+  streaming = false;
+}
+
+function makeMessage(toolCalls: Array<{ name: string; id?: string }>): Message {
+  return {
+    id: 'm-1',
+    role: 'assistant',
+    content: '',
+    extra: { tool_calls: toolCalls },
+  };
+}
+
+describe('ChatMessageComponent — GenUI tool-call suppression', () => {
+  it('renders the skeleton when message has a generate_a2ui_schema tool call and is streaming', () => {
+    TestBed.configureTestingModule({ imports: [GenuiHost] });
+    const fx = TestBed.createComponent(GenuiHost);
+    fx.componentInstance.msg = makeMessage([{ name: 'generate_a2ui_schema' }]);
+    fx.componentInstance.streaming = true;
+    fx.detectChanges();
+    expect(fx.nativeElement.querySelector('chat-genui-skeleton')).toBeTruthy();
+    expect(fx.nativeElement.querySelector('.chat-message__assistant-body')).toBeNull();
+  });
+
+  it('renders the skeleton when message has a generate_json_render_spec tool call', () => {
+    TestBed.configureTestingModule({ imports: [GenuiHost] });
+    const fx = TestBed.createComponent(GenuiHost);
+    fx.componentInstance.msg = makeMessage([{ name: 'generate_json_render_spec' }]);
+    fx.componentInstance.streaming = true;
+    fx.detectChanges();
+    expect(fx.nativeElement.querySelector('chat-genui-skeleton')).toBeTruthy();
+  });
+
+  it('keeps the skeleton after streaming completes (body remains suppressed)', () => {
+    TestBed.configureTestingModule({ imports: [GenuiHost] });
+    const fx = TestBed.createComponent(GenuiHost);
+    fx.componentInstance.msg = makeMessage([{ name: 'generate_a2ui_schema' }]);
+    fx.componentInstance.streaming = false;
+    fx.detectChanges();
+    expect(fx.nativeElement.querySelector('chat-genui-skeleton')).toBeTruthy();
+  });
+
+  it('renders the normal body when tool call is a non-GenUI tool (e.g. search_documents)', () => {
+    TestBed.configureTestingModule({ imports: [GenuiHost] });
+    const fx = TestBed.createComponent(GenuiHost);
+    fx.componentInstance.msg = makeMessage([{ name: 'search_documents' }]);
+    fx.componentInstance.streaming = true;
+    fx.detectChanges();
+    expect(fx.nativeElement.querySelector('chat-genui-skeleton')).toBeNull();
+    expect(fx.nativeElement.querySelector('.chat-message__assistant-body')).toBeTruthy();
+  });
+
+  it('renders the normal body when message has no tool calls', () => {
+    TestBed.configureTestingModule({ imports: [GenuiHost] });
+    const fx = TestBed.createComponent(GenuiHost);
+    fx.componentInstance.msg = { id: 'm-1', role: 'assistant', content: 'hi', extra: {} };
+    fx.componentInstance.streaming = false;
+    fx.detectChanges();
+    expect(fx.nativeElement.querySelector('chat-genui-skeleton')).toBeNull();
+    expect(fx.nativeElement.querySelector('.chat-message__assistant-body')).toBeTruthy();
   });
 });
