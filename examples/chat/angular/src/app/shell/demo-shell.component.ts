@@ -76,6 +76,19 @@ export class DemoShell {
       void this.threadsSvc.refresh();
     });
 
+    // Refresh threads list when an agent run completes. The backend writes
+    // metadata.title on the first user message via _maybe_write_thread_title;
+    // a refresh after run-end picks up the new title in the drawer without
+    // needing a manual thread switch or reload.
+    let lastStatus = this.agent.status();
+    effect(() => {
+      const status = this.agent.status();
+      if (lastStatus === 'running' && status !== 'running') {
+        void this.threadsSvc.refresh();
+      }
+      lastStatus = status;
+    });
+
     if (typeof window !== 'undefined') {
       const onResize = () => this.viewportWidth.set(window.innerWidth);
       window.addEventListener('resize', onResize);
