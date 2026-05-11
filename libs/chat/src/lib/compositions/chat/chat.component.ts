@@ -451,6 +451,27 @@ export class ChatComponent {
       }
     }
 
+    // Content-shape detector: during streaming, LangGraph projects the
+    // sub-LLM's tool_call.arguments as the assistant message's content
+    // string (NOT as a structured array). The structured array form
+    // only materialises after streaming completes. So during streaming,
+    // we see the JSON envelopes flowing in as text — neither tool_calls
+    // nor content[].function_call are populated. Detect via stable
+    // A2UI/json-render markers in the content string.
+    const projectedContent = (m as { content?: unknown }).content;
+    if (typeof projectedContent === 'string' && projectedContent.length > 0) {
+      // A2UI v1 envelope keys (canonical Google shape).
+      if (projectedContent.includes('"surfaceUpdate"')
+          || projectedContent.includes('"beginRendering"')
+          || projectedContent.includes('"dataModelUpdate"')) {
+        return true;
+      }
+      // json-render spec shape — looks like `{ "root": "...", "elements": ... }`.
+      if (projectedContent.includes('"root"') && projectedContent.includes('"elements"')) {
+        return true;
+      }
+    }
+
     // Walk backward through messages for the emit-phase assistant
     // message whose own structure has no GenUI hint. Bounded by the
     // most recent human message (= start of the current turn).
