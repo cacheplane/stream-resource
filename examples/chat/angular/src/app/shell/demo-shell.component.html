@@ -1,32 +1,31 @@
 <div class="demo-shell">
-  <header class="demo-shell__header">
-    <button
-      type="button"
-      class="demo-shell__hamburger"
-      aria-label="Open conversations"
-      [attr.aria-expanded]="drawerOpen()"
-      (click)="toggleDrawer()"
-    >☰</button>
-    <app-control-palette
-      [mode]="mode()"
-      [model]="model()"
-      [modelOptions]="modelOptions()"
-      [effort]="effort()"
-      [effortOptions]="effortOptions()"
-      [genUiMode]="genUiMode()"
-      [genUiOptions]="genUiOptions()"
-      [theme]="theme()"
-      [themeOptions]="themeOptions()"
-      [debugOpen]="debugOpen()"
-      (modeChange)="onModeChange($event)"
-      (modelChange)="onModelChange($event)"
-      (effortChange)="onEffortChange($event)"
-      (genUiModeChange)="onGenUiModeChange($event)"
-      (themeChange)="onThemeChange($event)"
-      (debugOpenChange)="onDebugChange($event)"
-      (newConversation)="onNewConversation()"
-    />
-  </header>
+  <button
+    type="button"
+    class="demo-shell__hamburger"
+    aria-label="Open conversations"
+    [attr.aria-expanded]="drawerOpen()"
+    (click)="toggleDrawer()"
+  >☰</button>
+
+  <app-control-palette
+    [mode]="mode()"
+    [model]="model()"
+    [modelOptions]="modelOptions()"
+    [effort]="effort()"
+    [effortOptions]="effortOptions()"
+    [genUiMode]="genUiMode()"
+    [genUiOptions]="genUiOptions()"
+    [theme]="theme()"
+    [themeOptions]="themeOptions()"
+    [debugOpen]="debugOpen()"
+    (modeChange)="onModeChange($event)"
+    (modelChange)="onModelChange($event)"
+    (effortChange)="onEffortChange($event)"
+    (genUiModeChange)="onGenUiModeChange($event)"
+    (themeChange)="onThemeChange($event)"
+    (debugOpenChange)="onDebugChange($event)"
+    (newConversation)="onNewConversation()"
+  />
 
   <chat-thread-drawer
     [open]="drawerOpen()"
