@@ -1,7 +1,7 @@
 // libs/chat/src/lib/compositions/chat/chat.component.ts
 // SPDX-License-Identifier: MIT
 import {
-  Component, ChangeDetectionStrategy, input, model, output, computed, effect, signal, viewChild, ElementRef,
+  Component, ChangeDetectionStrategy, input, model, output, computed, effect, signal, untracked, viewChild, ElementRef,
   DestroyRef, inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -370,7 +370,7 @@ export class ChatComponent {
         this.programmaticScroll = true;
         el.scrollTop = el.scrollHeight;
         requestAnimationFrame(() => { this.programmaticScroll = false; });
-        if (isNewMessage) this.pinned.set(true);
+        if (isNewMessage) untracked(() => this.pinned.set(true));
       }
     });
 
