@@ -3,7 +3,29 @@ import { Container } from '../ui/Container';
 import { Section } from '../ui/Section';
 import { Button } from '../ui/Button';
 
-export function FinalCTA() {
+interface FinalCTAProps {
+  /** Headline. Defaults to the homepage closer. */
+  headline?: string;
+  /** Sub-headline. Defaults to the homepage closer. */
+  subtext?: string;
+  /** Primary CTA. Defaults to "Get started" → /docs. */
+  primary?: { label: string; href: string };
+  /** Optional secondary CTA. Defaults to "See it live →" → cockpit. */
+  secondary?: { label: string; href: string; external?: boolean } | null;
+  /** Optional trailing caption. Defaults to MIT line. Pass null to hide. */
+  caption?: string | null;
+}
+
+const DEFAULT_PRIMARY = { label: 'Get started', href: '/docs' };
+const DEFAULT_SECONDARY = { label: 'See it live →', href: 'https://cockpit.cacheplane.ai', external: true };
+
+export function FinalCTA({
+  headline = 'Stop stalling on agentic Angular.',
+  subtext = 'Install the framework, read the docs, and have a streaming chat in your app this afternoon.',
+  primary = DEFAULT_PRIMARY,
+  secondary = DEFAULT_SECONDARY,
+  caption = 'MIT · No signup required · No telemetry',
+}: FinalCTAProps = {}) {
   return (
     <Section surface="tinted" ariaLabelledBy="final-cta-heading">
       <Container>
@@ -22,7 +44,7 @@ export function FinalCTA() {
               fontStyle: 'italic',
             }}
           >
-            Stop stalling on agentic Angular.
+            {headline}
           </h2>
           <p
             style={{
@@ -34,7 +56,7 @@ export function FinalCTA() {
               marginBottom: 32,
             }}
           >
-            Install the framework, read the docs, and have a streaming chat in your app this afternoon.
+            {subtext}
           </p>
           <div
             style={{
@@ -45,29 +67,32 @@ export function FinalCTA() {
               marginBottom: 16,
             }}
           >
-            <Button variant="primary" size="lg" href="/docs">
-              Get started
+            <Button variant="primary" size="lg" href={primary.href}>
+              {primary.label}
             </Button>
-            <Button
-              variant="ghost"
-              size="lg"
-              href="https://cockpit.cacheplane.ai"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              See it live →
-            </Button>
+            {secondary ? (
+              <Button
+                variant="ghost"
+                size="lg"
+                href={secondary.href}
+                {...(secondary.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              >
+                {secondary.label}
+              </Button>
+            ) : null}
           </div>
-          <p
-            style={{
-              fontFamily: tokens.typography.caption.family,
-              fontSize: tokens.typography.caption.size,
-              color: tokens.colors.textMuted,
-              margin: 0,
-            }}
-          >
-            MIT · No signup required · No telemetry
-          </p>
+          {caption ? (
+            <p
+              style={{
+                fontFamily: tokens.typography.caption.family,
+                fontSize: tokens.typography.caption.size,
+                color: tokens.colors.textMuted,
+                margin: 0,
+              }}
+            >
+              {caption}
+            </p>
+          ) : null}
         </div>
       </Container>
     </Section>
