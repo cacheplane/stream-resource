@@ -39,7 +39,7 @@ export function Card({
     <div
       data-ui="card"
       data-hoverable={hoverable || undefined}
-      className={cn('card-primitive', className)}
+      className={cn(className)}
       style={{
         background: SURFACE[surface],
         border: `1px solid ${tokens.surfaces.border}`,
