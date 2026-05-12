@@ -143,7 +143,7 @@ export default async function RenderPage() {
         visual={<RenderCodeShowcase />}
       />
 
-      <WhitePaperBlock />
+      <WhitePaperBlock paper="render" />
       <FinalCTA />
     </>
   );

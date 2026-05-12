@@ -15,7 +15,22 @@ const BULLETS = [
   'No vendor pitch. Just what we learned shipping it.',
 ];
 
-export function WhitePaperBlock() {
+type WhitepaperId = 'overview' | 'angular' | 'render' | 'chat';
+
+interface WhitePaperBlockProps {
+  /** Whitepaper variant. Determines PDF path + analytics tag. */
+  paper?: WhitepaperId;
+}
+
+const PDF_PATHS: Record<WhitepaperId, { href: string; download: string }> = {
+  overview: { href: '/whitepaper.pdf', download: 'angular-agent-readiness-guide.pdf' },
+  angular: { href: '/whitepapers/angular.pdf', download: 'angular-streaming-guide.pdf' },
+  render: { href: '/whitepapers/render.pdf', download: 'angular-genui-guide.pdf' },
+  chat: { href: '/whitepapers/chat.pdf', download: 'angular-chat-guide.pdf' },
+};
+
+export function WhitePaperBlock({ paper = 'overview' }: WhitePaperBlockProps = {}) {
+  const pdf = PDF_PATHS[paper];
   const [email, setEmail] = useState('');
   const [state, setState] = useState<'idle' | 'submitting' | 'done' | 'error'>('idle');
 
@@ -26,7 +41,7 @@ export function WhitePaperBlock() {
     track(analyticsEvents.marketingWhitepaperSignupSubmit, {
       surface: 'home_whitepaper',
       source_section: 'whitepaper-block',
-      paper: 'overview',
+      paper,
     });
     try {
       await fetch('/api/whitepaper-signup', {
@@ -37,14 +52,14 @@ export function WhitePaperBlock() {
       track(analyticsEvents.marketingWhitepaperSignupSuccess, {
         surface: 'home_whitepaper',
         source_section: 'whitepaper-block',
-        paper: 'overview',
+        paper,
       });
       setState('done');
     } catch {
       track(analyticsEvents.marketingWhitepaperSignupFail, {
         surface: 'home_whitepaper',
         source_section: 'whitepaper-block',
-        paper: 'overview',
+        paper,
         error_reason: 'api_error',
       });
       setState('error');
@@ -129,10 +144,10 @@ export function WhitePaperBlock() {
               >
                 ✓ Check your inbox — the guide is on its way.{' '}
                 <a
-                  href="/whitepaper.pdf"
-                  download="angular-agent-readiness-guide.pdf"
+                  href={pdf.href}
+                  download={pdf.download}
                   onClick={() =>
-                    trackWhitepaperDownloadClick('overview', {
+                    trackWhitepaperDownloadClick(paper, {
                       surface: 'home_whitepaper',
                       source_section: 'whitepaper-block',
                       cta_id: 'home_whitepaper_direct',
@@ -182,7 +197,7 @@ export function WhitePaperBlock() {
             {state === 'error' && (
               <p style={{ marginTop: 12, color: tokens.colors.angularRed, fontSize: 14 }}>
                 Something went wrong — please try again or{' '}
-                <a href="/whitepaper.pdf" download style={{ color: tokens.colors.accent }}>
+                <a href={pdf.href} download={pdf.download} style={{ color: tokens.colors.accent }}>
                   download directly
                 </a>
                 .
@@ -199,10 +214,10 @@ export function WhitePaperBlock() {
               >
                 Already on the list?{' '}
                 <a
-                  href="/whitepaper.pdf"
-                  download="angular-agent-readiness-guide.pdf"
+                  href={pdf.href}
+                  download={pdf.download}
                   onClick={() =>
-                    trackWhitepaperDownloadClick('overview', {
+                    trackWhitepaperDownloadClick(paper, {
                       surface: 'home_whitepaper',
                       source_section: 'whitepaper-block',
                       cta_id: 'home_whitepaper_direct_inline',

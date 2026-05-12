@@ -133,7 +133,7 @@ export default async function ChatPage() {
         visual={<ChatLandingCodeShowcase />}
       />
 
-      <WhitePaperBlock />
+      <WhitePaperBlock paper="chat" />
       <FinalCTA />
     </>
   );

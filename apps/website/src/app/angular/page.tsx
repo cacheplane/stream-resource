@@ -137,7 +137,7 @@ export class ChatComponent {
         visual={<AngularCodeShowcase />}
       />
 
-      <WhitePaperBlock />
+      <WhitePaperBlock paper="angular" />
       <FinalCTA />
     </>
   );
