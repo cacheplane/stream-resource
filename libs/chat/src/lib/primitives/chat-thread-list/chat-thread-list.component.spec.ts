@@ -155,5 +155,50 @@ describe('ChatThreadListComponent', () => {
       fixture.detectChanges();
       expect(deleteSpy).not.toHaveBeenCalled();
     });
+
+    it('Rename: when adapter rejects, the title reverts after settle', async () => {
+      const renameSpy = vi.fn(async () => { throw new Error('boom'); });
+      const fixture = render({ actions: { rename: renameSpy } });
+      (fixture.nativeElement.querySelector('.chat-thread-list__kebab') as HTMLElement).click();
+      fixture.detectChanges();
+      const renameItem = Array.from(document.querySelectorAll('.chat-overflow-menu__item'))
+        .find((el) => (el as HTMLElement).textContent?.trim() === 'Rename') as HTMLElement;
+      renameItem.click();
+      fixture.detectChanges();
+      await new Promise((r) => queueMicrotask(() => r(undefined)));
+      fixture.detectChanges();
+      const input = fixture.nativeElement.querySelector('.chat-thread-list__edit') as HTMLInputElement;
+      input.value = 'BadRename';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      // Wait for the rejection + finally clear to settle.
+      await new Promise((r) => setTimeout(r, 0));
+      await new Promise((r) => setTimeout(r, 0));
+      fixture.detectChanges();
+      // The visible title should be back to the original (the pending override has been cleared).
+      const firstItemTitle = fixture.nativeElement.querySelectorAll('.chat-thread-list__item-title')[0] as HTMLElement;
+      expect(firstItemTitle.textContent?.trim()).toBe('First');
+      expect(renameSpy).toHaveBeenCalledWith('t1', 'BadRename');
+    });
+
+    it('Delete: when adapter rejects, the hidden row reappears', async () => {
+      const deleteSpy = vi.fn(async () => { throw new Error('boom'); });
+      const fixture = render({ actions: { delete: deleteSpy } });
+      (fixture.nativeElement.querySelector('.chat-thread-list__kebab') as HTMLElement).click();
+      fixture.detectChanges();
+      const delItem = Array.from(document.querySelectorAll('.chat-overflow-menu__item'))
+        .find((el) => (el as HTMLElement).textContent?.trim() === 'Delete') as HTMLElement;
+      delItem.click();
+      fixture.detectChanges();
+      (document.querySelector('.chat-confirm-dialog__confirm') as HTMLElement).click();
+      fixture.detectChanges();
+      // Wait for the rejection + finally clear to settle.
+      await new Promise((r) => setTimeout(r, 0));
+      await new Promise((r) => setTimeout(r, 0));
+      fixture.detectChanges();
+      const remaining = fixture.nativeElement.querySelectorAll('.chat-thread-list__item');
+      expect(remaining.length).toBe(2);
+      expect(deleteSpy).toHaveBeenCalledWith('t1');
+    });
   });
 });
