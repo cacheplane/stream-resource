@@ -173,3 +173,31 @@ html {
 .docs-prose th { text-align: left; padding: 0.5rem 0.75rem; font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; color: #8b8fa3; border-bottom: 1px solid rgba(0, 64, 144, 0.15); }
 .docs-prose td { padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(0, 64, 144, 0.08); color: #555770; }
 .docs-prose td code { font-size: 0.8em; }
+
+/* UI primitive — Card hover */
+[data-ui="card"][data-hoverable] {
+  cursor: default;
+}
+[data-ui="card"][data-hoverable]:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-strong);
+  transform: translateY(-1px);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-ui="card"][data-hoverable]:hover {
+    transform: none;
+  }
+}
+
+/* UI primitive — FAQ */
+[data-ui="faq-item"] > summary::-webkit-details-marker {
+  display: none;
+}
+[data-ui="faq-item"][open] [data-ui="faq-chevron"] {
+  transform: rotate(180deg);
+}
+[data-ui="faq-item"] > summary:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-sm);
+}
