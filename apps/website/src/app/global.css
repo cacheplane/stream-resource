@@ -201,3 +201,51 @@ html {
   box-shadow: var(--shadow-focus);
   border-radius: var(--radius-sm);
 }
+
+/* Docs — readable column max-width */
+.docs-prose {
+  max-width: 70ch;
+}
+@media (max-width: 768px) {
+  .docs-prose {
+    max-width: 100%;
+  }
+}
+
+/* Docs — hash-anchor affordance on H2/H3 */
+.docs-prose h2,
+.docs-prose h3 {
+  position: relative;
+}
+.docs-prose h2 .heading-anchor,
+.docs-prose h3 .heading-anchor {
+  position: absolute;
+  left: -1.25em;
+  top: 0;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  color: var(--color-text-muted);
+  opacity: 0;
+  text-decoration: none;
+  transition: opacity 120ms ease;
+}
+.docs-prose h2:hover .heading-anchor,
+.docs-prose h3:hover .heading-anchor,
+.docs-prose h2 .heading-anchor:focus-visible,
+.docs-prose h3 .heading-anchor:focus-visible {
+  opacity: 0.6;
+}
+.docs-prose h2 .heading-anchor:hover,
+.docs-prose h3 .heading-anchor:hover {
+  opacity: 1;
+  color: var(--color-accent);
+}
+@media (max-width: 768px) {
+  /* On narrow viewports, drop the absolute positioning so the hash doesn't overlap the page edge. */
+  .docs-prose h2 .heading-anchor,
+  .docs-prose h3 .heading-anchor {
+    position: static;
+    margin-right: 6px;
+    display: none;
+  }
+}
