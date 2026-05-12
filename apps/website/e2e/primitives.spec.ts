@@ -10,14 +10,16 @@ test.describe('UI primitives showcase', () => {
   });
 
   test('renders LogoMark', async ({ page }) => {
-    const logos = page.locator('[data-ui="logo-mark"]');
+    // Scope to the dev showcase main content (Nav + Footer also render LogoMark site-wide).
+    const logos = page.locator('main [data-ui="logo-mark"]');
     await expect(logos).toHaveCount(3);
   });
 
   test('renders Eyebrow in all tones', async ({ page }) => {
-    await expect(page.locator('[data-ui="eyebrow"][data-tone="muted"]').first()).toBeVisible();
-    await expect(page.locator('[data-ui="eyebrow"][data-tone="accent"]')).toBeVisible();
-    await expect(page.locator('[data-ui="eyebrow"][data-tone="angular"]')).toBeVisible();
+    // Scope to main; Footer renders accent-toned Eyebrows for its column headings.
+    await expect(page.locator('main [data-ui="eyebrow"][data-tone="muted"]').first()).toBeVisible();
+    await expect(page.locator('main [data-ui="eyebrow"][data-tone="accent"]').first()).toBeVisible();
+    await expect(page.locator('main [data-ui="eyebrow"][data-tone="angular"]').first()).toBeVisible();
   });
 
   test('renders Pill in all variants', async ({ page }) => {
