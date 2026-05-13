@@ -133,7 +133,6 @@ export default function PilotToProdPage() {
         visualLeft
         visual={
           <BrowserFrame url="cockpit.cacheplane.ai" elevation="md">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/screenshots/cockpit-run.webp"
               alt="Cockpit reference app — live chat surface ready to receive a message"

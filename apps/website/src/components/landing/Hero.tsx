@@ -81,7 +81,6 @@ export function Hero() {
               elevation="lg"
               style={{ position: 'absolute', top: 0, left: 0, width: '92%' }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/screenshots/cockpit-code.webp"
                 alt="Cockpit reference app showing the Angular streaming component source"

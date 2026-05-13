@@ -42,7 +42,6 @@ export default async function HomePage() {
         cta={{ label: 'Read the streaming guide', href: '/docs/agent/api/agent' }}
         visual={
           <BrowserFrame url="cockpit.cacheplane.ai/langgraph/streaming" elevation="md">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/screenshots/cockpit-docs.webp"
               alt="Cockpit reference app — Angular streaming guide with provideAgent setup"
@@ -75,7 +74,6 @@ export default async function HomePage() {
         visualLeft
         visual={
           <BrowserFrame url="cockpit.cacheplane.ai/langgraph/api" elevation="md">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/screenshots/cockpit-api.webp"
               alt="Cockpit reference app — API reference rendered as structured cards"
