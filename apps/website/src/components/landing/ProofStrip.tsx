@@ -16,7 +16,7 @@ const SIGNALS: Signal[] = [
     value: 'Open source',
     href: 'https://github.com/cacheplane/angular-agent-framework/blob/main/LICENSE',
   },
-  { label: 'Built for Angular 20+', value: 'Zoneless ready', href: null },
+  { label: 'Built for', value: 'Angular 20+', href: null },
   {
     label: 'Adapter contract',
     value: 'LangGraph + AG-UI + your own',

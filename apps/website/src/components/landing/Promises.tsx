@@ -11,7 +11,7 @@ const PROMISES = [
   },
   {
     title: 'No abandoned majors',
-    body: 'We follow Angular’s LTS. When Angular ships, we ship.',
+    body: 'We support Angular’s current and previous LTS versions.',
   },
   {
     title: 'No required cloud',
