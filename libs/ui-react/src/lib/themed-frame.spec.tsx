@@ -40,7 +40,8 @@ describe('ThemedFrame', () => {
       </ThemeProvider>
     );
     postMessage.mockClear();
-    const iframe = container.querySelector('iframe')!;
+    const iframe = container.querySelector('iframe');
+    if (!iframe) throw new Error('iframe not rendered');
     const ownWindow = iframe.contentWindow;
 
     // Matching source — should reply
