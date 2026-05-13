@@ -53,4 +53,23 @@ describe('A2uiSurfaceComponent — progressive rendering', () => {
     fx.detectChanges();
     expect(fx.nativeElement.querySelector('[data-role="real"]')).toBeTruthy();
   });
+
+  it('state takes priority over surface when both inputs are set', () => {
+    const views = new Map<string, unknown>([['c1', {
+      id: 'c1', type: 't', bindings: [], ready: true, props: {}, def: { t: {} },
+    }]]);
+    const legacySurface = {
+      surfaceId: 'legacy', catalogId: 'basic',
+      components: new Map(), dataModel: {},
+    };
+    const fx = TestBed.createComponent(A2uiSurfaceComponent);
+    fx.componentRef.setInput('state', makeState(views));
+    fx.componentRef.setInput('surface', legacySurface);
+    fx.componentRef.setInput('catalog', { t: { component: RealCmp } });
+    fx.detectChanges();
+    // state path mounts the real component via a2uiSlot
+    expect(fx.nativeElement.querySelector('[data-role="real"]')).toBeTruthy();
+    // legacy <render-spec> path must NOT have rendered
+    expect(fx.nativeElement.querySelector('render-spec')).toBeFalsy();
+  });
 });

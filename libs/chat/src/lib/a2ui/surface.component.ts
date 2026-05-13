@@ -56,6 +56,17 @@ import type { A2uiViews } from './views';
     }
   `,
 })
+/**
+ * Renders an A2UI surface. Supports two input shapes:
+ * - `state` (preferred): chat-side `A2uiSurfaceState` driving progressive
+ *   per-component rendering via `a2uiSlot` + readiness gates.
+ * - `surface` (legacy): wire-format `A2uiSurface` fed into `<render-spec>`;
+ *   kept for backwards compatibility.
+ *
+ * When both inputs are set, `state` takes priority for rendering AND for
+ * action-message construction; `surface` is only consulted when `state`
+ * is unset.
+ */
 export class A2uiSurfaceComponent {
   /** Wire-format surface (legacy path — kept for backwards compat). */
   readonly surface = input<A2uiSurface>();
@@ -113,7 +124,10 @@ export class A2uiSurfaceComponent {
     const consumerHandlers = this.handlers();
     return {
       'a2ui:event': (params: Record<string, unknown>) => {
-        const surf = this.surface();
+        // Prefer state.surface so action messages reference the surface
+        // we actually rendered, even if a legacy `[surface]` input with
+        // a mismatched id is also bound.
+        const surf = this.state()?.surface ?? this.surface();
         if (!surf) return undefined;
         const message = buildA2uiActionMessage(params, surf);
         this.action.emit(message);
