@@ -1,42 +1,11 @@
 /**
- * Core color palette for the angular design system.
+ * @deprecated Re-exported from `baseTokens.brand` for backwards compatibility
+ * with existing consumers. New code should import from `baseTokens` directly.
  *
- * Light theme with LangGraph blue accent and Angular red brand color.
- * Used across both the website and cockpit.
+ * Theme-variant color tokens live in `lightOverrides` / `darkOverrides` and
+ * are resolved at runtime via `cssVars(theme)` in @ngaf/ui-react.
  */
-export const colors = Object.freeze({
-  /** Base background — light cream */
-  bg: '#f8f9fc',
-  /** Primary accent — LangGraph blue */
-  accent: '#004090',
-  /** Light accent — sky blue for secondary highlights */
-  accentLight: '#64C3FD',
-  /** Accent glow — used for shadows and ambient effects */
-  accentGlow: 'rgba(0, 64, 144, 0.2)',
-  /** Accent border — subtle blue for panel edges */
-  accentBorder: 'rgba(0, 64, 144, 0.15)',
-  /** Accent border hover — stronger blue on interaction */
-  accentBorderHover: 'rgba(0, 64, 144, 0.3)',
-  /** Accent surface — very light tint for selected/active states */
-  accentSurface: 'rgba(0, 64, 144, 0.06)',
-  /** Hovered state of the primary accent */
-  accentHover: '#003070',
-  /** Inverted text — for use on dark/accent backgrounds */
-  textInverted: '#ffffff',
-  /** Primary text — dark ink for headings and body */
-  textPrimary: '#1a1a2e',
-  /** Secondary text — warm gray for descriptions */
-  textSecondary: '#555770',
-  /** Muted text — light gray for labels and metadata */
-  textMuted: '#8b8fa3',
-  /** Sidebar background — glass treatment */
-  sidebarBg: 'rgba(255, 255, 255, 0.45)',
-  /** Angular brand red */
-  angularRed: '#DD0031',
-  /** Render library — green */
-  renderGreen: '#1a7a40',
-  /** Chat library — purple */
-  chatPurple: '#5a00c8',
-} as const);
+import { baseTokens } from './base';
 
+export const colors = baseTokens.brand;
 export type Colors = typeof colors;
