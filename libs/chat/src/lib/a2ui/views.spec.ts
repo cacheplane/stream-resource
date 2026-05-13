@@ -3,9 +3,9 @@ import { describe, it, expect } from 'vitest';
 import { Component } from '@angular/core';
 import { normalizeViewEntry, type A2uiViewEntry } from './views';
 
-@Component({ standalone: true, selector: 't-real', template: '' })
+@Component({ standalone: true, selector: 'chat-test-real', template: '' })
 class RealCmp {}
-@Component({ standalone: true, selector: 't-fb', template: '' })
+@Component({ standalone: true, selector: 'chat-test-fb', template: '' })
 class FallbackCmp {}
 
 describe('normalizeViewEntry', () => {
