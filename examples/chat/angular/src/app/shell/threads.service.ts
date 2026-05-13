@@ -19,7 +19,17 @@ export class ThreadsService {
       this.threads.set(
         mapped
           .filter((t) => t.status !== 'archived')
-          .sort((a, b) => Number(b.pinned ?? false) - Number(a.pinned ?? false)),
+          .sort((a, b) => {
+            const aPinned = a.pinned === true;
+            const bPinned = b.pinned === true;
+            if (aPinned !== bPinned) return Number(bPinned) - Number(aPinned);
+            if (aPinned && bPinned) {
+              const aOrd = typeof a.pinnedOrder === 'number' ? a.pinnedOrder : Infinity;
+              const bOrd = typeof b.pinnedOrder === 'number' ? b.pinnedOrder : Infinity;
+              return aOrd - bOrd;
+            }
+            return 0;
+          }),
       );
       this.archivedThreads.set(mapped.filter((t) => t.status === 'archived'));
     } catch {
@@ -27,9 +37,11 @@ export class ThreadsService {
     }
   }
 
-  async create(): Promise<string | null> {
+  async create(projectId?: string): Promise<string | null> {
     try {
-      const t = await this.client.threads.create({ metadata: {} });
+      const t = await this.client.threads.create({
+        metadata: projectId !== undefined ? { projectId } : {},
+      });
       await this.refresh();
       return t.thread_id;
     } catch {
@@ -57,6 +69,11 @@ export class ThreadsService {
     await this.refresh();
   }
 
+  async moveToProject(threadId: string, projectId: string | null): Promise<void> {
+    await this.client.threads.update(threadId, { metadata: { projectId } });
+    await this.refresh();
+  }
+
   async pin(threadId: string): Promise<void> {
     await this.client.threads.update(threadId, { metadata: { pinned: true } });
     await this.refresh();
@@ -67,19 +84,54 @@ export class ThreadsService {
     await this.refresh();
   }
 
-  /** Best-effort title from thread metadata; falls back to a truncated id. */
+  async reorderPinned(threadId: string, beforeId: string | null): Promise<void> {
+    const current = this.threads().filter((t) => t.pinned === true);
+    const moved = current.find((t) => t.id === threadId);
+    if (!moved) return;
+    const rest = current.filter((t) => t.id !== threadId);
+    const next: Thread[] = [];
+    for (const t of rest) {
+      if (t.id === beforeId) next.push(moved);
+      next.push(t);
+    }
+    if (beforeId === null) next.push(moved);
+
+    // Re-stamp metadata.pinnedOrder = 0,1,2,... in the desired order.
+    await Promise.all(
+      next.map((t, idx) =>
+        this.client.threads.update(t.id, { metadata: { pinnedOrder: idx } }),
+      ),
+    );
+    await this.refresh();
+  }
+
+  /** Best-effort title from thread metadata.
+   *
+   * The backend writes `metadata.title` from the first user message in a
+   * thread (see `_maybe_write_thread_title` in the Python graph). Threads
+   * created but never sent (e.g. via "+ New chat" then abandoned) have
+   * no title, so we fall back to "Untitled" — easier on the eye than
+   * the raw `Thread 019e1e98` id prefix, and consistent with how other
+   * chat apps surface drafts.
+   */
   private toThread(t: SdkThread): Thread {
-    const meta = (t.metadata ?? {}) as { title?: unknown; archived?: unknown; pinned?: unknown };
+    const meta = (t.metadata ?? {}) as { title?: unknown; archived?: unknown; pinned?: unknown; projectId?: unknown; pinnedOrder?: unknown };
     const customTitle = meta.title;
     const archived = meta.archived === true;
     const pinned = meta.pinned === true;
+    const projectId = typeof meta.projectId === 'string' && meta.projectId.length > 0
+      ? meta.projectId
+      : null;
+    const pinnedOrder = typeof meta.pinnedOrder === 'number' ? meta.pinnedOrder : undefined;
     return {
       id: t.thread_id,
       title: typeof customTitle === 'string' && customTitle.length > 0
         ? customTitle
-        : `Thread ${t.thread_id.slice(0, 8)}`,
+        : 'Untitled',
       status: archived ? 'archived' : 'active',
       pinned,
+      projectId,
+      pinnedOrder,
     };
   }
 }

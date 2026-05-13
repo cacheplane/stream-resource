@@ -3114,6 +3114,227 @@
     ]
   },
   {
+    "name": "ChatProjectListComponent",
+    "kind": "class",
+    "description": "",
+    "params": [],
+    "examples": [],
+    "properties": [
+      {
+        "name": "actions",
+        "type": "InputSignal<ProjectActionAdapter | null>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "activeProjectId",
+        "type": "InputSignal<string | null>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "confirmDeleteId",
+        "type": "WritableSignal<string | null>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "creatingProject",
+        "type": "WritableSignal<boolean>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "creatingValue",
+        "type": "WritableSignal<string>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "currentMenuItems",
+        "type": "Signal<OverflowMenuItem[]>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "editingProjectId",
+        "type": "WritableSignal<string | null>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "editingValue",
+        "type": "WritableSignal<string>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "menuAnchor",
+        "type": "WritableSignal<HTMLElement | null>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "menuOpenForId",
+        "type": "WritableSignal<string | null>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "newProjectRequested",
+        "type": "OutputEmitterRef<void>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "projects",
+        "type": "InputSignal<Project[]>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "projectSelected",
+        "type": "OutputEmitterRef<string>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "showNewProjectButton",
+        "type": "InputSignal<boolean>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "visibleProjects",
+        "type": "Signal<Project[]>",
+        "description": "",
+        "optional": false
+      }
+    ],
+    "methods": [
+      {
+        "name": "cancelCreate",
+        "signature": "cancelCreate()",
+        "description": "",
+        "params": []
+      },
+      {
+        "name": "cancelRename",
+        "signature": "cancelRename()",
+        "description": "",
+        "params": []
+      },
+      {
+        "name": "commitCreate",
+        "signature": "commitCreate()",
+        "description": "",
+        "params": []
+      },
+      {
+        "name": "commitRename",
+        "signature": "commitRename(projectId: string)",
+        "description": "",
+        "params": [
+          {
+            "name": "projectId",
+            "type": "string",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
+        "name": "onCreateInput",
+        "signature": "onCreateInput(e: Event)",
+        "description": "",
+        "params": [
+          {
+            "name": "e",
+            "type": "Event",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
+        "name": "onEditInput",
+        "signature": "onEditInput(e: Event)",
+        "description": "",
+        "params": [
+          {
+            "name": "e",
+            "type": "Event",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
+        "name": "onMenuAction",
+        "signature": "onMenuAction(id: string)",
+        "description": "",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
+        "name": "onNewProjectClicked",
+        "signature": "onNewProjectClicked()",
+        "description": "",
+        "params": []
+      },
+      {
+        "name": "openMenu",
+        "signature": "openMenu(projectId: string, anchor: HTMLElement)",
+        "description": "",
+        "params": [
+          {
+            "name": "projectId",
+            "type": "string",
+            "description": "",
+            "optional": false
+          },
+          {
+            "name": "anchor",
+            "type": "HTMLElement",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
+        "name": "performDelete",
+        "signature": "performDelete()",
+        "description": "",
+        "params": []
+      },
+      {
+        "name": "selectProject",
+        "signature": "selectProject(projectId: string)",
+        "description": "",
+        "params": [
+          {
+            "name": "projectId",
+            "type": "string",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
+        "name": "showKebab",
+        "signature": "showKebab()",
+        "description": "",
+        "params": []
+      }
+    ]
+  },
+  {
     "name": "ChatReasoningComponent",
     "kind": "class",
     "description": "Renders an assistant's reasoning content as a compact pill that\nexpands to reveal the underlying text. Three visual states:\n\n- Streaming: pill shows \"Thinking…\" with a pulsing dot; auto-expanded\n  so the user sees reasoning stream in real time.\n- Idle, with durationMs known: pill shows \"Thought for {duration}\";\n  collapsed by default, expand on click.\n- Idle, no duration: pill shows \"Show reasoning\"; collapsed by default.\n\nThe body re-uses chat-streaming-md so reasoning content gets the same\nmarkdown rendering pipeline as the visible response (lists, code,\nstep labels often appear in reasoning output).\n\nInternal state: a tristate \"expanded\" — null means follow auto state-\ndriven logic (force-expand on isStreaming, otherwise honor\ndefaultExpanded), boolean is a manual user choice that wins for the\nlifetime of the instance.",
@@ -3413,7 +3634,19 @@
         "optional": false
       },
       {
+        "name": "modeChange",
+        "type": "OutputEmitterRef<ChatSidenavMode>",
+        "description": "",
+        "optional": false
+      },
+      {
         "name": "newChat",
+        "type": "OutputEmitterRef<void>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "newProjectRequested",
         "type": "OutputEmitterRef<void>",
         "description": "",
         "optional": false
@@ -3431,8 +3664,32 @@
         "optional": false
       },
       {
+        "name": "projectActions",
+        "type": "InputSignal<ProjectActionAdapter | null>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "projects",
+        "type": "InputSignal<Project[] | null>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "projectSelected",
+        "type": "OutputEmitterRef<string>",
+        "description": "",
+        "optional": false
+      },
+      {
         "name": "searchOpened",
         "type": "OutputEmitterRef<void>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "selectedProjectId",
+        "type": "InputSignal<string | null>",
         "description": "",
         "optional": false
       },
@@ -3450,6 +3707,12 @@
       }
     ],
     "methods": [
+      {
+        "name": "onCollapseToggle",
+        "signature": "onCollapseToggle()",
+        "description": "",
+        "params": []
+      },
       {
         "name": "onEscape",
         "signature": "onEscape()",
@@ -3608,6 +3871,18 @@
         "optional": false
       },
       {
+        "name": "draggingThreadId",
+        "type": "WritableSignal<string | null>",
+        "description": "Id of the thread currently being dragged via HTML5 drag-and-drop.",
+        "optional": false
+      },
+      {
+        "name": "dropTarget",
+        "type": "WritableSignal<object | null>",
+        "description": "Drop target during a drag: which row, and whether the indicator shows\n on the top edge ('before') or bottom edge ('after').",
+        "optional": false
+      },
+      {
         "name": "editingThreadId",
         "type": "WritableSignal<string | null>",
         "description": "",
@@ -3638,8 +3913,26 @@
         "optional": false
       },
       {
+        "name": "moveMenuItems",
+        "type": "Signal<OverflowMenuItem[]>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "moveMenuOpenForId",
+        "type": "WritableSignal<string | null>",
+        "description": "",
+        "optional": false
+      },
+      {
         "name": "newThreadRequested",
         "type": "OutputEmitterRef<void>",
+        "description": "",
+        "optional": false
+      },
+      {
+        "name": "projects",
+        "type": "InputSignal<Project[] | null>",
         "description": "",
         "optional": false
       },
@@ -3695,6 +3988,101 @@
         ]
       },
       {
+        "name": "dropPositionFor",
+        "signature": "dropPositionFor(threadId: string)",
+        "description": "",
+        "params": [
+          {
+            "name": "threadId",
+            "type": "string",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
+        "name": "onDragEnd",
+        "signature": "onDragEnd()",
+        "description": "",
+        "params": []
+      },
+      {
+        "name": "onDragLeave",
+        "signature": "onDragLeave(_e: DragEvent, threadId: string)",
+        "description": "",
+        "params": [
+          {
+            "name": "_e",
+            "type": "DragEvent",
+            "description": "",
+            "optional": false
+          },
+          {
+            "name": "threadId",
+            "type": "string",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
+        "name": "onDragOver",
+        "signature": "onDragOver(e: DragEvent, threadId: string)",
+        "description": "",
+        "params": [
+          {
+            "name": "e",
+            "type": "DragEvent",
+            "description": "",
+            "optional": false
+          },
+          {
+            "name": "threadId",
+            "type": "string",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
+        "name": "onDragStart",
+        "signature": "onDragStart(e: DragEvent, threadId: string)",
+        "description": "",
+        "params": [
+          {
+            "name": "e",
+            "type": "DragEvent",
+            "description": "",
+            "optional": false
+          },
+          {
+            "name": "threadId",
+            "type": "string",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
+        "name": "onDrop",
+        "signature": "onDrop(e: DragEvent, targetThreadId: string)",
+        "description": "",
+        "params": [
+          {
+            "name": "e",
+            "type": "DragEvent",
+            "description": "",
+            "optional": false
+          },
+          {
+            "name": "targetThreadId",
+            "type": "string",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
         "name": "onEditInput",
         "signature": "onEditInput(e: Event)",
         "description": "",
@@ -3714,6 +4102,19 @@
         "params": [
           {
             "name": "id",
+            "type": "string",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
+        "name": "onMoveMenuAction",
+        "signature": "onMoveMenuAction(itemId: string)",
+        "description": "",
+        "params": [
+          {
+            "name": "itemId",
             "type": "string",
             "description": "",
             "optional": false
@@ -3759,6 +4160,51 @@
         "params": []
       },
       {
+        "name": "performMoveDown",
+        "signature": "performMoveDown(threadId: string)",
+        "description": "",
+        "params": [
+          {
+            "name": "threadId",
+            "type": "string",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
+        "name": "performMoveToProject",
+        "signature": "performMoveToProject(threadId: string, projectId: string | null)",
+        "description": "",
+        "params": [
+          {
+            "name": "threadId",
+            "type": "string",
+            "description": "",
+            "optional": false
+          },
+          {
+            "name": "projectId",
+            "type": "string | null",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
+        "name": "performMoveUp",
+        "signature": "performMoveUp(threadId: string)",
+        "description": "",
+        "params": [
+          {
+            "name": "threadId",
+            "type": "string",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
         "name": "performPin",
         "signature": "performPin(threadId: string)",
         "description": "",
@@ -3766,6 +4212,25 @@
           {
             "name": "threadId",
             "type": "string",
+            "description": "",
+            "optional": false
+          }
+        ]
+      },
+      {
+        "name": "performReorderPinned",
+        "signature": "performReorderPinned(threadId: string, beforeId: string | null)",
+        "description": "",
+        "params": [
+          {
+            "name": "threadId",
+            "type": "string",
+            "description": "",
+            "optional": false
+          },
+          {
+            "name": "beforeId",
+            "type": "string | null",
             "description": "",
             "optional": false
           }
@@ -5851,6 +6316,32 @@
     "examples": []
   },
   {
+    "name": "ProjectActionAdapter",
+    "kind": "interface",
+    "description": "Consumer-provided adapter for project lifecycle actions. The framework calls\nthese methods after user confirmation (delete) or commit (create/rename) and\nmanages optimistic UI + rollback on rejection.",
+    "properties": [
+      {
+        "name": "create",
+        "type": "unknown",
+        "description": "",
+        "optional": true
+      },
+      {
+        "name": "delete",
+        "type": "unknown",
+        "description": "",
+        "optional": true
+      },
+      {
+        "name": "rename",
+        "type": "unknown",
+        "description": "",
+        "optional": true
+      }
+    ],
+    "examples": []
+  },
+  {
     "name": "ResolvedCitation",
     "kind": "interface",
     "description": "",
@@ -5966,6 +6457,12 @@
         "optional": true
       },
       {
+        "name": "moveToProject",
+        "type": "unknown",
+        "description": "",
+        "optional": true
+      },
+      {
         "name": "pin",
         "type": "unknown",
         "description": "",
@@ -5973,6 +6470,12 @@
       },
       {
         "name": "rename",
+        "type": "unknown",
+        "description": "",
+        "optional": true
+      },
+      {
+        "name": "reorderPinned",
         "type": "unknown",
         "description": "",
         "optional": true
@@ -6203,6 +6706,13 @@
     "kind": "type",
     "description": "",
     "signature": "\"human\" | \"ai\" | \"tool\" | \"system\" | \"function\"",
+    "examples": []
+  },
+  {
+    "name": "Project",
+    "kind": "type",
+    "description": "",
+    "signature": "unknown",
     "examples": []
   },
   {

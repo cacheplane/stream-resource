@@ -120,6 +120,100 @@ describe('ChatSidenavComponent', () => {
     expect(lists[1].getAttribute('mode')).toBe('archived');
   });
 
+  it('renders the collapse chevron in expanded mode with "Collapse sidenav" label', () => {
+    const fixture = render({ mode: 'expanded' });
+    const btn = fixture.nativeElement.querySelector('.chat-sidenav__action--collapse') as HTMLButtonElement;
+    expect(btn).not.toBeNull();
+    expect(btn.getAttribute('aria-label')).toBe('Collapse sidenav');
+  });
+
+  it('renders the expand chevron in collapsed mode with "Expand sidenav" label', () => {
+    const fixture = render({ mode: 'collapsed' });
+    const btn = fixture.nativeElement.querySelector('.chat-sidenav__action--collapse') as HTMLButtonElement;
+    expect(btn).not.toBeNull();
+    expect(btn.getAttribute('aria-label')).toBe('Expand sidenav');
+  });
+
+  it('omits the collapse chevron in drawer mode', () => {
+    const fixture = render({ mode: 'drawer' });
+    expect(fixture.nativeElement.querySelector('.chat-sidenav__action--collapse')).toBeNull();
+  });
+
+  it('renders a topbar containing the new-chat and collapse buttons in expanded mode', () => {
+    const fixture = render({ mode: 'expanded' });
+    const topbar = fixture.nativeElement.querySelector('.chat-sidenav__topbar') as HTMLElement;
+    expect(topbar).not.toBeNull();
+    expect(topbar.querySelector('.chat-sidenav__action--new')).not.toBeNull();
+    expect(topbar.querySelector('.chat-sidenav__action--collapse')).not.toBeNull();
+  });
+
+  it('search button is the only action in .chat-sidenav__actions row', () => {
+    const fixture = render({ mode: 'expanded' });
+    const actions = fixture.nativeElement.querySelector('.chat-sidenav__actions') as HTMLElement;
+    const buttons = actions.querySelectorAll('button');
+    expect(buttons.length).toBe(1);
+    expect(buttons[0].classList.contains('chat-sidenav__action--search')).toBe(true);
+  });
+
+  it('drawer mode: renders a close button in the topbar that emits openChange(false)', () => {
+    const fixture = render({ mode: 'drawer', open: true });
+    const topbar = fixture.nativeElement.querySelector('.chat-sidenav__topbar') as HTMLElement;
+    const close = topbar.querySelector('.chat-sidenav__action--close') as HTMLButtonElement;
+    expect(close).not.toBeNull();
+    expect(close.getAttribute('aria-label')).toBe('Close conversations');
+    let lastOpen: boolean | undefined;
+    fixture.componentInstance.openChange.subscribe((v: boolean) => { lastOpen = v; });
+    close.click();
+    expect(lastOpen).toBe(false);
+  });
+
+  it('non-drawer modes: no close button is rendered', () => {
+    expect(render({ mode: 'expanded' }).nativeElement.querySelector('.chat-sidenav__action--close')).toBeNull();
+    expect(render({ mode: 'collapsed' }).nativeElement.querySelector('.chat-sidenav__action--close')).toBeNull();
+  });
+
+  it('clicking the chevron in expanded mode emits modeChange="collapsed"', () => {
+    const fixture = render({ mode: 'expanded' });
+    let last: string | undefined;
+    fixture.componentInstance.modeChange.subscribe((m: string) => { last = m; });
+    const btn = fixture.nativeElement.querySelector('.chat-sidenav__action--collapse') as HTMLButtonElement;
+    btn.click();
+    expect(last).toBe('collapsed');
+  });
+
+  it('clicking the chevron in collapsed mode emits modeChange="expanded"', () => {
+    const fixture = render({ mode: 'collapsed' });
+    let last: string | undefined;
+    fixture.componentInstance.modeChange.subscribe((m: string) => { last = m; });
+    const btn = fixture.nativeElement.querySelector('.chat-sidenav__action--collapse') as HTMLButtonElement;
+    btn.click();
+    expect(last).toBe('expanded');
+  });
+
+  it('Cmd+B in expanded mode emits modeChange="collapsed"', () => {
+    const fixture = render({ mode: 'expanded' });
+    let last: string | undefined;
+    fixture.componentInstance.modeChange.subscribe((m: string) => { last = m; });
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', metaKey: true }));
+    expect(last).toBe('collapsed');
+  });
+
+  it('Cmd+B in collapsed mode emits modeChange="expanded"', () => {
+    const fixture = render({ mode: 'collapsed' });
+    let last: string | undefined;
+    fixture.componentInstance.modeChange.subscribe((m: string) => { last = m; });
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', metaKey: true }));
+    expect(last).toBe('expanded');
+  });
+
+  it('Cmd+B is a no-op in drawer mode', () => {
+    const fixture = render({ mode: 'drawer' });
+    let emits = 0;
+    fixture.componentInstance.modeChange.subscribe(() => { emits++; });
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', metaKey: true }));
+    expect(emits).toBe(0);
+  });
+
   it('clicking the archived heading toggles aria-expanded', () => {
     const fixture = render({ threads: [{ id: 't1' }] });
     fixture.componentRef.setInput('archivedThreads', []);
@@ -132,5 +226,43 @@ describe('ChatSidenavComponent', () => {
     heading.click();
     fixture.detectChanges();
     expect(heading.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('projects=null renders no Projects section', () => {
+    const fixture = render({ threads: [{ id: 't1' }] });
+    expect(fixture.nativeElement.querySelector('.chat-sidenav__projects')).toBeNull();
+  });
+
+  it('projects=[p1,p2] renders the Projects section with two rows', () => {
+    const fixture = render({ threads: [{ id: 't1' }] });
+    fixture.componentRef.setInput('projects', [{ id: 'p1', name: 'Work' }, { id: 'p2', name: 'Personal' }]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.chat-sidenav__projects')).not.toBeNull();
+    const rows = fixture.nativeElement.querySelectorAll('.chat-project-list__item');
+    expect(rows.length).toBe(2);
+  });
+
+  it('selectedProjectId highlights the matching project row', () => {
+    const fixture = render({ threads: [{ id: 't1' }] });
+    fixture.componentRef.setInput('projects', [{ id: 'p1', name: 'Work' }, { id: 'p2', name: 'Personal' }]);
+    fixture.componentRef.setInput('selectedProjectId', 'p2');
+    fixture.detectChanges();
+    const rows = fixture.nativeElement.querySelectorAll('.chat-project-list__item');
+    expect(rows[0].getAttribute('data-active')).toBeNull();
+    expect(rows[1].getAttribute('data-active')).toBe('true');
+  });
+
+  it('projectActions.create shows "+ New project" and emits newProjectRequested on click', () => {
+    const fixture = render({ threads: [{ id: 't1' }] });
+    fixture.componentRef.setInput('projects', []);
+    fixture.componentRef.setInput('projectActions', { create: async () => ({ id: 'x' }) });
+    fixture.detectChanges();
+    let emits = 0;
+    fixture.componentInstance.newProjectRequested.subscribe(() => { emits++; });
+    const btn = fixture.nativeElement.querySelector('.chat-project-list__new') as HTMLButtonElement;
+    expect(btn).not.toBeNull();
+    btn.click();
+    fixture.detectChanges();
+    expect(emits).toBe(1);
   });
 });

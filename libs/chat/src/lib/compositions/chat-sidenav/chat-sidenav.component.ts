@@ -18,13 +18,18 @@ import {
   type Thread,
   type ThreadActionAdapter,
 } from '../../primitives/chat-thread-list/chat-thread-list.component';
+import {
+  ChatProjectListComponent,
+  type Project,
+  type ProjectActionAdapter,
+} from '../../primitives/chat-project-list/chat-project-list.component';
 
 export type ChatSidenavMode = 'expanded' | 'collapsed' | 'drawer';
 
 @Component({
   selector: 'chat-sidenav',
   standalone: true,
-  imports: [ChatThreadListComponent],
+  imports: [ChatThreadListComponent, ChatProjectListComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[attr.data-mode]': 'mode()',
@@ -50,7 +55,7 @@ export type ChatSidenavMode = 'expanded' | 'collapsed' | 'drawer';
         <ng-content select="[sidenavHeader]" />
       </div>
 
-      <div class="chat-sidenav__actions">
+      <div class="chat-sidenav__topbar">
         <button
           type="button"
           class="chat-sidenav__action chat-sidenav__action--new"
@@ -64,6 +69,44 @@ export type ChatSidenavMode = 'expanded' | 'collapsed' | 'drawer';
           </svg>
           <span class="chat-sidenav__action-label">New chat</span>
         </button>
+        @if (mode() !== 'drawer') {
+          <button
+            type="button"
+            class="chat-sidenav__action chat-sidenav__action--collapse"
+            (click)="onCollapseToggle()"
+            [attr.aria-label]="mode() === 'collapsed' ? 'Expand sidenav' : 'Collapse sidenav'"
+            [attr.title]="(mode() === 'collapsed' ? 'Expand sidenav' : 'Collapse sidenav') + ' (⌘B)'"
+          >
+            @if (mode() === 'collapsed') {
+              <svg class="chat-sidenav__action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="9 6 15 12 9 18"/>
+              </svg>
+            } @else {
+              <svg class="chat-sidenav__action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 6 9 12 15 18"/>
+              </svg>
+            }
+            <span class="chat-sidenav__action-label">{{ mode() === 'collapsed' ? 'Expand' : 'Collapse' }}</span>
+          </button>
+        }
+        @if (mode() === 'drawer') {
+          <button
+            type="button"
+            class="chat-sidenav__action chat-sidenav__action--close"
+            (click)="openChange.emit(false)"
+            aria-label="Close conversations"
+            title="Close conversations"
+          >
+            <svg class="chat-sidenav__action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            <span class="chat-sidenav__action-label">Close</span>
+          </button>
+        }
+      </div>
+
+      <div class="chat-sidenav__actions">
         <button
           type="button"
           class="chat-sidenav__action chat-sidenav__action--search"
@@ -83,6 +126,20 @@ export type ChatSidenavMode = 'expanded' | 'collapsed' | 'drawer';
         <ng-content select="[sidenavPrimary]" />
       </div>
 
+      @if (projects() !== null) {
+        <div class="chat-sidenav__projects">
+          <div class="chat-sidenav__threads-heading">Projects</div>
+          <chat-project-list
+            [projects]="projects()!"
+            [activeProjectId]="selectedProjectId()"
+            [showNewProjectButton]="!!projectActions()?.create"
+            [actions]="projectActions()"
+            (projectSelected)="projectSelected.emit($event)"
+            (newProjectRequested)="newProjectRequested.emit()"
+          />
+        </div>
+      }
+
       @if (threads() !== null) {
         <div class="chat-sidenav__threads">
           <div class="chat-sidenav__threads-heading">Recent</div>
@@ -90,6 +147,7 @@ export type ChatSidenavMode = 'expanded' | 'collapsed' | 'drawer';
             [threads]="threads()!"
             [activeThreadId]="activeThreadId() ?? ''"
             [actions]="actions()"
+            [projects]="projects()"
             (threadSelected)="threadSelected.emit($event)"
           />
         </div>
@@ -122,6 +180,7 @@ export type ChatSidenavMode = 'expanded' | 'collapsed' | 'drawer';
                   [threads]="archivedThreads()!"
                   [activeThreadId]="activeThreadId() ?? ''"
                   [actions]="actions()"
+                  [projects]="projects()"
                   (threadSelected)="threadSelected.emit($event)"
                 />
               }
@@ -147,11 +206,17 @@ export class ChatSidenavComponent {
   readonly activeThreadId = input<string | null>(null);
   readonly actions = input<ThreadActionAdapter | null>(null);
   readonly archivedThreads = input<Thread[] | null>(null);
+  readonly projects = input<Project[] | null>(null);
+  readonly selectedProjectId = input<string | null>(null);
+  readonly projectActions = input<ProjectActionAdapter | null>(null);
 
   readonly newChat = output<void>();
   readonly threadSelected = output<string>();
   readonly searchOpened = output<void>();
   readonly openChange = output<boolean>();
+  readonly modeChange = output<ChatSidenavMode>();
+  readonly projectSelected = output<string>();
+  readonly newProjectRequested = output<void>();
 
   protected readonly archivedOpen = signal<boolean>(false);
 
@@ -161,14 +226,23 @@ export class ChatSidenavComponent {
     fromEvent<KeyboardEvent>(window, 'keydown')
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((e) => {
-        if (!((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')) return;
+        if (!(e.metaKey || e.ctrlKey)) return;
+        const key = e.key.toLowerCase();
+        if (key !== 'k' && key !== 'b') return;
         const t = e.target as HTMLElement | null;
         if (t) {
           const tag = t.tagName;
           if (tag === 'INPUT' || tag === 'TEXTAREA' || t.isContentEditable) return;
         }
+        if (key === 'k') {
+          e.preventDefault();
+          this.searchOpened.emit();
+          return;
+        }
+        // Cmd/Ctrl+B: toggle expanded ↔ collapsed (no-op in drawer mode).
+        if (this.mode() === 'drawer') return;
         e.preventDefault();
-        this.searchOpened.emit();
+        this.modeChange.emit(this.mode() === 'collapsed' ? 'expanded' : 'collapsed');
       });
   }
 
@@ -176,5 +250,11 @@ export class ChatSidenavComponent {
     if (this.mode() === 'drawer' && this.open()) {
       this.openChange.emit(false);
     }
+  }
+
+  protected onCollapseToggle(): void {
+    const m = this.mode();
+    if (m === 'drawer') return;
+    this.modeChange.emit(m === 'collapsed' ? 'expanded' : 'collapsed');
   }
 }
