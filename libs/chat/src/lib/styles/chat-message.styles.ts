@@ -20,6 +20,7 @@ export const CHAT_MESSAGE_STYLES = `
   :host([data-role="assistant"]):first-child { margin-top: 0; }
 
   .chat-message__bubble {
+    width: fit-content;
     max-width: 80%;
     padding: 8px 12px;
     border-radius: var(--ngaf-chat-radius-bubble);
