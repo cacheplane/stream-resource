@@ -1,7 +1,9 @@
 {
   "fixtures": [
     {
-      "match": { "userMessage": "show me a tiny surface" },
+      "match": {
+        "userMessage": "Demo: render a feedback form"
+      },
       "response": {
         "toolCalls": [
           {
@@ -10,18 +12,108 @@
               "envelopes": [
                 {
                   "surfaceUpdate": {
-                    "surfaceId": "s1",
+                    "surfaceId": "feedback-form",
                     "components": [
                       {
                         "id": "root",
                         "component": {
-                          "Text": { "text": { "literalString": "Hello from the mock!" } }
+                          "Column": {
+                            "children": {
+                              "explicitList": [
+                                "form-title",
+                                "name-field",
+                                "email-field",
+                                "feedback-field",
+                                "submit-button"
+                              ]
+                            },
+                            "alignment": "start"
+                          }
+                        }
+                      },
+                      {
+                        "id": "form-title",
+                        "component": {
+                          "Text": {
+                            "text": {
+                              "literalString": "Feedback Form"
+                            },
+                            "usageHint": "h1"
+                          }
+                        }
+                      },
+                      {
+                        "id": "name-field",
+                        "component": {
+                          "TextField": {
+                            "label": {
+                              "literalString": "Name"
+                            },
+                            "text": {
+                              "literalString": ""
+                            },
+                            "textFieldType": "shortText"
+                          }
+                        }
+                      },
+                      {
+                        "id": "email-field",
+                        "component": {
+                          "TextField": {
+                            "label": {
+                              "literalString": "Email"
+                            },
+                            "text": {
+                              "literalString": ""
+                            },
+                            "textFieldType": "shortText"
+                          }
+                        }
+                      },
+                      {
+                        "id": "feedback-field",
+                        "component": {
+                          "TextField": {
+                            "label": {
+                              "literalString": "Feedback"
+                            },
+                            "text": {
+                              "literalString": ""
+                            },
+                            "textFieldType": "longText"
+                          }
+                        }
+                      },
+                      {
+                        "id": "submit-button",
+                        "component": {
+                          "Button": {
+                            "child": "submit-text",
+                            "action": {
+                              "name": "submit_feedback"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "id": "submit-text",
+                        "component": {
+                          "Text": {
+                            "text": {
+                              "literalString": "Submit"
+                            }
+                          }
                         }
                       }
                     ]
                   }
                 },
-                { "beginRendering": { "surfaceId": "s1", "root": "root" } }
+                {
+                  "beginRendering": {
+                    "surfaceId": "feedback-form",
+                    "root": "root"
+                  }
+                }
               ]
             }
           }
