@@ -264,4 +264,67 @@ describe('createProxyHandler', () => {
     } as never, res as never);
     expect(res.setHeader).toHaveBeenCalledWith('access-control-allow-origin', '*');
   });
+
+  // === Body-size cap ===
+
+  it('returns 413 when body length exceeds maxBodyBytes (via JSON.stringify)', async () => {
+    const fetchMock = vi.spyOn(global, 'fetch');
+    const handler = createProxyHandler({ backendUrl: DEFAULT_BACKEND, maxBodyBytes: 100 });
+    const res = makeRes();
+    const bigBody = { content: 'x'.repeat(200) };
+    await handler({
+      method: 'POST',
+      headers: { host: 'demo.cacheplane.ai', 'content-type': 'application/json' },
+      body: bigBody,
+      url: '/api/threads',
+      query: {},
+    } as never, res as never);
+    expect(res._status).toBe(413);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      error: 'payload_too_large',
+      maxBytes: 100,
+    }));
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('returns 413 when Content-Length header exceeds maxBodyBytes (short-circuit)', async () => {
+    const fetchMock = vi.spyOn(global, 'fetch');
+    const handler = createProxyHandler({ backendUrl: DEFAULT_BACKEND, maxBodyBytes: 100 });
+    const res = makeRes();
+    await handler({
+      method: 'POST',
+      headers: {
+        host: 'demo.cacheplane.ai',
+        'content-type': 'application/json',
+        'content-length': '500',
+      },
+      body: { ok: true },
+      url: '/api/threads',
+      query: {},
+    } as never, res as never);
+    expect(res._status).toBe(413);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      error: 'payload_too_large',
+      maxBytes: 100,
+      actualBytes: 500,
+    }));
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('does not enforce cap when maxBodyBytes is undefined (legacy examples behavior)', async () => {
+    const fetchMock = vi.spyOn(global, 'fetch').mockResolvedValue(
+      new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } }),
+    );
+    const handler = createProxyHandler({ backendUrl: DEFAULT_BACKEND });
+    const res = makeRes();
+    await handler({
+      method: 'POST',
+      headers: { host: 'demo.cacheplane.ai', 'content-type': 'application/json', 'content-length': '999999' },
+      body: { content: 'x'.repeat(50000) },
+      url: '/api/threads',
+      query: {},
+    } as never, res as never);
+    expect(fetchMock).toHaveBeenCalled();
+    expect(res._status).toBe(200);
+  });
 });

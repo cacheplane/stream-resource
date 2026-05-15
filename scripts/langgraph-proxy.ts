@@ -140,6 +140,26 @@ export function createProxyHandler(config: ProxyConfig = {}): (req: VercelReques
       return;
     }
 
+    // Body-size cap. Fast-fail before rate-limit + upstream fetch.
+    if (config.maxBodyBytes !== undefined) {
+      const cl = req.headers['content-length'];
+      const clNum = cl !== undefined ? Number(cl) : NaN;
+      let actualBytes: number;
+      if (Number.isFinite(clNum) && clNum >= 0) {
+        actualBytes = clNum;
+      } else {
+        actualBytes = JSON.stringify(req.body ?? '').length;
+      }
+      if (actualBytes > config.maxBodyBytes) {
+        res.status(413).json({
+          error: 'payload_too_large',
+          maxBytes: config.maxBodyBytes,
+          actualBytes,
+        });
+        return;
+      }
+    }
+
     // Rate-limit gate: only POST /api/threads/{id}/runs/stream burns OpenAI tokens.
     if (
       config.checkRateLimit &&
