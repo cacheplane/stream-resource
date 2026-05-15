@@ -1,0 +1,32 @@
+{
+  "fixtures": [
+    {
+      "match": { "userMessage": "show me a tiny surface" },
+      "response": {
+        "toolCalls": [
+          {
+            "name": "render_a2ui_surface",
+            "arguments": {
+              "envelopes": [
+                {
+                  "surfaceUpdate": {
+                    "surfaceId": "s1",
+                    "components": [
+                      {
+                        "id": "root",
+                        "component": {
+                          "Text": { "text": { "literalString": "Hello from the mock!" } }
+                        }
+                      }
+                    ]
+                  }
+                },
+                { "beginRendering": { "surfaceId": "s1", "root": "root" } }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
