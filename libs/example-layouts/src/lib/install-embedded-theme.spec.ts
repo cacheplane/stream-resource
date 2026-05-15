@@ -12,7 +12,7 @@ describe('installEmbeddedTheme', () => {
     installEmbeddedTheme();
     expect(document.documentElement.dataset.theme).toBe('dark');
     // Verify a representative --ds-* var got set to the dark value
-    expect(document.documentElement.style.getPropertyValue('--ds-canvas').trim()).toBe('#0e1117');
+    expect(document.documentElement.style.getPropertyValue('--ds-canvas').trim()).toBe('rgb(17, 17, 17)');
   });
 
   it('accepts a non-default initial theme', () => {
