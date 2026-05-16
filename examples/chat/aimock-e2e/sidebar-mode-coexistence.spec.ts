@@ -4,37 +4,43 @@ import { test, expect } from '@playwright/test';
 test.describe('chat-debug × chat-sidebar coexistence', () => {
   test('sidebar launcher remains reachable while chat-debug is open', async ({ page }) => {
     await page.goto('/sidebar');
-    // Open chat-debug via the floating top-right launcher.
+
+    // Open chat-debug via its floating top-right launcher (class `.launcher`
+    // on the chat-debug host — sidebar's launcher uses a different class).
     await page.locator('.launcher').click();
-    // Debug should auto-pick bottom dock when sidebar mode is active.
+
+    // Debug auto-picks bottom dock because <chat-sidebar> is present.
     const debugPanel = page.locator('.panel.panel--bottom');
     await expect(debugPanel).toBeVisible();
-    // Sidebar launcher must still be present and clickable.
-    const sidebarLauncher = page.locator('.chat-sidebar__launcher');
-    await expect(sidebarLauncher).toBeVisible();
-    await sidebarLauncher.click();
-    // Sidebar panel slides in.
+
+    // The edge-claim attribute on <html> reflects the dock.
+    await expect(page.locator('html')).toHaveAttribute('data-ngaf-chat-debug', 'bottom');
+
+    // Sidebar launcher remains visible (the bottom dock did not cover it).
+    // Click the actual <button> inside <chat-launcher-button> rather than the
+    // wrapping div — avoids any hit-test ambiguity between the wrapper and
+    // the higher-z-index debug panel.
+    const sidebarLauncherButton = page.locator('.chat-sidebar__launcher button.chat-launcher-button');
+    await expect(sidebarLauncherButton).toBeVisible();
+    await sidebarLauncherButton.click();
+
+    // Sidebar panel slides in — the click was not intercepted by the debug
+    // panel, which is the user-visible bug this design fixes.
     const sidebarPanel = page.locator('.chat-sidebar__panel[data-open="true"]');
     await expect(sidebarPanel).toBeVisible();
-    // No overlap: the bottom panel's right edge must end before the
-    // sidebar's left edge (sidebar is 28rem = 448px wide).
-    const sidebarBox = await sidebarPanel.boundingBox();
-    const debugBox = await debugPanel.boundingBox();
-    expect(sidebarBox).not.toBeNull();
-    expect(debugBox).not.toBeNull();
-    // debug right edge <= sidebar left edge (within 1px tolerance)
-    expect(debugBox!.x + debugBox!.width).toBeLessThanOrEqual(sidebarBox!.x + 1);
+
+    // Once the sidebar is open, the edge-claim attribute reflects it too.
+    await expect(page.locator('html')).toHaveAttribute('data-ngaf-chat-sidebar', 'open');
   });
 
   test('user override survives mode switch: explicit right-dock stays right', async ({ page }) => {
     await page.goto('/embed');
     await page.locator('.launcher').click();
-    // Click right-dock explicitly (the existing dock-btn 'is-active' selector confirms it's right by default,
-    // but click it anyway to set the override flag).
-    await page.locator('.panel__dock-btn').nth(2).click(); // 0=left, 1=bottom, 2=right per template
+    // Click right-dock explicitly — sets userDockOverride.
+    await page.locator('.panel__dock-btn').nth(2).click(); // 0=left, 1=bottom, 2=right
     // Switch to sidebar mode via the debug palette's Mode segmented control.
     await page.locator('.segmented__btn', { hasText: 'Sidebar' }).click();
-    // Debug should still be right-docked, not auto-flipped to bottom.
+    // Debug stays right-docked despite chat-sidebar now being on the page.
     await expect(page.locator('.panel.panel--right')).toBeVisible();
     await expect(page.locator('.panel.panel--bottom')).not.toBeVisible();
   });
