@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
+import { TestBed } from '@angular/core/testing';
 import { computeStateDiff } from './state-diff';
 import type { DiffEntry } from './state-diff';
 import { toDebugCheckpoint, extractStateValues } from './debug-utils';
@@ -86,5 +87,17 @@ describe('ChatDebugComponent', () => {
 describe('DebugCheckpointCardComponent', () => {
   it('is defined as a class', () => {
     expect(typeof DebugCheckpointCardComponent).toBe('function');
+  });
+});
+
+describe('ChatDebugComponent — edge-claim attribute', () => {
+  afterEach(() => {
+    document.documentElement.removeAttribute('data-ngaf-chat-debug');
+  });
+
+  it('sets data-ngaf-chat-debug=dock on <html> while open', () => {
+    const styles = (ChatDebugComponent as unknown as { ɵcmp: { styles: string[] } }).ɵcmp.styles.join('\n');
+    expect(styles).toMatch(/\.panel--bottom[^{]*\{[^}]*right:\s*var\(--ngaf-chat-occupy-right/);
+    expect(styles).toMatch(/\.panel--right[^{]*\{[^}]*right:\s*var\(--ngaf-chat-occupy-right/);
   });
 });

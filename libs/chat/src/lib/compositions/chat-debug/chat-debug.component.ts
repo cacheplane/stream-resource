@@ -99,12 +99,15 @@ interface TabEntry {
       animation: chat-debug-panel-enter 120ms ease;
     }
     .panel--right {
-      top: 0; right: 0; bottom: 0;
+      top: 0;
+      right: var(--ngaf-chat-occupy-right, 0);
+      bottom: 0;
       width: var(--panel-size, 420px);
       border-right: 0;
       border-top-left-radius: var(--ngaf-chat-debug-radius-panel);
       border-bottom-left-radius: var(--ngaf-chat-debug-radius-panel);
       transform-origin: bottom right;
+      transition: right 200ms ease-out;
     }
     .panel--left {
       top: 0; left: 0; bottom: 0;
@@ -115,12 +118,15 @@ interface TabEntry {
       transform-origin: bottom left;
     }
     .panel--bottom {
-      left: 0; right: 0; bottom: 0;
+      left: 0;
+      right: var(--ngaf-chat-occupy-right, 0);
+      bottom: 0;
       height: var(--panel-size, 40vh);
       border-bottom: 0;
       border-top-left-radius: var(--ngaf-chat-debug-radius-panel);
       border-top-right-radius: var(--ngaf-chat-debug-radius-panel);
       transform-origin: bottom right;
+      transition: right 200ms ease-out;
     }
     @keyframes chat-debug-panel-enter {
       from { opacity: 0; transform: scale(0.96); }
@@ -399,6 +405,19 @@ export class ChatDebugComponent {
       p.write('open', this.open());
       p.write('dock', this.dockState());
       p.write('tab', this.activeTabId());
+    });
+
+    // Publish the dock the panel currently occupies. Peer panels
+    // (e.g. chat-sidebar) read --ngaf-chat-occupy-{right,bottom,left}
+    // to avoid overlap.
+    effect(() => {
+      if (typeof document === 'undefined') return;
+      const html = document.documentElement;
+      if (this.open()) {
+        html.dataset['ngafChatDebug'] = this.dockState();
+      } else {
+        delete html.dataset['ngafChatDebug'];
+      }
     });
   }
 
