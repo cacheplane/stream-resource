@@ -2,7 +2,12 @@
 import { Injectable, signal } from '@angular/core';
 import type { RenderLifecycle } from './lifecycle';
 
-@Injectable({ providedIn: 'root' })
+/**
+ * Provided by `provideRender()` — opt-in. Scope follows the consumer's
+ * `provideRender` call (root-scoped by default, sub-tree if `provideRender`
+ * is in a sub-injector).
+ */
+@Injectable()
 export class RenderLifecycleService implements RenderLifecycle {
   private _firstMountAt = signal<{ kind: 'spec' | 'element'; elementType?: string; at: number } | null>(null);
   private _mountCount = signal(0);
