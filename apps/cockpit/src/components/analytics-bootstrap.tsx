@@ -4,7 +4,7 @@
 import { useEffect } from 'react';
 import posthog from 'posthog-js';
 import { getCockpitSessionId } from '../lib/analytics/distinct-id';
-import { shouldCaptureAnalytics } from '../lib/analytics/properties';
+import { shouldCaptureAnalytics } from '@ngaf/telemetry/browser';
 
 /**
  * Client-side analytics bootstrap. Initializes posthog-js once per
