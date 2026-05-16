@@ -100,6 +100,7 @@ export const docsConfig: DocsLibrary[] = [
           { title: 'State Store', slug: 'state-store', section: 'guides' },
           { title: 'Specs & Elements', slug: 'specs', section: 'guides' },
           { title: 'Events & Handlers', slug: 'events', section: 'guides' },
+          { title: 'Lifecycle Signals', slug: 'lifecycle', section: 'guides' },
         ],
       },
       {
