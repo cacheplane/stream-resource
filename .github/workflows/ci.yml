@@ -169,13 +169,14 @@ jobs:
       - working-directory: cockpit/langgraph/streaming/python
         run: uv sync
       - run: npx playwright install --with-deps chromium
-      - run: npx nx e2e cockpit --skip-nx-cache
+      - run: npx nx run-many --target=e2e --projects=cockpit-*-angular --parallel=1 --skip-nx-cache
       - name: Upload Playwright trace on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: cockpit-e2e-trace
-          path: apps/cockpit/e2e/test-results/
+          path: |
+            cockpit/**/angular/e2e/test-results/
           retention-days: 7
 
   website-e2e:
