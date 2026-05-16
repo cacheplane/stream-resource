@@ -24,7 +24,8 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, MessagesState, END
 from langgraph.types import Command
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError, field_validator
+
 
 # Inlined flight fixtures — standalone has no aviation_data module.
 _FLIGHTS = [
@@ -70,31 +71,60 @@ A2UI_PREFIX = "---a2ui_JSON---"
 AIRPORT_CODES = ["LAX", "JFK", "SFO", "ORD", "BOS", "ATL", "DFW", "SEA", "MIA", "DEN"]
 FARE_CLASSES = ["Economy", "Premium", "Business", "First"]
 
+# Catalog component names — must match libs/chat/src/lib/a2ui/catalog/index.ts.
+# The chat-lib's unwrapComponentDef() looks for ONE key from this set inside the
+# `component` field. Unknown / multiple keys fall through to a stub Text and
+# render nothing visible — silent failure mode, hence the field_validator below.
+ALLOWED_COMPONENTS = frozenset({
+    "AudioPlayer", "Button", "Card", "CheckBox", "Column", "DateTimeInput",
+    "Divider", "Icon", "Image", "List", "Modal", "MultipleChoice", "Row",
+    "Slider", "Tabs", "Text", "TextField", "Video",
+})
+
 
 # ── Pydantic schemas ────────────────────────────────────────────────────────
 
 class A2uiComponent(BaseModel):
-    """Single A2UI updateComponents entry.
+    """Single A2UI v0.9 updateComponents entry.
 
-    Literal[...] on `component` is the gate that keeps the LLM from
-    inventing component types not in the catalog. Pydantic raises
-    ValidationError if it does, triggering retry.
+    Format (from libs/chat/src/lib/a2ui/surface-to-spec.ts):
+        {id: "name_field",
+         component: {TextField: {label: "Name", text: {path: "/name"}}}}
+
+    The `component` field MUST be a single-key dict whose key is one of
+    ALLOWED_COMPONENTS. The inner dict is the per-component props (see
+    libs/a2ui/src/lib/types.ts for the per-component shapes).
+
+    Key per-component notes the LLM must respect:
+      Card({child: "<id>"})                         — single child only
+      Button({child: "<id>", action: {...}})        — child is a Text id (label)
+      Column/Row/List({children: {explicitList:[id,...]}})
+      TextField({label, text: {path:"/p"}, textFieldType: "shortText"|"number"|"date"|...})
+      MultipleChoice({label, options:[{label,value}], selections:{path}, maxAllowedSelections:1})
+      Text({text: "literal or {path:'/p'}", usageHint?: "h1"|"h2"|"body"|...})
+      Divider({})
     """
     id: str
-    component: Literal[
-        "Column", "Row", "Card", "TextField", "ChoicePicker",
-        "NumberField", "DatePicker", "CheckBox", "Button", "Divider",
-    ]
-    label: str | None = None
-    title: str | None = None
-    placeholder: str | None = None
-    options: list[str] | None = None
-    value: dict[str, Any] | None = None
-    selected: dict[str, Any] | None = None
-    checked: dict[str, Any] | None = None
-    children: list[str] | None = None
-    checks: list[dict[str, Any]] | None = None
-    action: dict[str, Any] | None = None
+    component: dict[str, dict[str, Any]] = Field(
+        description=(
+            "Single-key map {ComponentName: {props}}. ComponentName must be "
+            "one of: " + ", ".join(sorted(ALLOWED_COMPONENTS))
+        ),
+    )
+
+    @field_validator("component")
+    @classmethod
+    def _single_known_key(cls, v: dict[str, Any]) -> dict[str, Any]:
+        if not isinstance(v, dict) or len(v) != 1:
+            raise ValueError(
+                f"component must be a single-key dict, got keys: {list(v) if isinstance(v, dict) else type(v)}"
+            )
+        key = next(iter(v))
+        if key not in ALLOWED_COMPONENTS:
+            raise ValueError(
+                f"component '{key}' not in catalog. Allowed: {sorted(ALLOWED_COMPONENTS)}"
+            )
+        return v
 
 
 class _SurfaceSpec(BaseModel):
@@ -198,46 +228,73 @@ async def _emit_with_retry(
 
 # ── build_form node ─────────────────────────────────────────────────────────
 
-_BUILD_FORM_SYSTEM = f"""You are an aviation booking-form designer. Emit an A2UI booking form using the structured output schema.
+_AIRPORT_OPTIONS = [{"label": c, "value": c} for c in AIRPORT_CODES]
+_FARE_OPTIONS = [{"label": c, "value": c} for c in FARE_CLASSES]
 
-Required components (in this order, inside a single Card titled "Book a flight" inside a Column root):
-1. Origin airport ChoicePicker — options = {AIRPORT_CODES}, selected = {{"path": "/origin"}}
-2. Destination airport ChoicePicker — same options, selected = {{"path": "/dest"}}
-3. Departure date TextField — value = {{"path": "/date"}}, placeholder "YYYY-MM-DD"
-4. Passengers NumberField — value = {{"path": "/passengers"}}
-5. Fare class ChoicePicker — options = {FARE_CLASSES}, selected = {{"path": "/fare_class"}}
-6. Submit Button — label "Search flights", action = {{"event": {{"name": "bookingSubmit", "context": {{"formId": "booking"}}}}}}
+_BUILD_FORM_SYSTEM = f"""You are an aviation booking-form designer. Emit an A2UI v0.9 booking form using the structured output schema.
 
-Submit button MUST be gated by `checks` that require:
-- /origin set (call: "required")
-- /dest set (call: "required")
-- /date set (call: "required")
+A2UI FORMAT (CRITICAL): each component is `{{"id": "...", "component": {{"<ComponentName>": {{<props>}}}}}}`. The component name is the SINGLE KEY of the inner dict. ComponentName must be one of:
+  Column, Row, Card, Text, TextField, MultipleChoice, DateTimeInput, CheckBox, Button, Divider, List, Image, Icon, Modal, Slider, Tabs
 
-Default data_model: {{"origin": "", "dest": "", "date": "", "passengers": 1, "fare_class": "Economy"}}
-surface_id MUST be "booking".
+Per-component shapes:
+  Column / Row / List: {{"children": {{"explicitList": ["id1", "id2"]}}}}
+  Card:                {{"child": "<id>"}}            ← single child only
+  Button:              {{"child": "<text-id>", "primary": true, "action": {{"name": "<eventName>", "context": [{{"key":"formId","value":"booking"}}]}}}}
+  Text:                {{"text": "literal string", "usageHint": "h2"}}    (h1/h2/h3/h4/h5/caption/body)
+  TextField:           {{"label": "Field", "text": {{"path": "/p"}}, "textFieldType": "shortText"}}  (shortText/longText/number/date/obscured)
+  MultipleChoice:      {{"label": "Origin", "options": [{{"label":"LAX","value":"LAX"}}], "selections": {{"path":"/origin"}}, "maxAllowedSelections": 1}}
+  CheckBox:            {{"label": "...", "checked": {{"path":"/p"}}}}
+  Divider:             {{}}
 
-Use unique `id` values for every component (e.g. "root", "card", "origin_field", etc.)."""
+Required form composition for THIS task:
+  surface_id MUST be "booking"
+  data_model MUST be {{"origin": "", "dest": "", "date": "", "passengers": 1, "fare_class": "Economy"}}
+
+  Build this component tree:
+    root (Column, children=[card])
+    card (Card, child=card_col)
+    card_col (Column, children=[title, origin, dest, date, passengers, fare, submit])
+    title (Text, text="Book a flight", usageHint="h2")
+    origin (MultipleChoice, label="Origin", options={_AIRPORT_OPTIONS}, selections={{"path":"/origin"}}, maxAllowedSelections=1)
+    dest (MultipleChoice, label="Destination", options={_AIRPORT_OPTIONS}, selections={{"path":"/dest"}}, maxAllowedSelections=1)
+    date (TextField, label="Departure date (YYYY-MM-DD)", text={{"path":"/date"}}, textFieldType="date")
+    passengers (TextField, label="Passengers", text={{"path":"/passengers"}}, textFieldType="number")
+    fare (MultipleChoice, label="Fare class", options={_FARE_OPTIONS}, selections={{"path":"/fare_class"}}, maxAllowedSelections=1)
+    submit (Button, child=submit_label, primary=true, action={{"name":"bookingSubmit","context":[{{"key":"formId","value":"booking"}}]}})
+    submit_label (Text, text="Search flights")
+
+Use these exact ids."""
+
+
+def _comp(id_: str, name: str, props: dict[str, Any]) -> A2uiComponent:
+    """Tiny helper so the sentinels read naturally."""
+    return A2uiComponent(id=id_, component={name: props})
 
 
 _SENTINEL_BOOKING_FORM = BookingFormSpec(
     surface_id="booking",
     data_model={"origin": "", "dest": "", "date": "", "passengers": 1, "fare_class": "Economy"},
     components=[
-        A2uiComponent(id="root", component="Column", children=["card"]),
-        A2uiComponent(id="card", component="Card", title="Book a flight (fallback)",
-                      children=["origin", "dest", "date", "passengers", "fare", "submit"]),
-        A2uiComponent(id="origin", component="ChoicePicker", label="Origin",
-                      options=AIRPORT_CODES, selected={"path": "/origin"}),
-        A2uiComponent(id="dest", component="ChoicePicker", label="Destination",
-                      options=AIRPORT_CODES, selected={"path": "/dest"}),
-        A2uiComponent(id="date", component="TextField", label="Date",
-                      value={"path": "/date"}, placeholder="YYYY-MM-DD"),
-        A2uiComponent(id="passengers", component="NumberField", label="Passengers",
-                      value={"path": "/passengers"}),
-        A2uiComponent(id="fare", component="ChoicePicker", label="Fare class",
-                      options=FARE_CLASSES, selected={"path": "/fare_class"}),
-        A2uiComponent(id="submit", component="Button", label="Search flights",
-                      action={"event": {"name": "bookingSubmit", "context": {"formId": "booking"}}}),
+        _comp("root", "Column", {"children": {"explicitList": ["card"]}}),
+        _comp("card", "Card", {"child": "card_col"}),
+        _comp("card_col", "Column", {"children": {"explicitList": [
+            "title", "origin", "dest", "date", "passengers", "fare", "submit",
+        ]}}),
+        _comp("title", "Text", {"text": "Book a flight (fallback)", "usageHint": "h2"}),
+        _comp("origin", "MultipleChoice", {"label": "Origin", "options": _AIRPORT_OPTIONS,
+                                            "selections": {"path": "/origin"}, "maxAllowedSelections": 1}),
+        _comp("dest", "MultipleChoice", {"label": "Destination", "options": _AIRPORT_OPTIONS,
+                                          "selections": {"path": "/dest"}, "maxAllowedSelections": 1}),
+        _comp("date", "TextField", {"label": "Departure date (YYYY-MM-DD)",
+                                     "text": {"path": "/date"}, "textFieldType": "date"}),
+        _comp("passengers", "TextField", {"label": "Passengers",
+                                           "text": {"path": "/passengers"}, "textFieldType": "number"}),
+        _comp("fare", "MultipleChoice", {"label": "Fare class", "options": _FARE_OPTIONS,
+                                          "selections": {"path": "/fare_class"}, "maxAllowedSelections": 1}),
+        _comp("submit", "Button", {"child": "submit_label", "primary": True,
+                                    "action": {"name": "bookingSubmit",
+                                               "context": [{"key": "formId", "value": "booking"}]}}),
+        _comp("submit_label", "Text", {"text": "Search flights"}),
     ],
 )
 
@@ -261,26 +318,58 @@ _SEARCH_FLIGHTS_SYSTEM = """You just received a booking submission. The find_rou
 
 Form data (for context): {form_json}
 
-Emit an A2UI results surface using the FlightResultsSpec schema.
+Emit an A2UI v0.9 results surface using the FlightResultsSpec schema.
 
-- surface_id MUST be "results"
-- data_model can be {{}} (no user input needed on this surface)
-- Root is a Column with children = list of flight Card ids (or a single Card "no_flights" if the list is empty)
-- For each flight: a Card with title "<airline> flight <flight_number>", containing TextField/Divider children showing route, depart/arrive times, duration, aircraft, gate, and a "Select" Button whose action emits {{"event": {{"name": "flightSelect", "context": {{"flightId": "<flight_number>"}}}}}}
-- For the empty case: a single Card with id "no_flights" titled "No flights found", containing a "Modify search" Button with action {{"event": {{"name": "modifySearch", "context": {{"formId": "booking"}}}}}}
+A2UI format (CRITICAL): every component is `{{"id": "...", "component": {{"<ComponentName>": {{<props>}}}}}}`. The component name is the SINGLE KEY of the inner dict.
 
-Use unique `id` values for every component."""
+Allowed component names: Column, Row, Card, Text, TextField, Button, Divider, List.
+
+Per-component shapes you'll need:
+  Column / List: {{"children": {{"explicitList": ["id1", "id2"]}}}}
+  Card:          {{"child": "<single-id>"}}
+  Text:          {{"text": "literal", "usageHint": "h2"}}  (or h1/h3/body/caption)
+  Button:        {{"child": "<text-id>", "primary": true, "action": {{"name": "<event>", "context": [{{"key":"flightId","value":"<num>"}}]}}}}
+  Divider:       {{}}
+
+Surface constraints:
+  surface_id MUST be "results"
+  data_model can be {{}}
+  Root = a Column whose explicitList lists every flight Card id (or just ["no_flights"] when empty)
+
+Build pattern (one per flight):
+  card_<n>      (Card, child=col_<n>)
+  col_<n>       (Column, children explicitList = [title_<n>, route_<n>, time_<n>, btn_<n>])
+  title_<n>     (Text, text="<airline> flight <flight_number>", usageHint="h3")
+  route_<n>     (Text, text="<from> → <to>  •  <duration_min> min  •  <aircraft>", usageHint="body")
+  time_<n>      (Text, text="Depart <depart_local>  •  Arrive <arrive_local>  •  Gate <gate>", usageHint="caption")
+  btn_<n>       (Button, child=btn_label_<n>, primary=true,
+                 action={{"name":"flightSelect","context":[{{"key":"flightId","value":"<flight_number>"}}]}})
+  btn_label_<n> (Text, text="Select")
+
+Empty case: components = [
+  {{"id":"root", "component":{{"Column":{{"children":{{"explicitList":["no_flights"]}}}}}}}},
+  {{"id":"no_flights","component":{{"Card":{{"child":"empty_col"}}}}}},
+  {{"id":"empty_col","component":{{"Column":{{"children":{{"explicitList":["empty_msg","modify_btn"]}}}}}}}},
+  {{"id":"empty_msg","component":{{"Text":{{"text":"No flights found","usageHint":"h3"}}}}}},
+  {{"id":"modify_btn","component":{{"Button":{{"child":"modify_label","action":{{"name":"modifySearch","context":[{{"key":"formId","value":"booking"}}]}}}}}}}},
+  {{"id":"modify_label","component":{{"Text":{{"text":"Modify search"}}}}}}
+]
+
+Use unique ids for every component."""
 
 
 _SENTINEL_RESULTS = FlightResultsSpec(
     surface_id="results",
     data_model={},
     components=[
-        A2uiComponent(id="root", component="Column", children=["msg"]),
-        A2uiComponent(id="msg", component="Card", title="Results unavailable",
-                      children=["modify"]),
-        A2uiComponent(id="modify", component="Button", label="Modify search",
-                      action={"event": {"name": "modifySearch", "context": {"formId": "booking"}}}),
+        _comp("root", "Column", {"children": {"explicitList": ["msg"]}}),
+        _comp("msg", "Card", {"child": "msg_col"}),
+        _comp("msg_col", "Column", {"children": {"explicitList": ["msg_text", "modify"]}}),
+        _comp("msg_text", "Text", {"text": "Results unavailable", "usageHint": "h3"}),
+        _comp("modify", "Button", {"child": "modify_label",
+                                    "action": {"name": "modifySearch",
+                                               "context": [{"key": "formId", "value": "booking"}]}}),
+        _comp("modify_label", "Text", {"text": "Modify search"}),
     ],
 )
 
