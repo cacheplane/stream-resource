@@ -131,7 +131,14 @@ async def _emit_with_retry(
     Each retry re-injects the error message so the model has a chance
     to correct its output. After max_attempts, raises RuntimeError.
     """
-    llm = _get_llm().with_structured_output(spec_cls)
+    # method="function_calling" is required because our schema uses
+    # `dict[str, Any]` fields (value/selected/checked/checks/action) for
+    # A2UI binding payloads. OpenAI's default strict structured-output mode
+    # demands additionalProperties=false on every nested object and rejects
+    # open dicts. Function-calling mode is more flexible and the model
+    # still adheres to the rest of the schema (especially the Literal[...]
+    # on component type, which is the actual safety gate we need).
+    llm = _get_llm().with_structured_output(spec_cls, method="function_calling")
     messages = list(base_messages)
     last_err: Exception | None = None
     for attempt in range(max_attempts):
