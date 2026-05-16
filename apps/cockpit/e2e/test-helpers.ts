@@ -14,7 +14,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
  * attribute before counting or text-matching downstream of the assistant turn.
  */
 export async function sendPromptAndWait(page: Page, prompt: string): Promise<Locator> {
-  await page.goto('/embed');
+  await page.goto('/');
   const input = page.getByRole('textbox', { name: /message|prompt/i });
   await input.fill(prompt);
   await page.getByRole('button', { name: /send/i }).click();
