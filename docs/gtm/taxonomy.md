@@ -52,13 +52,14 @@ The standard PostHog `$pageview` event is used as-is across all three surfaces.
 | Event                                          | When                                                   |
 |------------------------------------------------|--------------------------------------------------------|
 | `cockpit:recipe_start`                         | Recipe page loaded with intent (`?source=` present)    |
-| `cockpit:install_command_copied`               | Install command copied                                 |
 | `cockpit:transport_connected`                  | LangGraph/AG-UI/custom adapter wired in tour           |
 | `cockpit:chat_first_message`                   | First user message sent in cockpit chat                |
 | `cockpit:thread_persisted`                     | Thread saved (re-load demonstrated)                    |
 | `cockpit:interrupt_handled`                    | Human-approval interrupt completed                     |
 | `cockpit:generative_component_rendered`        | One generative Angular component rendered              |
-| `cockpit:six_signals_complete`                 | All six signals fired within 30 min for one session    |
+| `cockpit:activation_complete`                  | All five activation signals fired within 30 min for one session |
+
+Activation funnel is 5 signals as of Spec 1C. `ngaf:postinstall` is a separate top-of-funnel chart — uncorrelated to cockpit sessions by design.
 
 ## ngaf (library telemetry)
 
@@ -135,3 +136,4 @@ This file is human-edited. When events are added/renamed/removed, update the aff
 | Date       | Change |
 |------------|--------|
 | 2026-05-13 | Initial draft per Spec 0. |
+| 2026-05-15 | Drop cockpit:install_command_copied, rename cockpit:six_signals_complete → cockpit:activation_complete (Spec 1C). |
