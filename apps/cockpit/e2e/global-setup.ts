@@ -61,7 +61,7 @@ export default async function globalSetup(): Promise<void> {
 
   const angular = spawn(
     'npx',
-    ['nx', 'serve', 'cockpit-chat-messages-angular', '--port', '4501'],
+    ['nx', 'serve', 'cockpit-langgraph-streaming-angular', '--port', '4300'],
     {
       cwd: REPO_ROOT,
       env: { ...process.env },
@@ -71,9 +71,9 @@ export default async function globalSetup(): Promise<void> {
   angular.stdout?.on('data', (b) => process.stdout.write(`[angular] ${b}`));
   angular.stderr?.on('data', (b) => process.stderr.write(`[angular] ${b}`));
 
-  await waitForPort('http://localhost:4501/', 120_000);
+  await waitForPort('http://localhost:4300/', 120_000);
   // eslint-disable-next-line no-console
-  console.log('[cockpit] angular ready on :4501');
+  console.log('[cockpit] angular ready on :4300');
 
   globalThis.__COCKPIT_AIMOCK_E2E_STATE__ = { aimock, langgraph, angular };
 }

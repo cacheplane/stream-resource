@@ -10,7 +10,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: 'http://localhost:4501',
+    baseURL: 'http://localhost:4300',
     trace: 'retain-on-failure',
   },
   projects: [
