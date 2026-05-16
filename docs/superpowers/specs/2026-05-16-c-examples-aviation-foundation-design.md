@@ -24,9 +24,9 @@ Out of scope:
 | 1 | Aviation domain — single source of truth | New `aviation_data.py` with ~10 airports, ~4 airlines, ~30 flights, static "current weather" per airport |
 | 2 | c-tool-calls tool set | 3 tools: `lookup_flight(flight_number)`, `get_airport_info(airport_code)`, `find_routes(from_code, to_code, date_offset_days=0)` |
 | 3 | c-tool-calls graph shape | Standard agent ↔ ToolNode loop (the canonical LangGraph pattern); LLM bound with all 3 tools |
-| 4 | c-subagents architecture | Sequential pipeline: orchestrator → research → booking → itinerary → END. Every query runs the full chain. |
+| 4 | c-subagents architecture | Orchestrator LLM with single `task` tool. System prompt directs sequential invocation: research → booking → itinerary. LLM is sequential because the prompt mandates it (not via graph structure). |
 | 5 | c-subagents subagent tools | Research: `[get_airport_info]`. Booking: `[find_routes, lookup_flight]`. Itinerary: no tools (text synthesis only). |
-| 6 | Subagent message identity | Each subagent emits its `AIMessage` with `name="research"` / `"booking"` / `"itinerary"` so the chat lib's subagent rendering primitives render them as distinct cards |
+| 6 | c-subagents UI rendering | Orchestrator LLM calls a single `task(role, task_description)` tool. Chat lib's `SubagentTracker` auto-creates subagent cards from tool calls matching `subagentToolNames` (default `['task']`). The `role` arg distinguishes which specialized subagent ran. |
 | 7 | Theme-rewrite scope | Only `tool-calls.md` + `subagents.md` prompt files in this PR. The other 9 prompts (messages/input/debug/interrupts/theming/threads/timeline/generative-ui/a2ui) get their aviation rewrites in subsequent PRs. |
 
 ## Architecture
@@ -49,18 +49,20 @@ START → agent → [tool_calls?] → ToolNode → agent → ... → END
 
 Single LLM node bound with all 3 tools. Standard `langgraph.prebuilt.ToolNode`. Loops until LLM emits a final answer with no tool calls.
 
-**c-subagents graph (sequential pipeline):**
+**c-subagents graph (orchestrator + task tool):**
 
 ```
-START → orchestrator → research → booking → itinerary → END
+START → orchestrator (LLM with task tool) → [task calls] → ToolNode → orchestrator → ... → END
 ```
 
-- **orchestrator**: emits a single `AIMessage(name="orchestrator", content="Delegating to research, booking, and itinerary subagents...")` — frames the user's request for downstream subagents
-- **research**: own LLM, bound with `[get_airport_info]`. System prompt focuses on destination/airport intel. Emits `AIMessage(name="research", ...)` after its tool loop completes
-- **booking**: own LLM, bound with `[find_routes, lookup_flight]`. System prompt focuses on finding flight options. Emits `AIMessage(name="booking", ...)`
-- **itinerary**: own LLM, no tools. Receives the accumulated message history (incl. research + booking outputs). Produces final synthesized summary. Emits `AIMessage(name="itinerary", ...)`
-
-State carries the standard `MessagesState` (just the message list). Each subagent reads the full history and appends its own message.
+- The orchestrator is a single LLM node bound with one tool: `task(role: Literal["research","booking","itinerary"], task_description: str)`
+- The `task` tool's implementation dispatches to one of 3 internal async functions:
+  - `_run_research_subagent(description)` — own LLM bound with `[get_airport_info]`, own system prompt
+  - `_run_booking_subagent(description)` — own LLM bound with `[find_routes, lookup_flight]`, own system prompt
+  - `_run_itinerary_subagent(description)` — own LLM, no tools, focused on synthesis
+- Each subagent function returns its final answer as a string (the tool result)
+- The orchestrator's system prompt directs sequential invocation: "Call task() three times in order: research, booking, itinerary"
+- The chat lib's `SubagentTracker` watches for tool calls named `task` (its default) and surfaces them as subagent cards in the chat-subagents UI
 
 ## Mock dataset shape
 
