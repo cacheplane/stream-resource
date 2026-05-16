@@ -1,0 +1,12 @@
+{
+  "fixtures": [
+    {
+      "match": {
+        "userMessage": "Tell me one quick fact about Angular signals in two sentences."
+      },
+      "response": {
+        "content": "Hi \u2014 this demo showcases ChatMessagesComponent, ChatInputComponent, and ChatTypingIndicatorComponent working together as individual primitives rather than the composed ChatComponent.\n\nQuick fact: Angular signals are lightweight reactive primitives that hold state and notify dependents (computed values and effects) when the value changes. They enable fine-grained reactivity, reducing reliance on Zone.js and making update propagation more predictable and efficient.\n\nExample usage:\nconst count = signal(0);\nconst double = computed(() => count() * 2);\neffect(() => console.log(double()));"
+      }
+    }
+  ]
+}
