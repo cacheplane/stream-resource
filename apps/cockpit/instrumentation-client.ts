@@ -9,7 +9,8 @@ const host = typeof window === 'undefined' ? undefined : window.location.host;
 
 if (shouldCaptureAnalytics({ token, captureLocal, host })) {
   posthog.init(token!, {
-    api_host: process.env.NEXT_PUBLIC_COCKPIT_POSTHOG_HOST ?? 'https://us.i.posthog.com',
+    api_host: '/ingest',
+    ui_host: 'https://us.posthog.com',
     persistence: 'memory',
     bootstrap: { distinctID: getCockpitSessionId() },
     autocapture: false,
