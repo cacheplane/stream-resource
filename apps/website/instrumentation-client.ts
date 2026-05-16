@@ -1,8 +1,6 @@
 import posthog from 'posthog-js';
-import {
-  normalizePostHogHost,
-  shouldCaptureAnalytics,
-} from './src/lib/analytics/properties';
+import { normalizePostHogHost } from '@ngaf/telemetry/shared';
+import { shouldCaptureAnalytics } from '@ngaf/telemetry/browser';
 
 const token = process.env.NEXT_PUBLIC_POSTHOG_TOKEN;
 const captureLocal = process.env.NEXT_PUBLIC_POSTHOG_CAPTURE_LOCAL === 'true';
