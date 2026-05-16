@@ -102,6 +102,7 @@ export function CockpitShell({
               modes={PRIMARY_MODES}
               activeMode={activeMode}
               onChange={setActiveMode}
+              capability={entry.topic}
             />
           </div>
         </header>
