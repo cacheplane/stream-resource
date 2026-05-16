@@ -7,6 +7,30 @@ import { CockpitTelemetryService } from './cockpit-telemetry.service';
 import { COCKPIT_TELEMETRY_CONFIG } from './tokens';
 import { ActivationAggregator } from './activation-aggregator';
 import { CHAT_LIFECYCLE, type ChatLifecycle } from '@ngaf/chat';
+import { AgentLifecycleRegistry, type AgentLifecycle } from '@ngaf/langgraph';
+
+function makeAgentLifecycle(): AgentLifecycle & {
+  _setStreamStarted: () => void;
+  _setThreadPersisted: () => void;
+  _setInterruptResolved: () => void;
+} {
+  const streamStartedAt = signal<number | null>(null);
+  const threadPersistedAt = signal<number | null>(null);
+  const interruptResolvedAt = signal<number | null>(null);
+  return {
+    streamStartedAt: streamStartedAt.asReadonly(),
+    streamErrorAt: signal<{ at: number; classification: string } | null>(null).asReadonly(),
+    interruptReceivedAt: signal<number | null>(null).asReadonly(),
+    interruptResolvedAt: interruptResolvedAt.asReadonly(),
+    threadCreatedAt: signal<number | null>(null).asReadonly(),
+    threadPersistedAt: threadPersistedAt.asReadonly(),
+    toolCallStartedAt: signal<number | null>(null).asReadonly(),
+    toolCallCompletedAt: signal<number | null>(null).asReadonly(),
+    _setStreamStarted: () => streamStartedAt.set(Date.now()),
+    _setThreadPersisted: () => threadPersistedAt.set(Date.now()),
+    _setInterruptResolved: () => interruptResolvedAt.set(Date.now()),
+  };
+}
 
 const mocks = vi.hoisted(() => ({
   init: vi.fn(),
@@ -115,5 +139,114 @@ describe('CockpitTelemetryService', () => {
     await Promise.resolve();
     const call = mocks.capture.mock.calls.find(([e]) => e === 'cockpit:chat_first_message');
     expect((call?.[1] as Record<string, unknown>)['capability']).toBe('streaming');
+  });
+
+  test('no AgentLifecycleRegistry provided → no agent events fire', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: COCKPIT_TELEMETRY_CONFIG,
+          useValue: { posthogKey: 'phc_test', distinctId: 'd1', capabilitySlug: 'streaming' },
+        },
+        ActivationAggregator,
+        CockpitTelemetryService,
+      ],
+    });
+    const svc2 = TestBed.inject(CockpitTelemetryService);
+    svc2.init();
+    expect(mocks.capture).not.toHaveBeenCalledWith(
+      'cockpit:transport_connected',
+      expect.anything(),
+    );
+  });
+
+  test('fires cockpit:transport_connected when a registered agent lifecycle streamStartedAt flips', async () => {
+    TestBed.resetTestingModule();
+    const registry = new AgentLifecycleRegistry();
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: COCKPIT_TELEMETRY_CONFIG,
+          useValue: { posthogKey: 'phc_test', distinctId: 'd1', capabilitySlug: 'streaming' },
+        },
+        ActivationAggregator,
+        { provide: AgentLifecycleRegistry, useValue: registry },
+        CockpitTelemetryService,
+      ],
+    });
+    const svc2 = TestBed.inject(CockpitTelemetryService);
+    svc2.init();
+    const lifecycle = makeAgentLifecycle();
+    registry.register(lifecycle);
+    TestBed.tick();
+    await Promise.resolve();
+    lifecycle._setStreamStarted();
+    TestBed.tick();
+    await Promise.resolve();
+    expect(mocks.capture).toHaveBeenCalledWith(
+      'cockpit:transport_connected',
+      expect.objectContaining({ capability: 'streaming' }),
+    );
+  });
+
+  test('fires cockpit:thread_persisted and cockpit:interrupt_handled for registered agents', async () => {
+    TestBed.resetTestingModule();
+    const registry = new AgentLifecycleRegistry();
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: COCKPIT_TELEMETRY_CONFIG,
+          useValue: { posthogKey: 'phc_test', distinctId: 'd1', capabilitySlug: 'streaming' },
+        },
+        ActivationAggregator,
+        { provide: AgentLifecycleRegistry, useValue: registry },
+        CockpitTelemetryService,
+      ],
+    });
+    const svc2 = TestBed.inject(CockpitTelemetryService);
+    svc2.init();
+    const lifecycle = makeAgentLifecycle();
+    registry.register(lifecycle);
+    TestBed.tick();
+    await Promise.resolve();
+    lifecycle._setThreadPersisted();
+    lifecycle._setInterruptResolved();
+    TestBed.tick();
+    await Promise.resolve();
+    expect(mocks.capture).toHaveBeenCalledWith('cockpit:thread_persisted', expect.anything());
+    expect(mocks.capture).toHaveBeenCalledWith('cockpit:interrupt_handled', expect.anything());
+  });
+
+  test('subscribes to lifecycles registered AFTER init', async () => {
+    TestBed.resetTestingModule();
+    const registry = new AgentLifecycleRegistry();
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: COCKPIT_TELEMETRY_CONFIG,
+          useValue: { posthogKey: 'phc_test', distinctId: 'd1', capabilitySlug: 'streaming' },
+        },
+        ActivationAggregator,
+        { provide: AgentLifecycleRegistry, useValue: registry },
+        CockpitTelemetryService,
+      ],
+    });
+    const svc2 = TestBed.inject(CockpitTelemetryService);
+    svc2.init();
+    TestBed.tick();
+    await Promise.resolve();
+    // Register AFTER init.
+    const lifecycle = makeAgentLifecycle();
+    registry.register(lifecycle);
+    TestBed.tick();
+    await Promise.resolve();
+    lifecycle._setStreamStarted();
+    TestBed.tick();
+    await Promise.resolve();
+    expect(mocks.capture).toHaveBeenCalledWith(
+      'cockpit:transport_connected',
+      expect.anything(),
+    );
   });
 });

@@ -5,6 +5,7 @@ import {
 } from '@angular/core';
 import { AGENT_CONFIG } from './agent.provider';
 import type { AgentLifecycle } from './lifecycle';
+import { AgentLifecycleRegistry } from './agent-lifecycle-registry';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import {
   BehaviorSubject, Subject, of,
@@ -220,6 +221,12 @@ export function agent<
     toolCallStartedAt:   lcToolCallStartedAt,
     toolCallCompletedAt: lcToolCallCompletedAt,
   };
+
+  // Register with optional lifecycle registry. External instrumentation
+  // (e.g. cockpit-telemetry) provides AgentLifecycleRegistry to receive
+  // per-agent lifecycles created within this injection context.
+  const lifecycleRegistry = inject(AgentLifecycleRegistry, { optional: true });
+  lifecycleRegistry?.register(lifecycle);
 
   function resetLifecycle(): void {
     lcStreamStartedAt.set(null);

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
-import { Injectable, inject, effect, Injector, runInInjectionContext } from '@angular/core';
+import { Injectable, inject, effect, untracked, Injector, runInInjectionContext } from '@angular/core';
 import posthog from 'posthog-js';
 import { COCKPIT_TELEMETRY_CONFIG } from './tokens';
 import { ActivationAggregator } from './activation-aggregator';
 import { CHAT_LIFECYCLE } from '@ngaf/chat';
-import { AGENT_LIFECYCLE } from '@ngaf/langgraph';
+import { AgentLifecycleRegistry, type AgentLifecycle } from '@ngaf/langgraph';
 import { RENDER_LIFECYCLE } from '@ngaf/render';
 import type { CockpitEventName } from './events';
 
@@ -48,8 +48,30 @@ export class CockpitTelemetryService {
   }
 
   private subscribeAgent(): void {
-    const agent = this.injector.get(AGENT_LIFECYCLE, null, { optional: true });
-    if (!agent) return;
+    const registry = this.injector.get(AgentLifecycleRegistry, null, { optional: true });
+    if (!registry) return;
+
+    // Track subscribed lifecycles so we don't double-subscribe on re-registration.
+    const subscribed = new WeakSet<AgentLifecycle>();
+
+    runInInjectionContext(this.injector, () => {
+      effect(() => {
+        const lifecycles = registry.lifecycles();
+        // Creating new effects must happen outside the reactive read context;
+        // `untracked()` opts the effect-creation calls out of dependency
+        // tracking (and out of the "no effect inside reactive context" check).
+        untracked(() => {
+          for (const lifecycle of lifecycles) {
+            if (subscribed.has(lifecycle)) continue;
+            subscribed.add(lifecycle);
+            this.subscribeOneAgent(lifecycle);
+          }
+        });
+      });
+    });
+  }
+
+  private subscribeOneAgent(agent: AgentLifecycle): void {
     let transportFired = false;
     let threadFired = false;
     let interruptFired = false;

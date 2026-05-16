@@ -8,6 +8,7 @@ import {
 import { COCKPIT_TELEMETRY_CONFIG, type CockpitTelemetryConfig } from './tokens';
 import { CockpitTelemetryService } from './cockpit-telemetry.service';
 import { ActivationAggregator } from './activation-aggregator';
+import { AgentLifecycleRegistry } from '@ngaf/langgraph';
 
 export function provideCockpitTelemetry(
   config: CockpitTelemetryConfig,
@@ -15,6 +16,7 @@ export function provideCockpitTelemetry(
   return makeEnvironmentProviders([
     { provide: COCKPIT_TELEMETRY_CONFIG, useValue: config },
     ActivationAggregator,
+    AgentLifecycleRegistry,
     CockpitTelemetryService,
     {
       provide: ENVIRONMENT_INITIALIZER,

@@ -9,6 +9,7 @@ export type { AgentConfig } from './lib/agent.provider';
 // Lifecycle monitoring
 export { AGENT_LIFECYCLE } from './lib/lifecycle';
 export type { AgentLifecycle } from './lib/lifecycle';
+export { AgentLifecycleRegistry } from './lib/agent-lifecycle-registry';
 
 // Public types
 export type {
