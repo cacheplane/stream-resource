@@ -353,6 +353,10 @@ export class ChatDebugComponent {
 
   protected readonly open = signal<boolean>(false);
   protected readonly dockState = signal<DockPosition>('right');
+  /** Set to `true` the first time the user explicitly clicks a dock button.
+   *  Auto-dock detection becomes a no-op after this flips. Not persisted —
+   *  fresh session = fresh chance for the smart default. */
+  private readonly userDockOverride = signal<boolean>(false);
   protected readonly activeTabId = signal<string>('timeline');
 
   /** Reads `agent.status()` reactively for the launcher dot. */
@@ -419,6 +423,20 @@ export class ChatDebugComponent {
         delete html.dataset['ngafChatDebug'];
       }
     });
+
+    // Auto-dock: when the panel transitions from closed → open AND a
+    // sibling <chat-sidebar> exists on the page AND the user hasn't
+    // overridden the dock this session, prefer bottom-dock so the two
+    // panels coexist without stacking on the right edge.
+    effect(() => {
+      const isOpen = this.open();
+      if (!isOpen) return;
+      if (this.userDockOverride()) return;
+      if (typeof document === 'undefined') return;
+      if (!document.querySelector('chat-sidebar')) return;
+      // Untracked write so we don't re-trigger this effect via dockState.
+      queueMicrotask(() => this.dockState.set('bottom'));
+    });
   }
 
   setOpen(value: boolean): void {
@@ -427,6 +445,7 @@ export class ChatDebugComponent {
   }
 
   setDock(next: DockPosition): void {
+    this.userDockOverride.set(true);
     this.dockState.set(next);
     this.dockChange.emit(next);
   }
