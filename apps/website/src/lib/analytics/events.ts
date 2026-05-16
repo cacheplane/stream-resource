@@ -32,7 +32,8 @@ export type AnalyticsSurface =
   | 'docs'
   | 'library_landing'
   | 'solution'
-  | 'toast';
+  | 'toast'
+  | 'contact';
 
 /**
  * Stable identifiers for marketing CTAs. New CTAs must be added to this
