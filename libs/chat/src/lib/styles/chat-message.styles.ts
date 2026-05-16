@@ -7,7 +7,7 @@ export const CHAT_MESSAGE_STYLES = `
      * Block (not flex) so the layout child gets its width:100% (set in
      * chat-message.component.ts inline styles). Right-alignment happens
      * inside layout via justify-content:flex-end below, NOT here. The old
-     * `display:flex; justify-content:flex-end` on the host caused layout
+     * "display:flex; justify-content:flex-end" on the host caused layout
      * to shrink-wrap its content, which collapsed __main's 80% containing
      * block — see chat-message.component.ts comment for the full story.
      */
