@@ -7,6 +7,7 @@ describe('browser properties', () => {
     expect(isLocalAnalyticsHost('localhost:3000')).toBe(true);
     expect(isLocalAnalyticsHost('127.0.0.1:3000')).toBe(true);
     expect(isLocalAnalyticsHost('::1')).toBe(true);
+    expect(isLocalAnalyticsHost('[::1]:3000')).toBe(true);
     expect(isLocalAnalyticsHost('ngaf.example')).toBe(false);
     expect(isLocalAnalyticsHost(undefined)).toBe(false);
   });
