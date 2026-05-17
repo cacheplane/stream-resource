@@ -170,6 +170,23 @@ export const CHAT_SIDENAV_STYLES = `
   :host([data-mode="collapsed"]) .chat-sidenav__action-label {
     display: none;
   }
+  /* Primary CTA pill — defined AFTER the generic .chat-sidenav__action
+     rule so its background/padding/radius win the cascade with equal
+     specificity. The earlier --new block above is kept for the
+     collapsed-mode overrides (which are :host-prefixed, higher
+     specificity, so they still apply). */
+  .chat-sidenav__action.chat-sidenav__action--new {
+    background: var(--ngaf-chat-primary);
+    color: var(--ngaf-chat-on-primary);
+    border-radius: 9999px;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .chat-sidenav__action.chat-sidenav__action--new:hover {
+    background: var(--ngaf-chat-primary);
+    filter: brightness(1.1);
+  }
   .chat-sidenav__action-icon {
     width: 16px;
     height: 16px;
@@ -213,6 +230,8 @@ export const CHAT_SIDENAV_STYLES = `
     display: flex;
     align-items: center;
     gap: 4px;
+    /* Push to the right edge even when the left container is empty. */
+    margin-left: auto;
   }
   .chat-sidenav__toggle {
     width: 28px;
