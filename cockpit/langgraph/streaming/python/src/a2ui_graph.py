@@ -608,11 +608,14 @@ def _format_party(prior: dict[str, Any]) -> str:
     return "  •  ".join(parts) if parts else "(party details unavailable)"
 
 
-def route(state: MessagesState) -> Command[Literal["build_form", "search_flights"]]:
-    """Inspect the last message — submit event → search_flights, else build_form."""
+def route(state: MessagesState) -> Command[Literal["build_form", "search_flights", "confirm_booking"]]:
+    """Inspect the last message — submit event → search_flights, flight-select
+    event → confirm_booking, else build_form."""
     last_content = getattr(state["messages"][-1], "content", "") if state["messages"] else ""
     if _is_submit_event(last_content):
         return Command(goto="search_flights")
+    if _is_flight_select_event(last_content):
+        return Command(goto="confirm_booking")
     return Command(goto="build_form")
 
 
@@ -620,8 +623,10 @@ _builder = StateGraph(MessagesState)
 _builder.add_node("route", route)
 _builder.add_node("build_form", build_form)
 _builder.add_node("search_flights", search_flights)
+_builder.add_node("confirm_booking", confirm_booking)
 _builder.set_entry_point("route")
 _builder.add_edge("build_form", END)
 _builder.add_edge("search_flights", END)
+_builder.add_edge("confirm_booking", END)
 
 graph = _builder.compile()
