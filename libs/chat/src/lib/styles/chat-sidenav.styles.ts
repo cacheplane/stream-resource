@@ -162,13 +162,64 @@ export const CHAT_SIDENAV_STYLES = `
   :host([data-mode="collapsed"]) .chat-sidenav__threads-heading {
     display: none;
   }
-  .chat-sidenav__account {
-    flex-shrink: 0;
+  .chat-sidenav__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
     border-top: 1px solid var(--ngaf-chat-separator);
-    padding: var(--ngaf-chat-space-3);
+    gap: 8px;
+    flex-shrink: 0;
   }
-  :host([data-mode="collapsed"]) .chat-sidenav__account {
-    padding: var(--ngaf-chat-space-2);
+  .chat-sidenav__footer-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 28px;
+  }
+  .chat-sidenav__footer-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .chat-sidenav__toggle {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 0;
+    background: transparent;
+    color: var(--ngaf-chat-text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .chat-sidenav__toggle:hover {
+    background: var(--ngaf-chat-surface-alt);
+    color: var(--ngaf-chat-text);
+  }
+  /* Collapsed mode: footer becomes a vertical stack; left slot hides. */
+  :host([data-mode="collapsed"]) .chat-sidenav__footer {
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 4px;
+  }
+  :host([data-mode="collapsed"]) .chat-sidenav__footer-left {
+    display: none;
+  }
+  :host([data-mode="collapsed"]) .chat-sidenav__footer-right {
+    flex-direction: column;
+  }
+  /* Legacy [sidenavAccount] slot: kept renderable but visually folded into
+     the new footer. Existing consumers' content still projects; the slot
+     just renders in the footer-right area visually. */
+  .chat-sidenav__account {
+    display: none;
+  }
+  .chat-sidenav__account:has(> *) {
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
   .chat-sidenav__archived { flex-shrink: 0; }
   .chat-sidenav__archived-heading {
