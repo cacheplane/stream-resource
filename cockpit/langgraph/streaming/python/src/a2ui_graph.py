@@ -444,6 +444,40 @@ def _build_sentinel_confirmation(flight_id: str, party_text: str) -> Confirmatio
     )
 
 
+async def confirm_booking(state: MessagesState) -> dict:
+    """Post-Select node: look up the chosen flight, recover party context from
+    prior submit, emit confirmation surface."""
+    last = state["messages"][-1]
+    select_data = _parse_submit_payload(getattr(last, "content", "")) or {}
+    flight_id_raw = select_data.get("flightId") or select_data.get("flight_id") or ""
+    flight_id = flight_id_raw.upper() if isinstance(flight_id_raw, str) else ""
+
+    flight: dict[str, Any] | None = None
+    if flight_id:
+        try:
+            flight = await lookup_flight.ainvoke({"flight_number": flight_id})
+        except Exception as err:  # noqa: BLE001 — demo robustness
+            _logger.warning("lookup_flight failed for %s: %s", flight_id, err)
+
+    prior = _extract_prior_submit_context(state["messages"])
+    party_text = _format_party(prior)
+
+    base_messages = [
+        SystemMessage(content=_CONFIRM_BOOKING_SYSTEM.format(
+            flight_json=json.dumps(flight, indent=2) if flight else "null",
+            party_text=party_text,
+            flight_id=flight_id,
+        )),
+        HumanMessage(content=f"Emit the confirmation surface for flight {flight_id or '(unknown)'}."),
+    ]
+    try:
+        spec = await _emit_with_retry(ConfirmationSpec, base_messages)
+    except RuntimeError as err:
+        _logger.error("Falling back to sentinel confirmation surface: %s", err)
+        spec = _build_sentinel_confirmation(flight_id, party_text)
+    return {"messages": [AIMessage(content=_wrap_envelopes(spec))]}
+
+
 def _unwrap_literal(v: Any) -> Any:
     """Unwrap a v1 literal wrapper ({literalString|literalNumber|literalBoolean: <v>})."""
     if isinstance(v, dict):
