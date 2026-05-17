@@ -313,4 +313,30 @@ export const CHAT_SIDENAV_STYLES = `
     flex-direction: row;
   }
   :host([data-mode="collapsed"]) .chat-thread-list__new { display: none; }
+  :host([data-mode="collapsed"]) .chat-sidenav__action--search {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 10px;
+    justify-content: center;
+    background: transparent;
+  }
+  :host([data-mode="collapsed"]) .chat-sidenav__action--search .chat-sidenav__action-label {
+    display: none;
+  }
+  /* Collapsed: thread list, project list, archived block, sections — all hidden. */
+  :host([data-mode="collapsed"]) .chat-sidenav__threads,
+  :host([data-mode="collapsed"]) .chat-sidenav__projects,
+  :host([data-mode="collapsed"]) .chat-sidenav__archived,
+  :host([data-mode="collapsed"]) .chat-sidenav__sections,
+  :host([data-mode="collapsed"]) .chat-sidenav__primary {
+    display: none;
+  }
+  /* Collapsed: reduce horizontal padding so 32×32 buttons sit centered. */
+  :host([data-mode="collapsed"]) .chat-sidenav__topbar,
+  :host([data-mode="collapsed"]) .chat-sidenav__actions {
+    padding: 8px 4px;
+    align-items: center;
+    justify-content: center;
+  }
 `;
