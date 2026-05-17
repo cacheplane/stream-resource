@@ -327,3 +327,13 @@ describe('ChatSidenavComponent — footer slots', () => {
     expect(captured).toBe('collapsed');
   });
 });
+
+describe('ChatSidenavComponent — New chat primary CTA', () => {
+  it('renders the new-chat button with a primary-pill styling token', () => {
+    // Styles array is the second member of @Component decorator metadata.
+    const styles = (ChatSidenavComponent as unknown as { ɵcmp: { styles: string[] } }).ɵcmp.styles.join('\n');
+    // Primary pill family: matches chat-input send button.
+    expect(styles).toMatch(/\.chat-sidenav__action--new[^{]*\{[^}]*background:\s*var\(--ngaf-chat-primary/);
+    expect(styles).toMatch(/\.chat-sidenav__action--new[^{]*\{[^}]*border-radius:\s*9999px/);
+  });
+});

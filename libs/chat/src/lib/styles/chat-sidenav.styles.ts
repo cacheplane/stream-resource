@@ -89,14 +89,46 @@ export const CHAT_SIDENAV_STYLES = `
     gap: 4px;
     padding: var(--ngaf-chat-space-2) 0;
   }
-  .chat-sidenav__topbar .chat-sidenav__action {
+  .chat-sidenav__topbar .chat-sidenav__action--close {
     width: 36px;
     height: 36px;
     padding: 0;
     justify-content: center;
     flex: 0 0 auto;
   }
-  .chat-sidenav__topbar .chat-sidenav__action-label {
+  .chat-sidenav__topbar .chat-sidenav__action--close .chat-sidenav__action-label {
+    display: none;
+  }
+  .chat-sidenav__action--new {
+    background: var(--ngaf-chat-primary);
+    color: var(--ngaf-chat-on-primary);
+    border: 0;
+    padding: 10px 16px;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .chat-sidenav__action--new:hover {
+    filter: brightness(1.1);
+  }
+  .chat-sidenav__action--new:focus-visible {
+    outline: 2px solid var(--ngaf-chat-primary);
+    outline-offset: 2px;
+  }
+  /* Collapsed mode: shrink to 32×32 icon-only square. */
+  :host([data-mode="collapsed"]) .chat-sidenav__action--new {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 10px;
+    justify-content: center;
+  }
+  :host([data-mode="collapsed"]) .chat-sidenav__action--new .chat-sidenav__action-label {
     display: none;
   }
   .chat-sidenav__actions {
