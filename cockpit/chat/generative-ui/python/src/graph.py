@@ -175,13 +175,16 @@ async def emit_state(state: DashboardState) -> DashboardState:
 
 
 async def respond(state: DashboardState) -> DashboardState:
-    """Generate a brief conversational summary after tools have run."""
-    last = state["messages"][-1]
-    if last.type == "ai" and not (hasattr(last, "tool_calls") and last.tool_calls):
-        return state
-
+    """Generate a brief conversational summary of what just happened on this
+    turn. ALWAYS runs (no early-exit) so the user-visible summary is always
+    authored by this node, never inherited from plan_tools' chatter."""
     messages = [
-        SystemMessage(content="Provide a brief (1-2 sentence) conversational summary of what you just did. Do NOT output JSON.")
+        SystemMessage(content=(
+            "Provide a brief (1-2 sentence) conversational summary of what "
+            "you just did this turn. If you generated a dashboard, say so. "
+            "If you filtered data, say what you filtered. "
+            "Do NOT output JSON. Do NOT ask follow-up questions."
+        ))
     ] + state["messages"]
     response = await _llm.ainvoke(messages)
     return {"messages": [response]}
