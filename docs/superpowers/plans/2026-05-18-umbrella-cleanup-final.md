@@ -148,7 +148,7 @@ for k in sorted(d['graphs']):
 head -15 /tmp/umbrella-cleanup-pr1-before.txt
 ```
 
-Expected: `count=26`, and the 11 c-* graphs' paths all start with `./deps/streaming/src/` (umbrella-sourced).
+Expected: `count=26`, and the 11 c-* graphs' paths all start with `./deps/streaming/src/` (umbrella-sourced). After PR 1 the count grows to 32 (6 render caps added).
 
 Restore the generated manifest to the committed state (the generator mutated it; we want clean diff):
 
@@ -164,7 +164,7 @@ git checkout HEAD -- deployments/shared-dev/langgraph.json
 - Modify: `scripts/generate-shared-deployment-config.ts` (one line)
 - Modify: `cockpit/langgraph/streaming/python/langgraph.json` (rewrite)
 
-- [ ] **Step 1: Update the deploy script's filter**
+- [ ] **Step 1: Remove the deploy script's filter entirely**
 
 Edit `scripts/generate-shared-deployment-config.ts`. Find this block (currently at line 54-56):
 
@@ -174,13 +174,7 @@ Edit `scripts/generate-shared-deployment-config.ts`. Find this block (currently 
   }
 ```
 
-Replace with:
-
-```typescript
-  if (capability.product === 'render') {
-    continue;
-  }
-```
+**Delete those 3 lines entirely.** Result: all capabilities (langgraph, deep-agents, chat, render) iterate via their per-cap dirs. The loop body proceeds directly to `const manifestPath = ...`.
 
 Verify with diff:
 
@@ -188,7 +182,7 @@ Verify with diff:
 git diff scripts/generate-shared-deployment-config.ts
 ```
 
-Expected: exactly the filter change shown above. No other lines modified.
+Expected: exactly the 3 lines removed. No other changes.
 
 - [ ] **Step 2: Trim the umbrella's langgraph.json**
 
@@ -228,28 +222,27 @@ Expected: no errors.
 ```bash
 git add scripts/generate-shared-deployment-config.ts cockpit/langgraph/streaming/python/langgraph.json
 git commit -m "$(cat <<'EOF'
-feat(deploy): route shared-dev manifest through per-cap chat backends
+feat(deploy): route shared-dev manifest through per-cap dirs for all caps
 
 Two coupled changes that must land together (else addGraph throws on
 duplicate c-* registrations):
 
-1. scripts/generate-shared-deployment-config.ts: change line 54's
-   filter from "skip chat + render" to "skip render only". Chat caps
-   now iterate; their per-cap langgraph.json files supply the graphs.
+1. scripts/generate-shared-deployment-config.ts: remove the product-type
+   filter entirely. All capabilities (langgraph, deep-agents, chat,
+   render) now iterate via their per-cap dirs. Chat caps re-route from
+   umbrella to per-cap; render caps get deployed for the first time.
 
 2. cockpit/langgraph/streaming/python/langgraph.json: trim from 12
    graph entries to 1 (just `streaming`). The c-* entries are now
    redundant — duplicate registrations would collide.
 
-Net effect on shared-dev manifest: same 26 graph names, but the 11
-c-* graphs' entrypoint paths re-route from
-  ./deps/streaming/src/<file>.py:<symbol>
-to
-  ./deps/c-<cap>/src/graph.py:graph
-
-Production deploy continues to publish the same set of graphs; just
-sources each c-* from its per-cap dir (matching what local dev has
-been doing since the migration chain landed in PRs #413/#417/#382/#421/#424).
+Net effect on shared-dev manifest:
+  - 11 c-* graphs' entrypoint paths re-route from
+    ./deps/streaming/src/<file>.py:<symbol>
+    to ./deps/c-<cap>/src/graph.py:graph
+  - 6 render graphs newly added (spec-rendering, element-rendering,
+    state-management, r-registry, repeat-loops, computed-functions)
+  - Total grows from 26 → 32 graphs
 
 Sub-project 6/6, PR 1/2 of the per-cap migration chain. PR 2 (delete
 umbrella's now-dead duplicate source files) lands after this PR's
@@ -278,17 +271,31 @@ for k in sorted(d['graphs']):
 head -15 /tmp/umbrella-cleanup-pr1-after.txt
 ```
 
-Expected: `count=26`, same as the BEFORE snapshot.
+Expected: `count=32` (26 prior + 6 render caps newly added).
 
-- [ ] **Step 2: Confirm graph NAMES + COUNT unchanged**
+- [ ] **Step 2: Confirm the 26 prior graph names are all present + 6 new render names**
 
 ```bash
-diff <(grep -E '^count|^  [a-z-]+:' /tmp/umbrella-cleanup-pr1-before.txt | awk -F: '{print $1}') \
-     <(grep -E '^count|^  [a-z-]+:' /tmp/umbrella-cleanup-pr1-after.txt | awk -F: '{print $1}') \
-  && echo "NAMES + COUNT IDENTICAL"
+python3 -c "
+import json
+d = json.load(open('deployments/shared-dev/langgraph.json'))
+names = set(d['graphs'])
+expected_render = {'spec-rendering','element-rendering','state-management','r-registry','repeat-loops','computed-functions'}
+prior_chat = {'c-messages','c-input','c-debug','c-theming','c-threads','c-timeline','c-tool-calls','c-subagents','c-interrupts','c-generative-ui','c-a2ui'}
+expected_langgraph = {'streaming','persistence','interrupts','memory','durable-execution','subgraphs','time-travel','deployment-runtime'}
+expected_deep_agents = {'planning','filesystem','subagents','da-memory','skills','sandboxes'}
+expected_extras = {'chat'}
+all_expected = expected_render | prior_chat | expected_langgraph | expected_deep_agents | expected_extras
+missing = all_expected - names
+extra = names - all_expected
+print(f'count={len(names)} expected={len(all_expected)}')
+if missing: print(f'  MISSING: {sorted(missing)}')
+if extra: print(f'  UNEXPECTED EXTRA: {sorted(extra)}')
+if not missing and not extra: print('  OK — all expected names present, no surprises')
+"
 ```
 
-Expected: `NAMES + COUNT IDENTICAL`. If diff non-empty, STOP — the migration accidentally added/removed graphs.
+Expected: `count=32 expected=32` and `OK — all expected names present, no surprises`. If MISSING or UNEXPECTED EXTRA appears, STOP.
 
 - [ ] **Step 3: Confirm the 11 c-* paths re-routed**
 
@@ -311,13 +318,10 @@ import sys; sys.exit(0 if ok else 1)
 
 Expected: 11 ✓ marks, exit 0. If any ✗, STOP.
 
-- [ ] **Step 4: Confirm all other graphs' paths are unchanged**
+- [ ] **Step 4: Confirm chat paths re-routed + all other non-render paths unchanged**
 
 ```bash
 python3 -c "
-import json
-before = json.load(open('/tmp/umbrella-cleanup-pr1-before-full.json')) if False else None
-# Compare directly from snapshot files
 before_paths = {}
 with open('/tmp/umbrella-cleanup-pr1-before.txt') as f:
     for line in f:
@@ -333,19 +337,28 @@ with open('/tmp/umbrella-cleanup-pr1-after.txt') as f:
             k, v = s.split(': ', 1)
             after_paths[k.strip()] = v.strip()
 c_caps = {'c-messages','c-input','c-debug','c-theming','c-threads','c-timeline','c-tool-calls','c-subagents','c-interrupts','c-generative-ui','c-a2ui'}
-unchanged = sorted(set(before_paths) - c_caps)
-for k in unchanged:
-    if before_paths.get(k) != after_paths.get(k):
+render_new = {'spec-rendering','element-rendering','state-management','r-registry','repeat-loops','computed-functions'}
+# Chat caps must have changed path
+chat_changed_ok = all(before_paths[k] != after_paths.get(k) and after_paths.get(k,'').startswith(f'./deps/{k}/') for k in c_caps)
+print(f'chat caps re-routed correctly: {chat_changed_ok}')
+# Render caps must be newly added
+render_added_ok = all(k not in before_paths and k in after_paths for k in render_new)
+print(f'render caps newly added: {render_added_ok}')
+# Everything else unchanged
+unchanged_keys = sorted(set(before_paths) - c_caps)
+mismatches = [(k, before_paths[k], after_paths.get(k)) for k in unchanged_keys if before_paths[k] != after_paths.get(k)]
+if mismatches:
+    for k, b, a in mismatches:
         print(f'  ✗ {k}: PATH CHANGED unexpectedly')
-        print(f'      before: {before_paths.get(k)}')
-        print(f'      after:  {after_paths.get(k)}')
-    else:
-        pass
-print(f'verified {len(unchanged)} non-chat graph paths unchanged')
+        print(f'      before: {b}')
+        print(f'      after:  {a}')
+else:
+    print(f'verified {len(unchanged_keys)} non-chat graph paths unchanged')
+import sys; sys.exit(0 if chat_changed_ok and render_added_ok and not mismatches else 1)
 "
 ```
 
-Expected: `verified 15 non-chat graph paths unchanged` (or similar; should print exactly 15 — the 26 total minus the 11 c-* caps). If any line says PATH CHANGED, STOP.
+Expected: `chat caps re-routed correctly: True`, `render caps newly added: True`, `verified 15 non-chat graph paths unchanged`, exit 0. If any line shows ✗ or False, STOP.
 
 - [ ] **Step 5: Restore the generated manifest + cleanup**
 
@@ -385,6 +398,118 @@ done
 Expected per cap: `Resolved … packages` (or `Audited …`), then `CompiledStateGraph`. Any traceback STOPs.
 
 We don't need to boot all 11 — the prior 5 migration PRs each exercised these dirs. Smoke-checking 3 is enough.
+
+---
+
+## Task 4b (PR 1): Full verification for all 6 render caps (no commit)
+
+Render caps are deployed to LangSmith Cloud for the first time by this PR. Full per-cap verification (import + boot + SDK turn exchange) catches malformed manifests or missing dependencies before they reach production. Uses gpt-5-mini × 6 turns.
+
+- [ ] **Step 1: Per-cap import smoke for all 6 render caps**
+
+```bash
+for cap in spec-rendering element-rendering state-management registry repeat-loops computed-functions; do
+  echo "=== render/$cap ==="
+  (cd cockpit/render/$cap/python && uv sync 2>&1 | tail -1)
+  (cd cockpit/render/$cap/python && OPENAI_API_KEY="$OPENAI_API_KEY" uv run python -c "from src.graph import graph; print(type(graph).__name__)" 2>&1 | tail -1)
+done
+```
+
+Expected per cap: `Resolved … packages` (or `Audited …`), then `CompiledStateGraph`. Any traceback STOPs and identifies which render cap has a broken manifest.
+
+- [ ] **Step 2: Write a per-cap SDK turn verification script**
+
+The 6 render caps' angular `pythonPort` values (from `apps/cockpit/scripts/capability-registry.ts`): spec-rendering=5401, element-rendering=5402, state-management=5403, registry=5404, repeat-loops=5405, computed-functions=5406.
+
+Their graph ids in their langgraph.json: spec-rendering, element-rendering, state-management, **r-registry** (note the prefix, not 'registry'), repeat-loops, computed-functions.
+
+Save as `/tmp/render-verify.py`:
+
+```python
+"""Boot each render per-cap backend and exchange one turn via langgraph SDK HTTP."""
+import asyncio, os, signal, subprocess, sys, time
+
+CAPS = [
+    ("spec-rendering",     5401, "spec-rendering"),
+    ("element-rendering",  5402, "element-rendering"),
+    ("state-management",   5403, "state-management"),
+    ("registry",           5404, "r-registry"),
+    ("repeat-loops",       5405, "repeat-loops"),
+    ("computed-functions", 5406, "computed-functions"),
+]
+
+async def exchange_one(port: int, assistant_id: str) -> bool:
+    import httpx
+    from langgraph_sdk import get_client
+    client = get_client(url=f"http://localhost:{port}")
+    try:
+        thread = await client.threads.create()
+        async for _ in client.runs.stream(
+            thread_id=thread["thread_id"],
+            assistant_id=assistant_id,
+            input={"messages": [{"role": "user", "content": "Hello in one short sentence."}]},
+            stream_mode=["values"],
+        ):
+            pass
+        state = await client.threads.get_state(thread["thread_id"])
+        msgs = state["values"].get("messages", [])
+        for m in msgs:
+            if m.get("type") == "ai" and m.get("content"):
+                print(f"  ai: {m['content'][:80]!r}")
+                return True
+        return False
+    except Exception as e:
+        print(f"  ERROR: {e}")
+        return False
+
+async def main():
+    import httpx
+    for dirname, port, assistant_id in CAPS:
+        print(f"=== render/{dirname} on :{port} (assistant_id={assistant_id}) ===")
+        proc = subprocess.Popen(
+            ["uv", "run", "langgraph", "dev", "--no-browser", "--host", "127.0.0.1", "--port", str(port)],
+            cwd=f"cockpit/render/{dirname}/python",
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            preexec_fn=os.setsid,
+        )
+        ready = False
+        for _ in range(60):
+            try:
+                if httpx.get(f"http://127.0.0.1:{port}/ok", timeout=1).status_code == 200:
+                    ready = True
+                    break
+            except Exception:
+                pass
+            time.sleep(1)
+        if not ready:
+            print("  FAIL: langgraph never came up")
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+            sys.exit(1)
+        ok = await exchange_one(port, assistant_id)
+        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        proc.wait(timeout=5)
+        if not ok:
+            print(f"  FAIL: {dirname}")
+            sys.exit(1)
+        print(f"  PASS: {dirname}")
+
+asyncio.run(main())
+```
+
+- [ ] **Step 3: Run the render verification script**
+
+```bash
+uv run --python 3.12 --with langgraph-sdk --with httpx --with typing_extensions python /tmp/render-verify.py
+```
+
+Expected: 6 `PASS: <cap>` lines. If any FAIL, STOP and report which cap.
+
+- [ ] **Step 4: Cleanup**
+
+```bash
+rm /tmp/render-verify.py
+lsof -t -i :5401 -i :5402 -i :5403 -i :5404 -i :5405 -i :5406 2>/dev/null | xargs kill -9 2>/dev/null || true
+```
 
 ---
 
@@ -487,29 +612,35 @@ git push -u origin claude/umbrella-cleanup-pr1
 - [ ] **Step 2: Open PR**
 
 ```bash
-gh pr create --title "feat(deploy): route shared-dev manifest through per-cap chat backends (umbrella cleanup PR 1/2)" --body "$(cat <<'EOF'
+gh pr create --title "feat(deploy): route shared-dev manifest through per-cap dirs for all caps (umbrella cleanup PR 1/2)" --body "$(cat <<'EOF'
 ## Summary
 Two coupled edits that must land together (else \`addGraph\` throws on duplicate c-* registrations):
 
-1. \`scripts/generate-shared-deployment-config.ts\`: filter changes from \"skip chat + render\" to \"skip render only\". Chat caps now iterate.
+1. \`scripts/generate-shared-deployment-config.ts\`: remove the product-type filter entirely. All capabilities (langgraph, deep-agents, chat, render) now iterate via their per-cap dirs.
 2. \`cockpit/langgraph/streaming/python/langgraph.json\`: trim from 12 graph entries to 1 (\`streaming\` only). The c-* entries are now redundant.
 
-Net effect on shared-dev manifest: same 26 graph names, but the 11 c-* graphs' entrypoint paths re-route from \`./deps/streaming/src/<file>.py:<symbol>\` to \`./deps/c-<cap>/src/graph.py:graph\`. Production deploy continues to publish the same set of graphs; just sources each c-* from its per-cap dir.
+Net effect on shared-dev manifest:
+- 11 c-* graphs' entrypoint paths re-route from \`./deps/streaming/src/<file>.py:<symbol>\` to \`./deps/c-<cap>/src/graph.py:graph\`
+- 6 render graphs newly added (\`spec-rendering\`, \`element-rendering\`, \`state-management\`, \`r-registry\`, \`repeat-loops\`, \`computed-functions\`)
+- Total grows from 26 → 32 graphs
 
 This is PR 1 of 2 in the final umbrella cleanup (sub-project 6/6 of the per-cap migration chain). PR 2 (deletes the umbrella's now-dead duplicate source files) lands after this PR's Deploy LangGraph post-merge workflow is green.
 
 ## Test plan
-- [x] Pre-flight: all 11 per-cap manifests register expected graph ids
-- [x] Generated shared-deploy manifest has 26 graphs (same as before)
+- [x] Pre-flight: all 11 per-cap chat manifests register expected graph ids
+- [x] Generated shared-deploy manifest has 32 graphs (26 prior + 6 render)
 - [x] 11 c-* paths now \`./deps/c-<cap>/src/graph.py:graph\`
-- [x] 15 non-chat graph paths unchanged
-- [x] Per-cap representative import smoke (3 caps): \`CompiledStateGraph\`
+- [x] 6 render graphs newly added with \`./deps/<id>/src/graph.py:graph\` paths
+- [x] 15 non-chat, non-render graph paths unchanged
+- [x] Per-cap chat representative import smoke (3 caps): \`CompiledStateGraph\`
+- [x] Full per-cap render verification for all 6 caps: import + boot + SDK turn
 - [x] Umbrella streaming graph imports + boots with only \`streaming\` registered
 - [x] \`nx e2e cockpit-langgraph-streaming-angular\` passes
 - [x] \`nx e2e cockpit-chat-tool-calls-angular\` passes
 - [x] \`nx e2e cockpit-chat-subagents-angular\` passes
 - [ ] CI \`Cockpit — e2e\` + \`Cockpit — build all examples\` green
 - [ ] **Post-merge:** Deploy LangGraph workflow green (gates PR 2)
+- [ ] **Post-merge:** LangSmith dashboard shows no unexpected new graphs/cost from the 6 added render deployments
 
 ## Rollback
 If post-merge Deploy LangGraph fails, revert this PR. The umbrella's c-* source files still exist on the prior commit, so reverting restores the original deploy path.
@@ -729,7 +860,7 @@ python3 -c "import json; d=json.load(open('deployments/shared-dev/langgraph.json
 git checkout HEAD -- deployments/shared-dev/langgraph.json
 ```
 
-Expected: `26 graphs`. If different, STOP.
+Expected: `32 graphs`. If different, STOP.
 
 - [ ] **Step 2: Run the 3 cockpit aimock e2es**
 
