@@ -273,11 +273,23 @@ Keep langgraph dev RUNNING for Task 4 (don't kill yet).
 
 Save as `/tmp/cintr-rt-test.py`:
 
+**Important — runtime quirk:** LangGraph reports `runs.get().status == "success"` even when `interrupt()` fires inside a ToolNode in this version. The authoritative signal is whether the thread state has a pending interrupt (`state.tasks[].interrupts[]`). Gate on that, not on run status.
+
 ```python
 """End-to-end interrupt + resume round-trip against the per-cap c-interrupts backend."""
 import asyncio
 import sys
 from langgraph_sdk import get_client
+
+
+def pending_interrupt(state):
+    """Return the first pending interrupt value from the thread state, or None."""
+    for t in state.get("tasks", []):
+        for it in t.get("interrupts", []):
+            v = it.get("value")
+            if v is not None:
+                return v
+    return None
 
 
 async def main():
@@ -286,7 +298,6 @@ async def main():
     tid = thread["thread_id"]
     print(f"thread: {tid}")
 
-    # Submit the booking request.
     print("=== Submitting 'Book me on UA123.' ===")
     run = await client.runs.create(
         thread_id=tid,
@@ -295,31 +306,25 @@ async def main():
     )
     run_id = run["run_id"]
 
-    # Poll for interrupted.
+    # Wait for run to reach a stopping point. status=success here means EITHER
+    # a clean exit OR a suspended interrupt — distinguished by thread state.
     for _ in range(60):
         status_data = await client.runs.get(thread_id=tid, run_id=run_id)
         status = status_data.get("status", "")
         if status in ("interrupted", "success", "error", "timeout"):
             break
         await asyncio.sleep(1)
-    print(f"run status: {status}")
-    if status != "interrupted":
-        print(f"FAIL: expected status=interrupted, got {status}")
+    print(f"run terminal status: {status}")
+    if status in ("error", "timeout"):
+        print(f"FAIL: run did not reach a normal stopping point (status={status})")
         sys.exit(1)
 
-    # Verify the interrupt payload.
+    # Authoritative interrupt check: thread state.
     state = await client.threads.get_state(tid)
-    tasks = state.get("tasks", [])
-    interrupt_value = None
-    for t in tasks:
-        for it in t.get("interrupts", []):
-            interrupt_value = it.get("value")
-            break
-        if interrupt_value is not None:
-            break
-    print(f"interrupt payload: {interrupt_value}")
+    interrupt_value = pending_interrupt(state)
+    print(f"pending interrupt: {interrupt_value}")
     if not isinstance(interrupt_value, dict):
-        print(f"FAIL: expected dict payload, got {type(interrupt_value).__name__}")
+        print(f"FAIL: expected dict interrupt payload, got {type(interrupt_value).__name__}")
         sys.exit(1)
     if interrupt_value.get("type") != "approval_request":
         print(f"FAIL: expected type=approval_request, got {interrupt_value.get('type')}")
@@ -333,7 +338,6 @@ async def main():
         sys.exit(1)
     print("PASS turn 1: interrupt payload has expected shape")
 
-    # Resume with 'confirm'.
     print("=== Resuming with 'confirm' ===")
     resume_run = await client.runs.create(
         thread_id=tid,
@@ -347,13 +351,18 @@ async def main():
         if status in ("interrupted", "success", "error", "timeout"):
             break
         await asyncio.sleep(1)
-    print(f"resume status: {status}")
-    if status != "success":
-        print(f"FAIL: expected resume status=success, got {status}")
+    print(f"resume terminal status: {status}")
+    if status in ("error", "timeout"):
+        print(f"FAIL: resume did not reach a normal stopping point (status={status})")
         sys.exit(1)
 
-    # Verify the final state.
+    # After resume, no pending interrupts should remain.
     state = await client.threads.get_state(tid)
+    leftover = pending_interrupt(state)
+    if leftover is not None:
+        print(f"FAIL: thread still has a pending interrupt after resume: {leftover}")
+        sys.exit(1)
+
     msgs = state.get("values", {}).get("messages", [])
     tool_msg_content = None
     ai_text = None
