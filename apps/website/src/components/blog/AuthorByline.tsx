@@ -12,7 +12,6 @@ export function AuthorByline({ author }: { author: Author }) {
       }}
     >
       {author.avatar ? (
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={author.avatar}
           alt={`${author.name} avatar`}
