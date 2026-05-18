@@ -76,7 +76,11 @@ else
 fi
 (
   cd cockpit/chat/interrupts/python
-  OPENAI_BASE_URL="http://127.0.0.1:$AIMOCK_PORT/v1" OPENAI_API_KEY="test-record" \
+  # aimock --record forwards requests to real OpenAI but doesn't substitute
+  # the API key, so we must pass the real key through to langgraph. The
+  # recorded fixture matches on request body content (userMessage, tool
+  # results, etc.) — not on the Authorization header — so no auth leak.
+  OPENAI_BASE_URL="http://127.0.0.1:$AIMOCK_PORT/v1" OPENAI_API_KEY="$OPENAI_API_KEY" \
     exec $RUN_PREFIX uv run langgraph dev --port "$LANGGRAPH_PORT" --no-browser
 ) > "$TMP_DIR/langgraph.log" 2>&1 &
 LG_PID=$!
@@ -110,7 +114,11 @@ drive_flow() {
     | python3 -c 'import sys,json; print(json.load(sys.stdin)["run_id"])')
   echo "[record][$label] thread=$thread run=$run; polling for interrupt"
 
+  # LangGraph quirk: when interrupt() fires inside a ToolNode, runs.get()
+  # reports status=success. The authoritative interrupt signal is the
+  # presence of an unresolved interrupt in thread state. Gate on that.
   local status=""
+  local has_interrupt="False"
   for _ in {1..120}; do
     status=$(curl -sf "http://127.0.0.1:$LANGGRAPH_PORT/threads/$thread/runs/$run" \
       | python3 -c 'import sys,json; print(json.load(sys.stdin).get("status",""))')
@@ -119,12 +127,19 @@ drive_flow() {
     esac
     sleep 2
   done
-  if [[ "$status" != "interrupted" ]]; then
-    echo "[record][$label] expected interrupted, got: $status" >&2
+  if [[ "$status" == "error" || "$status" == "timeout" ]]; then
+    echo "[record][$label] run terminal status=$status (no normal stop)" >&2
     tail -40 "$TMP_DIR/langgraph.log" >&2
     exit 3
   fi
-  echo "[record][$label] interrupted; posting resume=$resume_value"
+  has_interrupt=$(curl -sf "http://127.0.0.1:$LANGGRAPH_PORT/threads/$thread/state" \
+    | python3 -c 'import sys,json; d=json.load(sys.stdin); print(any(it.get("value") is not None for t in d.get("tasks",[]) for it in t.get("interrupts",[])))')
+  if [[ "$has_interrupt" != "True" ]]; then
+    echo "[record][$label] expected pending interrupt in thread state, found none (run status=$status)" >&2
+    tail -40 "$TMP_DIR/langgraph.log" >&2
+    exit 3
+  fi
+  echo "[record][$label] interrupt fired; posting resume=$resume_value"
 
   local resume_run
   resume_run=$(curl -sf -X POST "http://127.0.0.1:$LANGGRAPH_PORT/threads/$thread/runs" \
@@ -132,6 +147,8 @@ drive_flow() {
     -d "{\"assistant_id\": \"c-interrupts\", \"command\": {\"resume\": \"$resume_value\"}}" \
     | python3 -c 'import sys,json; print(json.load(sys.stdin)["run_id"])')
 
+  # Resume run completion signal: terminal status reached AND no pending
+  # interrupt remains in thread state.
   status=""
   for _ in {1..120}; do
     status=$(curl -sf "http://127.0.0.1:$LANGGRAPH_PORT/threads/$thread/runs/$resume_run" \
@@ -141,8 +158,16 @@ drive_flow() {
     esac
     sleep 2
   done
-  if [[ "$status" != "success" ]]; then
-    echo "[record][$label] resume run did not succeed (status=$status)" >&2
+  if [[ "$status" == "error" || "$status" == "timeout" ]]; then
+    echo "[record][$label] resume run did not reach a normal stop (status=$status)" >&2
+    tail -40 "$TMP_DIR/langgraph.log" >&2
+    exit 4
+  fi
+  local leftover
+  leftover=$(curl -sf "http://127.0.0.1:$LANGGRAPH_PORT/threads/$thread/state" \
+    | python3 -c 'import sys,json; d=json.load(sys.stdin); print(any(it.get("value") is not None for t in d.get("tasks",[]) for it in t.get("interrupts",[])))')
+  if [[ "$leftover" == "True" ]]; then
+    echo "[record][$label] resume left a pending interrupt in thread state" >&2
     tail -40 "$TMP_DIR/langgraph.log" >&2
     exit 4
   fi
