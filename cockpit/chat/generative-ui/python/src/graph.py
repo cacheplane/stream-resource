@@ -9,7 +9,8 @@ import json
 from pathlib import Path
 from typing import Literal
 
-from langchain_core.messages import SystemMessage
+import uuid
+from langchain_core.messages import AIMessage, SystemMessage, ToolMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, MessagesState, END
 from langgraph.prebuilt import ToolNode
@@ -87,6 +88,38 @@ async def plan_tools(state: DashboardState) -> DashboardState:
     messages = [SystemMessage(content=_PROMPT + "\n\n" + context)] + state["messages"]
     response = await _llm_with_tools.ainvoke(messages)
     return {"messages": [response]}
+
+
+async def populate_initial_data(state: DashboardState) -> dict:
+    """Deterministic first-turn data fetch: invoke all 4 data tools.
+
+    The dashboard prompt mandates 'call ALL four data tools to populate the
+    dashboard' on first turn. That's a fixed instruction, not a judgment
+    call — encode it as Python instead of paying an LLM round-trip + risking
+    the planner refusing to commit to tool calls.
+
+    Synthesizes one AIMessage with tool_calls for all 4 tools + one
+    ToolMessage per result. Matches ToolNode's output shape so emit_state
+    (which reads ToolMessages by name) needs no changes.
+    """
+    tool_calls = [
+        {
+            "name": t.name,
+            "args": {},
+            "id": f"init_{t.name}_{uuid.uuid4().hex[:8]}",
+            "type": "tool_call",
+        }
+        for t in ALL_TOOLS
+    ]
+    ai = AIMessage(content="", tool_calls=tool_calls)
+
+    tool_msgs: list[ToolMessage] = []
+    for t, tc in zip(ALL_TOOLS, tool_calls):
+        result = await t.ainvoke({})
+        content = json.dumps(result) if not isinstance(result, str) else result
+        tool_msgs.append(ToolMessage(content=content, tool_call_id=tc["id"], name=t.name))
+
+    return {"messages": [ai] + tool_msgs}
 
 
 def should_call_tools(state: DashboardState) -> Literal["call_tools", "respond"]:
