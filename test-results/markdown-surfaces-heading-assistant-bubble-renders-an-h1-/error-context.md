@@ -1,0 +1,283 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - navigation "Sidebar navigation" [ref=e6]:
+    - button "New chat" [ref=e9] [cursor=pointer]:
+      - img [ref=e10]
+      - generic [ref=e11]: New chat
+    - button "Search conversations" [ref=e13] [cursor=pointer]:
+      - img [ref=e14]
+      - generic [ref=e17]: Search
+    - generic [ref=e18]:
+      - generic [ref=e19]: Projects
+      - generic [ref=e20]:
+        - button "+ New project" [ref=e21] [cursor=pointer]
+        - list
+    - generic [ref=e22]:
+      - generic [ref=e23]: Recent
+      - list [ref=e25]:
+        - listitem [ref=e26]:
+          - button "Untitled" [ref=e27] [cursor=pointer]:
+            - generic [ref=e28]: Untitled
+          - button "More actions" [ref=e29] [cursor=pointer]: ⋯
+        - listitem [ref=e30]:
+          - button "Show me a contact form with fields for name, email" [ref=e31] [cursor=pointer]:
+            - generic [ref=e32]: Show me a contact form with fields for name, email
+          - button "More actions" [ref=e33] [cursor=pointer]: ⋯
+        - listitem [ref=e34]:
+          - button "say hi briefly" [ref=e35] [cursor=pointer]:
+            - generic [ref=e36]: say hi briefly
+          - button "More actions" [ref=e37] [cursor=pointer]: ⋯
+        - listitem [ref=e38]:
+          - button "say hi briefly" [ref=e39] [cursor=pointer]:
+            - generic [ref=e40]: say hi briefly
+          - button "More actions" [ref=e41] [cursor=pointer]: ⋯
+        - listitem [ref=e42]:
+          - button "stream a long deterministic answer" [ref=e43] [cursor=pointer]:
+            - generic [ref=e44]: stream a long deterministic answer
+          - button "More actions" [ref=e45] [cursor=pointer]: ⋯
+        - listitem [ref=e46]:
+          - button "say hi briefly" [ref=e47] [cursor=pointer]:
+            - generic [ref=e48]: say hi briefly
+          - button "More actions" [ref=e49] [cursor=pointer]: ⋯
+        - listitem [ref=e50]:
+          - button "I want to clean up old database backups older than" [ref=e51] [cursor=pointer]:
+            - generic [ref=e52]: I want to clean up old database backups older than
+          - button "More actions" [ref=e53] [cursor=pointer]: ⋯
+        - listitem [ref=e54]:
+          - button "say hi briefly" [ref=e55] [cursor=pointer]:
+            - generic [ref=e56]: say hi briefly
+          - button "More actions" [ref=e57] [cursor=pointer]: ⋯
+        - listitem [ref=e58]:
+          - 'button "Demo: render a feedback form" [ref=e59] [cursor=pointer]':
+            - generic [ref=e60]: "Demo: render a feedback form"
+          - button "More actions" [ref=e61] [cursor=pointer]: ⋯
+        - listitem [ref=e62]:
+          - button "stream a long deterministic answer" [ref=e63] [cursor=pointer]:
+            - generic [ref=e64]: stream a long deterministic answer
+          - button "More actions" [ref=e65] [cursor=pointer]: ⋯
+        - listitem [ref=e66]:
+          - button "say hi briefly" [ref=e67] [cursor=pointer]:
+            - generic [ref=e68]: say hi briefly
+          - button "More actions" [ref=e69] [cursor=pointer]: ⋯
+        - listitem [ref=e70]:
+          - button "Use the research subagent to investigate the histo" [ref=e71] [cursor=pointer]:
+            - generic [ref=e72]: Use the research subagent to investigate the histo
+          - button "More actions" [ref=e73] [cursor=pointer]: ⋯
+        - listitem [ref=e74]:
+          - button "say hi briefly" [ref=e75] [cursor=pointer]:
+            - generic [ref=e76]: say hi briefly
+          - button "More actions" [ref=e77] [cursor=pointer]: ⋯
+        - listitem [ref=e78]:
+          - button "say hi briefly" [ref=e79] [cursor=pointer]:
+            - generic [ref=e80]: say hi briefly
+          - button "More actions" [ref=e81] [cursor=pointer]: ⋯
+        - listitem [ref=e82]:
+          - button "say hi briefly" [ref=e83] [cursor=pointer]:
+            - generic [ref=e84]: say hi briefly
+          - button "More actions" [ref=e85] [cursor=pointer]: ⋯
+        - listitem [ref=e86]:
+          - button "say hi briefly" [ref=e87] [cursor=pointer]:
+            - generic [ref=e88]: say hi briefly
+          - button "More actions" [ref=e89] [cursor=pointer]: ⋯
+        - listitem [ref=e90]:
+          - button "respond with the markdown checklist kitchen sink" [ref=e91] [cursor=pointer]:
+            - generic [ref=e92]: respond with the markdown checklist kitchen sink
+          - button "More actions" [ref=e93] [cursor=pointer]: ⋯
+        - listitem [ref=e94]:
+          - button "respond with a bullet list" [ref=e95] [cursor=pointer]:
+            - generic [ref=e96]: respond with a bullet list
+          - button "More actions" [ref=e97] [cursor=pointer]: ⋯
+        - listitem [ref=e98]:
+          - button "respond with a code fence" [ref=e99] [cursor=pointer]:
+            - generic [ref=e100]: respond with a code fence
+          - button "More actions" [ref=e101] [cursor=pointer]: ⋯
+        - listitem [ref=e102]:
+          - button "respond with a heading" [ref=e103] [cursor=pointer]:
+            - generic [ref=e104]: respond with a heading
+          - button "More actions" [ref=e105] [cursor=pointer]: ⋯
+        - listitem [ref=e106]:
+          - button "Show me a contact form with fields for name, email" [ref=e107] [cursor=pointer]:
+            - generic [ref=e108]: Show me a contact form with fields for name, email
+          - button "More actions" [ref=e109] [cursor=pointer]: ⋯
+        - listitem [ref=e110]:
+          - button "say hi briefly" [ref=e111] [cursor=pointer]:
+            - generic [ref=e112]: say hi briefly
+          - button "More actions" [ref=e113] [cursor=pointer]: ⋯
+        - listitem [ref=e114]:
+          - button "say hi briefly" [ref=e115] [cursor=pointer]:
+            - generic [ref=e116]: say hi briefly
+          - button "More actions" [ref=e117] [cursor=pointer]: ⋯
+        - listitem [ref=e118]:
+          - button "stream a long deterministic answer" [ref=e119] [cursor=pointer]:
+            - generic [ref=e120]: stream a long deterministic answer
+          - button "More actions" [ref=e121] [cursor=pointer]: ⋯
+        - listitem [ref=e122]:
+          - button "say hi briefly" [ref=e123] [cursor=pointer]:
+            - generic [ref=e124]: say hi briefly
+          - button "More actions" [ref=e125] [cursor=pointer]: ⋯
+        - listitem [ref=e126]:
+          - button "I want to clean up old database backups older than" [ref=e127] [cursor=pointer]:
+            - generic [ref=e128]: I want to clean up old database backups older than
+          - button "More actions" [ref=e129] [cursor=pointer]: ⋯
+        - listitem [ref=e130]:
+          - button "say hi briefly" [ref=e131] [cursor=pointer]:
+            - generic [ref=e132]: say hi briefly
+          - button "More actions" [ref=e133] [cursor=pointer]: ⋯
+        - listitem [ref=e134]:
+          - 'button "Demo: render a feedback form" [ref=e135] [cursor=pointer]':
+            - generic [ref=e136]: "Demo: render a feedback form"
+          - button "More actions" [ref=e137] [cursor=pointer]: ⋯
+        - listitem [ref=e138]:
+          - 'button "Demo: render a feedback form" [ref=e139] [cursor=pointer]':
+            - generic [ref=e140]: "Demo: render a feedback form"
+          - button "More actions" [ref=e141] [cursor=pointer]: ⋯
+        - listitem [ref=e142]:
+          - button "Tell me about coral reefs" [ref=e143] [cursor=pointer]:
+            - generic [ref=e144]: Tell me about coral reefs
+          - button "More actions" [ref=e145] [cursor=pointer]: ⋯
+        - listitem [ref=e146]:
+          - button "say hi briefly" [ref=e147] [cursor=pointer]:
+            - generic [ref=e148]: say hi briefly
+          - button "More actions" [ref=e149] [cursor=pointer]: ⋯
+        - listitem [ref=e150]:
+          - button "Use the research subagent to investigate the histo" [ref=e151] [cursor=pointer]:
+            - generic [ref=e152]: Use the research subagent to investigate the histo
+          - button "More actions" [ref=e153] [cursor=pointer]: ⋯
+        - listitem [ref=e154]:
+          - button "say hi briefly" [ref=e155] [cursor=pointer]:
+            - generic [ref=e156]: say hi briefly
+          - button "More actions" [ref=e157] [cursor=pointer]: ⋯
+        - listitem [ref=e158]:
+          - button "respond with a bullet list" [ref=e159] [cursor=pointer]:
+            - generic [ref=e160]: respond with a bullet list
+          - button "More actions" [ref=e161] [cursor=pointer]: ⋯
+        - listitem [ref=e162]:
+          - button "respond with a code fence" [ref=e163] [cursor=pointer]:
+            - generic [ref=e164]: respond with a code fence
+          - button "More actions" [ref=e165] [cursor=pointer]: ⋯
+        - listitem [ref=e166]:
+          - button "say hi briefly" [ref=e167] [cursor=pointer]:
+            - generic [ref=e168]: say hi briefly
+          - button "More actions" [ref=e169] [cursor=pointer]: ⋯
+        - listitem [ref=e170]:
+          - button "respond with a heading" [ref=e171] [cursor=pointer]:
+            - generic [ref=e172]: respond with a heading
+          - button "More actions" [ref=e173] [cursor=pointer]: ⋯
+        - listitem [ref=e174]:
+          - button "I want to clean up old database backups older than" [ref=e175] [cursor=pointer]:
+            - generic [ref=e176]: I want to clean up old database backups older than
+          - button "More actions" [ref=e177] [cursor=pointer]: ⋯
+        - listitem [ref=e178]:
+          - 'button "Demo: render a feedback form" [ref=e179] [cursor=pointer]':
+            - generic [ref=e180]: "Demo: render a feedback form"
+          - button "More actions" [ref=e181] [cursor=pointer]: ⋯
+        - listitem [ref=e182]:
+          - button "Show me a contact form with fields for name, email" [ref=e183] [cursor=pointer]:
+            - generic [ref=e184]: Show me a contact form with fields for name, email
+          - button "More actions" [ref=e185] [cursor=pointer]: ⋯
+        - listitem [ref=e186]:
+          - button "Show me a contact form with fields for name, email" [ref=e187] [cursor=pointer]:
+            - generic [ref=e188]: Show me a contact form with fields for name, email
+          - button "More actions" [ref=e189] [cursor=pointer]: ⋯
+        - listitem [ref=e190]:
+          - button "Use the research subagent to investigate the histo" [ref=e191] [cursor=pointer]:
+            - generic [ref=e192]: Use the research subagent to investigate the histo
+          - button "More actions" [ref=e193] [cursor=pointer]: ⋯
+        - listitem [ref=e194]:
+          - button "say hi briefly" [ref=e195] [cursor=pointer]:
+            - generic [ref=e196]: say hi briefly
+          - button "More actions" [ref=e197] [cursor=pointer]: ⋯
+        - listitem [ref=e198]:
+          - button "respond with a bullet list" [ref=e199] [cursor=pointer]:
+            - generic [ref=e200]: respond with a bullet list
+          - button "More actions" [ref=e201] [cursor=pointer]: ⋯
+        - listitem [ref=e202]:
+          - button "respond with a code fence" [ref=e203] [cursor=pointer]:
+            - generic [ref=e204]: respond with a code fence
+          - button "More actions" [ref=e205] [cursor=pointer]: ⋯
+        - listitem [ref=e206]:
+          - button "respond with a heading" [ref=e207] [cursor=pointer]:
+            - generic [ref=e208]: respond with a heading
+          - button "More actions" [ref=e209] [cursor=pointer]: ⋯
+        - listitem [ref=e210]:
+          - button "I want to clean up old database backups older than" [ref=e211] [cursor=pointer]:
+            - generic [ref=e212]: I want to clean up old database backups older than
+          - button "More actions" [ref=e213] [cursor=pointer]: ⋯
+        - listitem [ref=e214]:
+          - 'button "Demo: render a feedback form" [ref=e215] [cursor=pointer]':
+            - generic [ref=e216]: "Demo: render a feedback form"
+          - button "More actions" [ref=e217] [cursor=pointer]: ⋯
+        - listitem [ref=e218]:
+          - button "say hi briefly" [ref=e219] [cursor=pointer]:
+            - generic [ref=e220]: say hi briefly
+          - button "More actions" [ref=e221] [cursor=pointer]: ⋯
+    - button "Archived" [ref=e223] [cursor=pointer]:
+      - img [ref=e224]
+      - generic [ref=e226]: Archived
+    - generic [ref=e227]:
+      - button "Open chat devtools" [ref=e229] [cursor=pointer]:
+        - generic [ref=e231]: Devtools
+      - generic [ref=e232]:
+        - button "Switch to light theme" [ref=e233] [cursor=pointer]:
+          - img [ref=e234]
+        - button "Collapse sidenav" [ref=e240] [cursor=pointer]:
+          - img [ref=e241]
+  - generic [ref=e243]:
+    - toolbar "Demo controls" [ref=e244]:
+      - generic "Mode" [ref=e245]:
+        - button "Embed" [pressed] [ref=e246] [cursor=pointer]
+        - button "Popup" [ref=e247] [cursor=pointer]
+        - button "Sidebar" [ref=e248] [cursor=pointer]
+      - generic [ref=e249]:
+        - generic [ref=e250]: Model
+        - button "Model" [ref=e252] [cursor=pointer]:
+          - generic [ref=e253]: gpt-5-mini
+          - img [ref=e254]
+      - generic [ref=e256]:
+        - generic [ref=e257]: Effort
+        - button "Effort" [ref=e259] [cursor=pointer]:
+          - generic [ref=e260]: minimal (fast)
+          - img [ref=e261]
+      - generic [ref=e263]:
+        - generic [ref=e264]: Gen UI
+        - button "Gen UI" [ref=e266] [cursor=pointer]:
+          - generic [ref=e267]: A2UI v1-compatible
+          - img [ref=e268]
+      - generic [ref=e270]:
+        - generic [ref=e271]: Theme
+        - button "Theme" [ref=e273] [cursor=pointer]:
+          - generic [ref=e274]: Default dark
+          - img [ref=e275]
+      - button "New conversation" [ref=e277] [cursor=pointer]
+    - generic [ref=e282]:
+      - generic [ref=e285]:
+        - generic [ref=e289]: respond with a heading
+        - generic [ref=e291]:
+          - button "Checkpoint 1f152f78-e266-621a-8002-fcd4f255d353" [ref=e294] [cursor=pointer]
+          - generic [ref=e295]:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]
+            - toolbar "Message actions" [ref=e297]:
+              - button "Regenerate response" [ref=e298] [cursor=pointer]:
+                - img
+              - button "Copy to clipboard" [ref=e299] [cursor=pointer]:
+                - img
+              - button "Thumbs up" [ref=e300] [cursor=pointer]:
+                - img
+              - button "Thumbs down" [ref=e301] [cursor=pointer]:
+                - img
+      - generic [ref=e307]:
+        - textbox "Type a message" [ref=e308]:
+          - /placeholder: Type a message...
+        - generic [ref=e309]:
+          - button "gpt-5-mini" [ref=e311] [cursor=pointer]:
+            - generic [ref=e312]: gpt-5-mini
+            - img [ref=e313]
+          - button "Send message" [disabled] [ref=e315]:
+            - img [ref=e316]
+```
