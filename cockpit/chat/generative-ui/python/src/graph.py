@@ -50,15 +50,17 @@ def router(state: DashboardState) -> Command[Literal["generate_shell", "plan_too
     return Command(goto="plan_tools")
 
 
-async def generate_shell(state: DashboardState) -> DashboardState:
-    """Generate the dashboard shell spec on first turn."""
+async def generate_shell(state: DashboardState) -> Command[Literal["populate_initial_data"]]:
+    """Generate the dashboard shell spec on first turn, then dispatch to
+    deterministic data-population (skipping plan_tools, which has a
+    follow-up-only prompt)."""
     messages = [SystemMessage(content=_PROMPT)] + state["messages"]
     response = await _llm.ainvoke(messages)
     spec_text = response.content if isinstance(response.content, str) else ""
-    return {
-        "messages": [response],
-        "dashboard_spec": spec_text,
-    }
+    return Command(
+        goto="populate_initial_data",
+        update={"messages": [response], "dashboard_spec": spec_text},
+    )
 
 
 async def plan_tools(state: DashboardState) -> DashboardState:
