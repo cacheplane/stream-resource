@@ -55,3 +55,34 @@ export async function sendPromptAndWait(
   await expect(finalizedAssistant).toBeAttached({ timeout: 5_000 });
   return finalizedAssistant;
 }
+
+/**
+ * Send a user prompt and wait for an interrupt to surface.
+ *
+ * Unlike `sendPromptAndWait`, this helper does NOT wait for the
+ * Stop-generating cycle to complete with the agent fully idle. When an
+ * interrupt fires, the agent transitions to idle while the
+ * `chat-interrupt-panel` is still showing — the panel locator is the
+ * durable signal that the run has paused.
+ *
+ * Pair with `clickInterruptActionAndWaitFinal` to drive the resume.
+ */
+export async function sendPromptAndWaitForInterrupt(
+  page: Page,
+  prompt: string,
+  opts?: SendPromptAndWaitOptions,
+): Promise<void> {
+  const path = opts?.path ?? '/';
+  await page.goto(path);
+  const input = page.getByRole('textbox', { name: /message|prompt/i });
+  await input.fill(prompt);
+  await page.getByRole('button', { name: /send/i }).click();
+
+  // Brief — typically <1s. Catches the case where the click didn't dispatch.
+  await expect(page.getByRole('button', { name: /stop generating/i })).toBeVisible({
+    timeout: 10_000,
+  });
+
+  // Panel visible implies the run paused at an interrupt rather than completing.
+  await expect(page.locator('chat-interrupt-panel')).toBeVisible({ timeout: 60_000 });
+}
