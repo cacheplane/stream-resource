@@ -125,6 +125,15 @@
   background: color-mix(in srgb, var(--ngaf-chat-text) 8%, transparent);
 }
 
+/* The toolbar lives at the top of the page; chat-select's default upward
+ * popover (bottom: calc(100% + 8px)) renders offscreen here. Flip the
+ * menus to open downward — scoped to the toolbar so the chat-input model
+ * picker (which IS at the bottom) keeps its upward default. */
+.demo-shell__field ::ng-deep chat-select .chat-select__menu {
+  top: calc(100% + 8px);
+  bottom: auto;
+}
+
 @media (max-width: 767px) {
   .demo-shell__toolbar {
     padding-left: 60px;
