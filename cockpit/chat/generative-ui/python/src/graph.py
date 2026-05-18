@@ -80,10 +80,12 @@ async def agent(state: DashboardState) -> dict:
     return {"messages": [response]}
 
 
-def should_continue(state: DashboardState) -> Literal["tools", "emit_state"]:
+def should_continue(state: DashboardState) -> Literal["tools", "finalize", "emit_state"]:
     """Loop while the agent emits tool_calls, up to _MAX_TOOL_ITERATIONS
-    this turn. After the cap, force exit to emit_state — a partial
-    dashboard beats an infinite loop."""
+    this turn. After the cap, route through `finalize` (strips orphan
+    tool_calls from the last AI message) before emit_state — otherwise
+    `respond`'s LLM call rejects the message history because the AI
+    message had tool_calls without matching ToolMessages."""
     last = state["messages"][-1]
     if not (hasattr(last, "tool_calls") and last.tool_calls):
         return "emit_state"
@@ -95,8 +97,26 @@ def should_continue(state: DashboardState) -> Literal["tools", "emit_state"]:
         if msg.type == "ai" and getattr(msg, "tool_calls", None):
             iter_count += 1
     if iter_count >= _MAX_TOOL_ITERATIONS:
-        return "emit_state"
+        return "finalize"
     return "tools"
+
+
+async def finalize(state: DashboardState) -> dict:
+    """Strip tool_calls from the last AI message when the iteration cap
+    is hit, so respond's LLM call doesn't fail with 'tool_calls without
+    matching ToolMessage' errors. Replaces in place via add_messages
+    id-match reducer."""
+    last = state["messages"][-1]
+    if not (isinstance(last, AIMessage) and last.tool_calls):
+        return {}
+    replacement_kwargs: dict = {
+        "content": last.content or "(iteration cap reached)",
+        "additional_kwargs": last.additional_kwargs or {},
+        "response_metadata": last.response_metadata or {},
+    }
+    if getattr(last, "id", None):
+        replacement_kwargs["id"] = last.id
+    return {"messages": [AIMessage(**replacement_kwargs)]}
 
 
 async def wrap_spec_into_ai(state: DashboardState) -> dict:
@@ -227,6 +247,7 @@ _builder = StateGraph(DashboardState)
 _builder.add_node("agent", agent)
 _builder.add_node("tools", ToolNode(_ALL_TOOLS))
 _builder.add_node("wrap_spec_into_ai", wrap_spec_into_ai)
+_builder.add_node("finalize", finalize)
 _builder.add_node("emit_state", emit_state)
 _builder.add_node("respond", respond)
 
@@ -234,6 +255,7 @@ _builder.set_entry_point("agent")
 _builder.add_conditional_edges("agent", should_continue)
 _builder.add_edge("tools", "wrap_spec_into_ai")
 _builder.add_edge("wrap_spec_into_ai", "agent")
+_builder.add_edge("finalize", "emit_state")
 _builder.add_edge("emit_state", "respond")
 _builder.add_edge("respond", END)
 
