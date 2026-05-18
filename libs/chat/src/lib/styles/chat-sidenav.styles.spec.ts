@@ -42,6 +42,15 @@ describe('CHAT_SIDENAV_STYLES — New chat button', () => {
   });
 });
 
+describe('CHAT_SIDENAV_STYLES — header chrome', () => {
+  const normalized = CHAT_SIDENAV_STYLES.replace(/\s+/g, ' ');
+  it('does NOT draw a border-bottom on .chat-sidenav__header (removes the line above New chat)', () => {
+    expect(normalized).not.toMatch(
+      /\.chat-sidenav__header\s*\{[^}]*border-bottom:/,
+    );
+  });
+});
+
 describe('CHAT_SIDENAV_STYLES — action button font', () => {
   const normalized = CHAT_SIDENAV_STYLES.replace(/\s+/g, ' ');
 

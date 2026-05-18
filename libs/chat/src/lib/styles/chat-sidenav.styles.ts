@@ -70,7 +70,6 @@ export const CHAT_SIDENAV_STYLES = `
   .chat-sidenav__header {
     flex-shrink: 0;
     padding: var(--ngaf-chat-space-3);
-    border-bottom: 1px solid var(--ngaf-chat-separator);
   }
   .chat-sidenav__topbar {
     flex-shrink: 0;
