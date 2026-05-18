@@ -30,7 +30,7 @@ export const capabilities: readonly Capability[] = [
   { id: 'sandboxes', product: 'deep-agents', topic: 'sandboxes', angularProject: 'cockpit-deep-agents-sandboxes-angular', port: 4315, pythonDir: 'cockpit/deep-agents/sandboxes/python', graphName: 'sandboxes' },
   // Render capabilities
   { id: 'r-spec-rendering', product: 'render', topic: 'spec-rendering', angularProject: 'cockpit-render-spec-rendering-angular', port: 4401, pythonDir: 'cockpit/render/spec-rendering/python', graphName: 'r-spec-rendering' },
-  { id: 'element-rendering', product: 'render', topic: 'element-rendering', angularProject: 'cockpit-render-element-rendering-angular', port: 4402, pythonDir: 'cockpit/render/element-rendering/python', graphName: 'element-rendering' },
+  { id: 'r-element-rendering', product: 'render', topic: 'element-rendering', angularProject: 'cockpit-render-element-rendering-angular', port: 4402, pythonDir: 'cockpit/render/element-rendering/python', graphName: 'r-element-rendering' },
   { id: 'state-management', product: 'render', topic: 'state-management', angularProject: 'cockpit-render-state-management-angular', port: 4403, pythonDir: 'cockpit/render/state-management/python', graphName: 'state-management' },
   { id: 'r-registry', product: 'render', topic: 'registry', angularProject: 'cockpit-render-registry-angular', port: 4404, pythonDir: 'cockpit/render/registry/python', graphName: 'r-registry' },
   { id: 'repeat-loops', product: 'render', topic: 'repeat-loops', angularProject: 'cockpit-render-repeat-loops-angular', port: 4405, pythonDir: 'cockpit/render/repeat-loops/python', graphName: 'repeat-loops' },
