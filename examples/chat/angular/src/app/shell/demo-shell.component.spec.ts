@@ -43,3 +43,28 @@ describe('DemoShell — mode signal', () => {
     expect(cmp.mode()).toBe('embed');
   });
 });
+
+describe('DemoShell — toolbar dropdowns use chat-select', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([
+          { path: 'embed', component: DemoShell },
+          { path: '', pathMatch: 'full', redirectTo: 'embed' },
+          { path: '**', redirectTo: 'embed' },
+        ]),
+      ],
+    });
+  });
+
+  it('renders the four toolbar fields with <chat-select>, not native <select>', () => {
+    const fx = TestBed.createComponent(DemoShell);
+    fx.detectChanges();
+    const fields = fx.nativeElement.querySelectorAll('.demo-shell__field');
+    expect(fields.length).toBe(4);
+    for (const field of Array.from(fields) as HTMLElement[]) {
+      expect(field.querySelector('chat-select')).toBeTruthy();
+      expect(field.querySelector('select')).toBeNull();
+    }
+  });
+});
