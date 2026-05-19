@@ -97,4 +97,42 @@ describe('buildA2uiActionMessage (v1)', () => {
     const msg = buildA2uiActionMessage(params, surface);
     expect(msg.action.context).toEqual({});
   });
+
+  it('derives action.label from source Button child Text', () => {
+    const components: A2uiComponent[] = [
+      { id: 'submit-btn', component: { Button: { child: 'submit-label', action: { name: 'formSubmit' } } } },
+      { id: 'submit-label', component: { Text: { text: { literalString: 'Search flights' } } } },
+    ];
+    const surface = makeSurface(components);
+    const params = { surfaceId: 's1', sourceComponentId: 'submit-btn', name: 'formSubmit', context: {} };
+    const msg = buildA2uiActionMessage(params, surface);
+    expect(msg.action.label).toBe('Search flights');
+  });
+
+  it('leaves action.label undefined when source is not a Button', () => {
+    const components: A2uiComponent[] = [
+      { id: 'cb', component: { CheckBox: { label: { literalString: 'Agree' }, checked: { literalBoolean: false } } } },
+    ];
+    const surface = makeSurface(components);
+    const params = { surfaceId: 's1', sourceComponentId: 'cb', name: 'agreeToggle', context: {} };
+    const msg = buildA2uiActionMessage(params, surface);
+    expect(msg.action.label).toBeUndefined();
+  });
+
+  it('leaves action.label undefined when Button has no child Text id', () => {
+    const components: A2uiComponent[] = [
+      { id: 'submit-btn', component: { Button: { action: { name: 'formSubmit' } } as unknown as { child: string; action: { name: string } } } },
+    ];
+    const surface = makeSurface(components);
+    const params = { surfaceId: 's1', sourceComponentId: 'submit-btn', name: 'formSubmit', context: {} };
+    const msg = buildA2uiActionMessage(params, surface);
+    expect(msg.action.label).toBeUndefined();
+  });
+
+  it('leaves action.label undefined when sourceComponentId does not exist in surface', () => {
+    const surface = makeSurface([makeTextComp()]);
+    const params = { surfaceId: 's1', sourceComponentId: 'ghost-id', name: 'click', context: {} };
+    const msg = buildA2uiActionMessage(params, surface);
+    expect(msg.action.label).toBeUndefined();
+  });
 });
