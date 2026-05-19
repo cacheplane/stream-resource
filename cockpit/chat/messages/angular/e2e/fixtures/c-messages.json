@@ -1,0 +1,15 @@
+{
+  "fixtures": [
+    {
+      "match": {
+        "userMessage": "Hello",
+        "model": "gpt-5-mini",
+        "turnIndex": 0,
+        "hasToolResult": false
+      },
+      "response": {
+        "content": "Hi! I'm the chat-messages capability demo. I show how ChatMessageListComponent, ChatInputComponent, and ChatTypingIndicatorComponent render together. Try sending a few messages to see the bubbles and typing indicator in action."
+      }
+    }
+  ]
+}
