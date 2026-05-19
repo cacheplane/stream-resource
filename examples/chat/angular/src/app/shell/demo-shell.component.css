@@ -190,6 +190,11 @@
  * positioning is unchanged for consumers without a top toolbar. */
 .demo-shell ::ng-deep chat-sidenav {
   top: var(--demo-toolbar-height);
+  /* chat-sidenav has `height: 100%` on :host plus position: fixed + bottom: 0.
+   * With our top override the explicit height "wins" and the sidenav extends
+   * past the viewport (top + 100% > 100vh). Constrain the height to the
+   * viewport minus the toolbar. */
+  height: calc(100% - var(--demo-toolbar-height));
 }
 .demo-shell ::ng-deep .chat-sidebar__panel {
   top: var(--demo-toolbar-height);
