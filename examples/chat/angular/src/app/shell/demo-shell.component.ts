@@ -180,8 +180,9 @@ export class DemoShell {
     (this.persistence.read('colorScheme') as 'light' | 'dark' | null) ?? 'dark',
   );
 
-  /** Whether the threads drawer is open. Persisted across reloads. */
-  protected readonly drawerOpen = signal<boolean>(this.persistence.read('drawerOpen') ?? false);
+  /** Whether the threads drawer is open. Always starts closed on a fresh
+   *  load — drawer mode is a transient UI state, not a persisted preference. */
+  protected readonly drawerOpen = signal<boolean>(false);
 
   /** Whether the Cmd+K search palette is open. */
   protected readonly paletteOpen = signal<boolean>(false);
@@ -399,7 +400,6 @@ export class DemoShell {
 
   protected onSidenavOpenChange(next: boolean): void {
     this.drawerOpen.set(next);
-    this.persistence.write('drawerOpen', next);
   }
 
   protected toggleSidenav(): void {
