@@ -98,13 +98,27 @@ describe('buildA2uiActionMessage (v1)', () => {
     expect(msg.action.context).toEqual({});
   });
 
-  it('derives action.label from source Button child Text', () => {
+  it('derives action.label from source Button child Text (wrapped literalString)', () => {
     const components: A2uiComponent[] = [
       { id: 'submit-btn', component: { Button: { child: 'submit-label', action: { name: 'formSubmit' } } } },
       { id: 'submit-label', component: { Text: { text: { literalString: 'Search flights' } } } },
     ];
     const surface = makeSurface(components);
     const params = { surfaceId: 's1', sourceComponentId: 'submit-btn', name: 'formSubmit', context: {} };
+    const msg = buildA2uiActionMessage(params, surface);
+    expect(msg.action.label).toBe('Search flights');
+  });
+
+  it('derives action.label from source Button child Text (raw string shorthand)', () => {
+    // The LLM sometimes authors `text` as a raw string (ergonomic shorthand)
+    // rather than the canonical `{ literalString }` shape. Both are valid in
+    // the wild — the derivation accepts both. Real example from c-a2ui.
+    const components: A2uiComponent[] = [
+      { id: 'submit', component: { Button: { child: 'submit_label', action: { name: 'bookingSubmit' } } } },
+      { id: 'submit_label', component: { Text: { text: 'Search flights' as unknown as { literalString: string } } } },
+    ];
+    const surface = makeSurface(components);
+    const params = { surfaceId: 's1', sourceComponentId: 'submit', name: 'bookingSubmit', context: {} };
     const msg = buildA2uiActionMessage(params, surface);
     expect(msg.action.label).toBe('Search flights');
   });

@@ -28,9 +28,20 @@ function deriveActionLabel(surface: A2uiSurface, sourceId: string): string | nul
   if (!buttonProps?.child) return null;
   const labelText = surface.components.get(buttonProps.child);
   if (!labelText) return null;
-  const textProps = (labelText.component as { Text?: { text?: { literalString?: string } } }).Text;
-  const literal = textProps?.text?.literalString;
-  return typeof literal === 'string' && literal.length > 0 ? literal : null;
+  const textProps = (labelText.component as { Text?: { text?: unknown } }).Text;
+  if (!textProps) return null;
+  // `text` may be either a raw string (LLM-author ergonomic shorthand) or
+  // a wrapped DynamicString `{ literalString: "..." }` (canonical v1 shape).
+  // Accept both so the label survives whichever form the LLM happens to emit.
+  const text = textProps.text;
+  if (typeof text === 'string') {
+    return text.length > 0 ? text : null;
+  }
+  if (text && typeof text === 'object' && typeof (text as { literalString?: unknown }).literalString === 'string') {
+    const literal = (text as { literalString: string }).literalString;
+    return literal.length > 0 ? literal : null;
+  }
+  return null;
 }
 
 /** Builds an A2uiActionMessage from handler params and the current surface.
