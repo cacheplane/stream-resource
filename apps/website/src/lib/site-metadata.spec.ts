@@ -16,13 +16,21 @@ describe('site positioning copy', () => {
     expect(LONG_SUBHEAD).toContain('LangGraph and AG-UI-compatible agents');
     expect(LONG_SUBHEAD).toContain('Vercel json-render and Google A2UI');
     expect(HERO_SUBHEAD).toContain('durable threads, interrupts, subagents, planning, memory, and generative UI');
-    expect(POSITIONING_PROOF_POINTS).toEqual([
+    expect(POSITIONING_PROOF_POINTS.map((p) => p.label)).toEqual([
       'LangGraph + AG-UI',
       'Durable threads',
       'Interrupts',
       'Subagents',
       'Planning + memory',
       'json-render + A2UI',
+    ]);
+    expect(POSITIONING_PROOF_POINTS.map((p) => p.href)).toEqual([
+      '/docs/agent/concepts/langgraph-basics',
+      '/docs/agent/guides/persistence',
+      '/docs/agent/guides/interrupts',
+      '/docs/agent/guides/subgraphs',
+      '/docs/agent/guides/memory',
+      '/docs/render/concepts/json-render-vs-a2ui',
     ]);
     expect(DEFAULT_META_DESCRIPTION).toBe(SHORT_POSITIONING_DESCRIPTION);
   });

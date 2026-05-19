@@ -121,9 +121,22 @@ export function Hero() {
               }}
             >
               {POSITIONING_PROOF_POINTS.map((proofPoint, index) => (
-                <Pill key={proofPoint} variant={index === 0 ? 'accent' : 'neutral'}>
-                  {proofPoint}
-                </Pill>
+                <a
+                  key={proofPoint.label}
+                  href={proofPoint.href}
+                  onClick={() =>
+                    track(analyticsEvents.marketingCtaClick, {
+                      cta_id: 'hero_proof_pill',
+                      track: 'developer',
+                      surface: 'home',
+                    })
+                  }
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Pill variant={index === 0 ? 'accent' : 'neutral'} className="hero-proof-pill">
+                    {proofPoint.label}
+                  </Pill>
+                </a>
               ))}
             </div>
             <p
@@ -142,21 +155,61 @@ export function Hero() {
           </div>
 
           {/* Right column — generative UI dashboard */}
-          <div aria-hidden="true">
-            <BrowserFrame
-              url="demo.threadplane.ai"
-              rotate={-3}
-              elevation="lg"
-              style={{ width: '100%' }}
+          <div>
+            <a
+              href="https://cockpit.threadplane.ai/chat/generative-ui"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() =>
+                track(analyticsEvents.marketingCtaClick, {
+                  cta_id: 'hero_demo_open_cockpit',
+                  track: 'developer',
+                  surface: 'home',
+                })
+              }
+              style={{ display: 'block', textDecoration: 'none' }}
+              aria-label="Open the generative UI example running in cockpit"
             >
-              <img
-                src="/screenshots/canonical-demo-generative-ui.webp"
-                alt="Canonical demo — agent renders a live airline operations dashboard with KPI cards, charts, and a disruptions table"
-                style={{ display: 'block', width: '100%', height: 'auto' }}
-                loading="lazy"
-                decoding="async"
-              />
-            </BrowserFrame>
+              <BrowserFrame
+                url="demo.threadplane.ai"
+                rotate={-1}
+                elevation="lg"
+                style={{ width: '100%' }}
+              >
+                <img
+                  src="/screenshots/canonical-demo-generative-ui.webp"
+                  alt="Canonical demo — agent renders a live airline operations dashboard with KPI cards, charts, and a disruptions table"
+                  style={{ display: 'block', width: '100%', height: 'auto' }}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </BrowserFrame>
+            </a>
+            <p
+              style={{
+                margin: '12px 0 0',
+                textAlign: 'center',
+                fontFamily: tokens.typography.body.family,
+                fontSize: 13,
+                color: tokens.colors.textMuted,
+              }}
+            >
+              <a
+                href="https://cockpit.threadplane.ai/chat/generative-ui"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() =>
+                  track(analyticsEvents.marketingCtaClick, {
+                    cta_id: 'hero_demo_open_cockpit_caption',
+                    track: 'developer',
+                    surface: 'home',
+                  })
+                }
+                style={{ color: tokens.colors.accent, textDecoration: 'none', fontWeight: 600 }}
+              >
+                Open in cockpit →
+              </a>
+            </p>
           </div>
         </div>
 
