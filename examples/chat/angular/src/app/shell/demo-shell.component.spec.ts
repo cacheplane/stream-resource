@@ -149,3 +149,32 @@ describe('DemoShell — threadId hydration', () => {
     expect(cmp.threadIdSignal()).toBeNull();
   });
 });
+
+describe('DemoShell — thread switch navigates URL', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        THREADS_CONFIG,
+        provideRouter([
+          { path: 'embed', component: DemoShell },
+          { path: 'embed/:threadId', component: DemoShell },
+          { path: '', pathMatch: 'full', redirectTo: 'embed' },
+          { path: '**', redirectTo: 'embed' },
+        ]),
+      ],
+    });
+  });
+
+  it('navigates to /embed/<id> when onThreadSelected fires', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/embed');
+    const fx = TestBed.createComponent(DemoShell);
+    fx.detectChanges();
+    const cmp = fx.componentInstance as unknown as {
+      onThreadSelected: (id: string) => void;
+    };
+    cmp.onThreadSelected('xyz');
+    await fx.whenStable();
+    expect(router.url).toBe('/embed/xyz');
+  });
+});

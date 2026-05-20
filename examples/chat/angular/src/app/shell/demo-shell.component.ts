@@ -302,16 +302,14 @@ export class DemoShell {
     delete: async (id) => {
       await this.threadsSvc.delete(id);
       if (this.threadIdSignal() === id) {
-        this.threadIdSignal.set(null);
-        this.persistence.write('threadId', null);
+        void this.router.navigate(['/' + this.mode()], { queryParamsHandling: 'preserve' });
       }
     },
     rename: (id, title) => this.threadsSvc.rename(id, title),
     archive: async (id) => {
       await this.threadsSvc.archive(id);
       if (this.threadIdSignal() === id) {
-        this.threadIdSignal.set(null);
-        this.persistence.write('threadId', null);
+        void this.router.navigate(['/' + this.mode()], { queryParamsHandling: 'preserve' });
       }
     },
     unarchive: (id) => this.threadsSvc.unarchive(id),
@@ -334,8 +332,10 @@ export class DemoShell {
       assistantId: environment.assistantId,
       threadId: this.threadIdSignal,
       onThreadId: (id: string) => {
-        this.threadIdSignal.set(id);
-        this.persistence.write('threadId', id);
+        void this.router.navigate(['/' + this.mode(), id], {
+          queryParamsHandling: 'preserve',
+          replaceUrl: true,
+        });
       },
       // Phase 3B: tells SubagentTracker to treat `research` tool calls as
       // subagent dispatches and to materialize agent.subagents() from the
@@ -415,8 +415,7 @@ export class DemoShell {
 
   /** Switch to an existing thread selected from the threads panel. */
   protected onThreadSelected(threadId: string): void {
-    this.threadIdSignal.set(threadId);
-    this.persistence.write('threadId', threadId);
+    void this.router.navigate(['/' + this.mode(), threadId], { queryParamsHandling: 'preserve' });
   }
 
   protected onProjectSelected(projectId: string): void {
@@ -440,8 +439,7 @@ export class DemoShell {
     const sel = this.selectedProjectId();
     const id = await this.threadsSvc.create(sel ? { projectId: sel } : {});
     if (id) {
-      this.threadIdSignal.set(id);
-      this.persistence.write('threadId', id);
+      void this.router.navigate(['/' + this.mode(), id], { queryParamsHandling: 'preserve' });
     }
   }
 
