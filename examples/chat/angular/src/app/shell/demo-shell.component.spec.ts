@@ -150,6 +150,35 @@ describe('DemoShell — threadId hydration', () => {
   });
 });
 
+describe('DemoShell — mode change preserves thread + query', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        THREADS_CONFIG,
+        provideRouter([
+          { path: 'embed', component: DemoShell },
+          { path: 'embed/:threadId', component: DemoShell },
+          { path: 'popup', component: DemoShell },
+          { path: 'popup/:threadId', component: DemoShell },
+          { path: '', pathMatch: 'full', redirectTo: 'embed' },
+          { path: '**', redirectTo: 'embed' },
+        ]),
+      ],
+    });
+  });
+
+  it('preserves :threadId and ?model when switching mode', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/embed/abc?model=gpt-5-nano');
+    const fx = TestBed.createComponent(DemoShell);
+    fx.detectChanges();
+    const cmp = fx.componentInstance as unknown as { onModeChange: (m: string) => void };
+    cmp.onModeChange('popup');
+    await fx.whenStable();
+    expect(router.url).toBe('/popup/abc?model=gpt-5-nano');
+  });
+});
+
 describe('DemoShell — thread switch navigates URL', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({

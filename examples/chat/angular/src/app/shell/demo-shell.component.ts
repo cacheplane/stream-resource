@@ -369,7 +369,9 @@ export class DemoShell {
   })();
 
   protected onModeChange(next: DemoMode | string): void {
-    void this.router.navigate(['/' + next]);
+    const id = this.threadIdSignal();
+    const segments = id ? ['/' + next, id] : ['/' + next];
+    void this.router.navigate(segments, { queryParamsHandling: 'preserve' });
   }
 
   onModelChange(next: string): void {
