@@ -39,6 +39,15 @@ export type DemoMode = 'embed' | 'popup' | 'sidebar';
 const MODES: readonly DemoMode[] = ['embed', 'popup', 'sidebar'] as const;
 const TELEMETRY_SURFACE = 'canonical_demo';
 
+const KNOB_DEFAULTS = {
+  model: 'gpt-5-mini',
+  effort: 'minimal',
+  genui: 'a2ui',
+  theme: 'default-dark',
+  color: 'dark',
+  project: null as string | null,
+} as const;
+
 function modeFromUrl(url: string): DemoMode {
   const seg = url.split('?')[0].split('/').filter(Boolean)[0];
   return (MODES as readonly string[]).includes(seg) ? (seg as DemoMode) : 'embed';
@@ -97,6 +106,7 @@ export class DemoShell {
         if (currentTheme !== next) {
           this.theme.set(next);
           this.persistence.write('theme', next);
+          this.writeKnobsToUrl({ theme: next });
         }
       }
     });
@@ -377,27 +387,32 @@ export class DemoShell {
   onModelChange(next: string): void {
     this.model.set(next);
     this.persistence.write('model', next);
+    this.writeKnobsToUrl({ model: next });
   }
 
   protected onEffortChange(next: string): void {
     this.effort.set(next);
     this.persistence.write('effort', next);
+    this.writeKnobsToUrl({ effort: next });
   }
 
   protected onGenUiModeChange(next: string): void {
     this.genUiMode.set(next);
     this.persistence.write('genUiMode', next);
+    this.writeKnobsToUrl({ genui: next });
   }
 
   protected onThemeChange(next: string): void {
     this.theme.set(next);
     this.persistence.write('theme', next);
+    this.writeKnobsToUrl({ theme: next });
   }
 
   protected onColorSchemeChange(next: 'light' | 'dark' | string): void {
     if (next !== 'light' && next !== 'dark') return;
     this.colorScheme.set(next);
     this.persistence.write('colorScheme', next);
+    this.writeKnobsToUrl({ color: next });
   }
 
   protected onSidenavOpenChange(next: boolean): void {
@@ -423,6 +438,7 @@ export class DemoShell {
   protected onProjectSelected(projectId: string): void {
     this.selectedProjectId.set(projectId);
     this.persistence.write('selectedProjectId', projectId);
+    this.writeKnobsToUrl({ project: projectId });
   }
 
   protected onNewProjectClicked(): void {
@@ -443,6 +459,32 @@ export class DemoShell {
     if (id) {
       void this.router.navigate(['/' + this.mode(), id], { queryParamsHandling: 'preserve' });
     }
+  }
+
+  private buildQueryParams(overrides: Partial<Record<keyof typeof KNOB_DEFAULTS, string | null>> = {}):
+    Record<string, string | null> {
+    const current: Record<keyof typeof KNOB_DEFAULTS, string | null> = {
+      model: this.model(),
+      effort: this.effort(),
+      genui: this.genUiMode(),
+      theme: this.theme(),
+      color: this.colorScheme(),
+      project: this.selectedProjectId(),
+    };
+    const merged = { ...current, ...overrides };
+    const params: Record<string, string | null> = {};
+    for (const key of Object.keys(KNOB_DEFAULTS) as (keyof typeof KNOB_DEFAULTS)[]) {
+      const value = merged[key];
+      params[key] = value !== null && value !== KNOB_DEFAULTS[key] ? value : null;
+    }
+    return params;
+  }
+
+  private writeKnobsToUrl(overrides: Partial<Record<keyof typeof KNOB_DEFAULTS, string | null>> = {}): void {
+    void this.router.navigate([], {
+      queryParams: this.buildQueryParams(overrides),
+      replaceUrl: true,
+    });
   }
 
   private readUrlState(): void {

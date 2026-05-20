@@ -207,3 +207,41 @@ describe('DemoShell — thread switch navigates URL', () => {
     expect(router.url).toBe('/embed/xyz');
   });
 });
+
+describe('DemoShell — knob URL writes', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        THREADS_CONFIG,
+        provideRouter([
+          { path: 'embed', component: DemoShell },
+          { path: 'embed/:threadId', component: DemoShell },
+          { path: '', pathMatch: 'full', redirectTo: 'embed' },
+          { path: '**', redirectTo: 'embed' },
+        ]),
+      ],
+    });
+  });
+
+  it('writes ?model=gpt-5-nano when model changes off default', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/embed');
+    const fx = TestBed.createComponent(DemoShell);
+    fx.detectChanges();
+    const cmp = fx.componentInstance as unknown as { onModelChange: (m: string) => void };
+    cmp.onModelChange('gpt-5-nano');
+    await fx.whenStable();
+    expect(router.url).toBe('/embed?model=gpt-5-nano');
+  });
+
+  it('omits ?model when changing back to the default', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/embed?model=gpt-5-nano');
+    const fx = TestBed.createComponent(DemoShell);
+    fx.detectChanges();
+    const cmp = fx.componentInstance as unknown as { onModelChange: (m: string) => void };
+    cmp.onModelChange('gpt-5-mini');
+    await fx.whenStable();
+    expect(router.url).toBe('/embed');
+  });
+});
