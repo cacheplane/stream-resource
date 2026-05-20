@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { LANGGRAPH_THREADS_CONFIG } from '@ngaf/langgraph';
 import { DemoShell } from './demo-shell.component';
+import { PalettePersistence } from './palette-persistence.service';
 
 const THREADS_CONFIG = {
   provide: LANGGRAPH_THREADS_CONFIG,
@@ -309,5 +310,49 @@ describe('DemoShell — knob URL writes', () => {
     cmp.onModelChange('gpt-5-mini');
     await fx.whenStable();
     expect(router.url).toBe('/embed');
+  });
+});
+
+describe('DemoShell — ephemeral hydration', () => {
+  let writes: Array<[string, unknown]>;
+
+  beforeEach(() => {
+    writes = [];
+    const fake = {
+      read: (_key: string) => null,
+      write: (key: string, value: unknown) => { writes.push([key, value]); },
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        THREADS_CONFIG,
+        provideRouter([
+          { path: 'embed', component: DemoShell },
+          { path: 'embed/:threadId', component: DemoShell },
+          { path: '', pathMatch: 'full', redirectTo: 'embed' },
+          { path: '**', redirectTo: 'embed' },
+        ]),
+        { provide: PalettePersistence, useValue: fake },
+      ],
+    });
+  });
+
+  it('does NOT write to persistence when knobs hydrate from URL', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/embed/abc?model=gpt-5-nano&theme=material-dark');
+    const fx = TestBed.createComponent(DemoShell);
+    fx.detectChanges();
+    expect(writes.find(([k]) => k === 'model')).toBeUndefined();
+    expect(writes.find(([k]) => k === 'theme')).toBeUndefined();
+    expect(writes.find(([k]) => k === 'threadId')).toBeUndefined();
+  });
+
+  it('DOES write to persistence on explicit user action', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/embed');
+    const fx = TestBed.createComponent(DemoShell);
+    fx.detectChanges();
+    const cmp = fx.componentInstance as unknown as { onThemeChange: (t: string) => void };
+    cmp.onThemeChange('material-dark');
+    expect(writes.find(([k, v]) => k === 'theme' && v === 'material-dark')).toBeDefined();
   });
 });
