@@ -492,6 +492,20 @@ export class DemoShell {
     while (route.firstChild) route = route.firstChild;
     const threadId = route.snapshot.paramMap.get('threadId');
     this.threadIdSignal.set(threadId);
+
+    const q = route.snapshot.queryParamMap;
+    const model = q.get('model');
+    if (model !== null) this.model.set(model);
+    const effort = q.get('effort');
+    if (effort !== null) this.effort.set(effort);
+    const genui = q.get('genui');
+    if (genui !== null) this.genUiMode.set(genui);
+    const theme = q.get('theme');
+    if (theme !== null) this.theme.set(theme);
+    const color = q.get('color');
+    if (color === 'light' || color === 'dark') this.colorScheme.set(color);
+    const project = q.get('project');
+    if (project !== null) this.selectedProjectId.set(project);
   }
 
   /**

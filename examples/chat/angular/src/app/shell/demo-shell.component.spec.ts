@@ -208,6 +208,72 @@ describe('DemoShell — thread switch navigates URL', () => {
   });
 });
 
+describe('DemoShell — knob hydration from URL', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        THREADS_CONFIG,
+        provideRouter([
+          { path: 'embed', component: DemoShell },
+          { path: 'embed/:threadId', component: DemoShell },
+          { path: '', pathMatch: 'full', redirectTo: 'embed' },
+          { path: '**', redirectTo: 'embed' },
+        ]),
+      ],
+    });
+  });
+
+  it('hydrates model + effort from query params on mount', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/embed?model=gpt-5-nano&effort=high');
+    const fx = TestBed.createComponent(DemoShell);
+    fx.detectChanges();
+    const cmp = fx.componentInstance as unknown as {
+      model: () => string;
+      effort: () => string;
+    };
+    expect(cmp.model()).toBe('gpt-5-nano');
+    expect(cmp.effort()).toBe('high');
+  });
+
+  it('hydrates genUiMode from ?genui param', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/embed?genui=json-render');
+    const fx = TestBed.createComponent(DemoShell);
+    fx.detectChanges();
+    const cmp = fx.componentInstance as unknown as { genUiMode: () => string };
+    expect(cmp.genUiMode()).toBe('json-render');
+  });
+
+  it('hydrates colorScheme from ?color=light', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/embed?color=light');
+    const fx = TestBed.createComponent(DemoShell);
+    fx.detectChanges();
+    const cmp = fx.componentInstance as unknown as { colorScheme: () => string };
+    expect(cmp.colorScheme()).toBe('light');
+  });
+
+  it('ignores invalid ?color values', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/embed?color=purple');
+    const fx = TestBed.createComponent(DemoShell);
+    fx.detectChanges();
+    const cmp = fx.componentInstance as unknown as { colorScheme: () => string };
+    // Default is 'dark' — invalid value must not override it
+    expect(cmp.colorScheme()).toBe('dark');
+  });
+
+  it('hydrates selectedProjectId from ?project param', async () => {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/embed?project=proj-42');
+    const fx = TestBed.createComponent(DemoShell);
+    fx.detectChanges();
+    const cmp = fx.componentInstance as unknown as { selectedProjectId: () => string | null };
+    expect(cmp.selectedProjectId()).toBe('proj-42');
+  });
+});
+
 describe('DemoShell — knob URL writes', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
