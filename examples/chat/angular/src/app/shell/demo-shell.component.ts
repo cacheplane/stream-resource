@@ -39,14 +39,18 @@ export type DemoMode = 'embed' | 'popup' | 'sidebar';
 const MODES: readonly DemoMode[] = ['embed', 'popup', 'sidebar'] as const;
 const TELEMETRY_SURFACE = 'canonical_demo';
 
-/** Parse `/embed`, `/embed/<threadId>`, `/popup/<threadId>` etc. into
- *  `{mode, threadId}`. Source of truth for URL ↔ signal sync — see
- *  spec 2026-05-20-url-thread-routing-design.md. */
-function parseUrl(url: string): { mode: DemoMode; threadId: string | null } {
-  const segs = url.split('?')[0].split('#')[0].split('/').filter(Boolean);
-  const mode = (MODES as readonly string[]).includes(segs[0]) ? (segs[0] as DemoMode) : 'embed';
-  const threadId = segs[1] && segs[1].length > 0 ? segs[1] : null;
-  return { mode, threadId };
+const KNOB_DEFAULTS = {
+  model: 'gpt-5-mini',
+  effort: 'minimal',
+  genui: 'a2ui',
+  theme: 'default-dark',
+  color: 'dark',
+  project: null as string | null,
+} as const;
+
+function modeFromUrl(url: string): DemoMode {
+  const seg = url.split('?')[0].split('/').filter(Boolean)[0];
+  return (MODES as readonly string[]).includes(seg) ? (seg as DemoMode) : 'embed';
 }
 
 @Component({
@@ -102,6 +106,7 @@ export class DemoShell {
         if (currentTheme !== next) {
           this.theme.set(next);
           this.persistence.write('theme', next);
+          this.writeKnobsToUrl({ theme: next });
         }
       }
     });
@@ -112,46 +117,6 @@ export class DemoShell {
     effect(() => {
       void this.threadIdSignal();
       void this.threadsSvc.refresh();
-    });
-
-    // URL → signal. When the URL's threadId changes (paste link, back/
-    // forward, programmatic navigation), reflect it into threadIdSignal.
-    // The compare-and-set guard breaks the obvious URL→signal→URL loop:
-    // by the time the signal→URL effect below fires, both values match
-    // and `router.navigate` is skipped.
-    // URL → signal sync.
-    effect(() => {
-      const urlId = this.urlThreadId();
-      if (urlId !== this.threadIdSignal()) {
-        this.threadIdSignal.set(urlId);
-      }
-    });
-
-    // Validate URL thread ids whenever they appear. Decoupled from the
-    // sync effect above: on initial load the signal is hydrated from
-    // the URL synchronously (field initializer), so the sync guard
-    // would skip validation. This effect runs once per distinct id,
-    // including the initial one. Cache last-validated to avoid
-    // re-hitting the server on signal flips that round-trip the same
-    // id back through.
-    let lastValidated: string | null = null;
-    effect(() => {
-      const urlId = this.urlThreadId();
-      if (urlId && urlId !== lastValidated) {
-        lastValidated = urlId;
-        void this.validateUrlThreadId(urlId);
-      }
-    });
-
-    // signal → URL. When the agent auto-creates a thread, the sidenav
-    // switches threads, or onNewThread fires, push the new id into the
-    // URL. Skips when the URL already matches (also breaks the loop).
-    effect(() => {
-      const sigId = this.threadIdSignal();
-      const { mode, threadId: urlId } = this.urlState();
-      if (sigId === urlId) return;
-      const cmds: unknown[] = sigId ? ['/', mode, sigId] : ['/', mode];
-      void this.router.navigate(cmds as string[]);
     });
 
     // Refresh threads list when an agent run completes. The backend writes
@@ -173,23 +138,25 @@ export class DemoShell {
         this.searchQueryDebounced.set(q);
       }, 150);
     });
+
+    this.readUrlState();
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.readUrlState());
   }
 
-  /** Parsed URL — single source for both the active mode AND the URL's
-   *  thread id. Refreshes on every NavigationEnd so back/forward and
-   *  programmatic navigations both feed downstream effects. */
-  private readonly urlState = toSignal(
+  protected readonly mode = toSignal(
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
-      map((e) => parseUrl(e.urlAfterRedirects)),
-      startWith(parseUrl(this.router.url)),
+      map((e) => modeFromUrl(e.urlAfterRedirects)),
+      startWith(modeFromUrl(this.router.url)),
       takeUntilDestroyed(),
     ),
-    { initialValue: parseUrl(this.router.url) },
+    { initialValue: modeFromUrl(this.router.url) },
   );
-
-  protected readonly mode = computed<DemoMode>(() => this.urlState().mode);
-  private readonly urlThreadId = computed<string | null>(() => this.urlState().threadId);
 
   /**
    * Source of truth for the model picker. The shell owns it; the
@@ -307,11 +274,8 @@ export class DemoShell {
     { value: 'material-light', label: 'Material light' },
   ]);
 
-  /** Active thread id. URL is the source of truth (see urlState above);
-   *  this signal initialises from the URL on construction and is kept in
-   *  sync by the bidirectional effects in the constructor. The agent
-   *  watches this signal directly. */
-  protected readonly threadIdSignal = signal<string | null>(parseUrl(this.router.url).threadId);
+  /** URL-driven thread id (null when no :threadId param in route). */
+  protected readonly threadIdSignal = signal<string | null>(null);
 
   /** Title of the currently-selected thread, or 'New chat' if none. The
    *  Python graph writes thread.metadata.title from the first user message
@@ -347,12 +311,16 @@ export class DemoShell {
   protected readonly threadActions: ThreadActionAdapter = {
     delete: async (id) => {
       await this.threadsSvc.delete(id);
-      if (this.threadIdSignal() === id) this.threadIdSignal.set(null);
+      if (this.threadIdSignal() === id) {
+        void this.router.navigate(['/' + this.mode()], { queryParamsHandling: 'preserve' });
+      }
     },
     rename: (id, title) => this.threadsSvc.rename(id, title),
     archive: async (id) => {
       await this.threadsSvc.archive(id);
-      if (this.threadIdSignal() === id) this.threadIdSignal.set(null);
+      if (this.threadIdSignal() === id) {
+        void this.router.navigate(['/' + this.mode()], { queryParamsHandling: 'preserve' });
+      }
     },
     unarchive: (id) => this.threadsSvc.unarchive(id),
     pin: (id) => this.threadsSvc.pin(id),
@@ -374,10 +342,10 @@ export class DemoShell {
       assistantId: environment.assistantId,
       threadId: this.threadIdSignal,
       onThreadId: (id: string) => {
-        // The signal→URL effect picks this up and stamps the new id
-        // into the URL — no persistence write needed any more, URL is
-        // the source of truth.
-        this.threadIdSignal.set(id);
+        void this.router.navigate(['/' + this.mode(), id], {
+          queryParamsHandling: 'preserve',
+          replaceUrl: true,
+        });
       },
       // Phase 3B: tells SubagentTracker to treat `research` tool calls as
       // subagent dispatches and to materialize agent.subagents() from the
@@ -411,47 +379,40 @@ export class DemoShell {
   })();
 
   protected onModeChange(next: DemoMode | string): void {
-    // Preserve the active thread across mode switches: /embed/abc →
-    // /popup/abc keeps the conversation visible in the new chrome.
     const id = this.threadIdSignal();
-    void this.router.navigate(id ? ['/', next, id] : ['/', next]);
-  }
-
-  /** Silently redirect to the bare mode path when the URL's threadId
-   *  resolves to a 404. Uses `replaceUrl: true` so the back button
-   *  doesn't reload the broken link. Non-404 errors propagate from
-   *  the adapter as-is (genuine transport failures shouldn't be
-   *  swallowed). */
-  private async validateUrlThreadId(threadId: string): Promise<void> {
-    const thread = await this.threadsSvc.getThread(threadId);
-    if (thread) return;
-    await this.router.navigate(['/', this.mode()], { replaceUrl: true });
+    const segments = id ? ['/' + next, id] : ['/' + next];
+    void this.router.navigate(segments, { queryParamsHandling: 'preserve' });
   }
 
   onModelChange(next: string): void {
     this.model.set(next);
     this.persistence.write('model', next);
+    this.writeKnobsToUrl({ model: next });
   }
 
   protected onEffortChange(next: string): void {
     this.effort.set(next);
     this.persistence.write('effort', next);
+    this.writeKnobsToUrl({ effort: next });
   }
 
   protected onGenUiModeChange(next: string): void {
     this.genUiMode.set(next);
     this.persistence.write('genUiMode', next);
+    this.writeKnobsToUrl({ genui: next });
   }
 
   protected onThemeChange(next: string): void {
     this.theme.set(next);
     this.persistence.write('theme', next);
+    this.writeKnobsToUrl({ theme: next });
   }
 
   protected onColorSchemeChange(next: 'light' | 'dark' | string): void {
     if (next !== 'light' && next !== 'dark') return;
     this.colorScheme.set(next);
     this.persistence.write('colorScheme', next);
+    this.writeKnobsToUrl({ color: next });
   }
 
   protected onSidenavOpenChange(next: boolean): void {
@@ -471,12 +432,13 @@ export class DemoShell {
 
   /** Switch to an existing thread selected from the threads panel. */
   protected onThreadSelected(threadId: string): void {
-    this.threadIdSignal.set(threadId);
+    void this.router.navigate(['/' + this.mode(), threadId], { queryParamsHandling: 'preserve' });
   }
 
   protected onProjectSelected(projectId: string): void {
     this.selectedProjectId.set(projectId);
     this.persistence.write('selectedProjectId', projectId);
+    this.writeKnobsToUrl({ project: projectId });
   }
 
   protected onNewProjectClicked(): void {
@@ -494,7 +456,56 @@ export class DemoShell {
   protected async onNewThread(): Promise<void> {
     const sel = this.selectedProjectId();
     const id = await this.threadsSvc.create(sel ? { projectId: sel } : {});
-    if (id) this.threadIdSignal.set(id);
+    if (id) {
+      void this.router.navigate(['/' + this.mode(), id], { queryParamsHandling: 'preserve' });
+    }
+  }
+
+  private buildQueryParams(overrides: Partial<Record<keyof typeof KNOB_DEFAULTS, string | null>> = {}):
+    Record<string, string | null> {
+    const current: Record<keyof typeof KNOB_DEFAULTS, string | null> = {
+      model: this.model(),
+      effort: this.effort(),
+      genui: this.genUiMode(),
+      theme: this.theme(),
+      color: this.colorScheme(),
+      project: this.selectedProjectId(),
+    };
+    const merged = { ...current, ...overrides };
+    const params: Record<string, string | null> = {};
+    for (const key of Object.keys(KNOB_DEFAULTS) as (keyof typeof KNOB_DEFAULTS)[]) {
+      const value = merged[key];
+      params[key] = value !== null && value !== KNOB_DEFAULTS[key] ? value : null;
+    }
+    return params;
+  }
+
+  private writeKnobsToUrl(overrides: Partial<Record<keyof typeof KNOB_DEFAULTS, string | null>> = {}): void {
+    void this.router.navigate([], {
+      queryParams: this.buildQueryParams(overrides),
+      replaceUrl: true,
+    });
+  }
+
+  private readUrlState(): void {
+    let route = this.router.routerState.root;
+    while (route.firstChild) route = route.firstChild;
+    const threadId = route.snapshot.paramMap.get('threadId');
+    this.threadIdSignal.set(threadId);
+
+    const q = route.snapshot.queryParamMap;
+    const model = q.get('model');
+    if (model !== null) this.model.set(model);
+    const effort = q.get('effort');
+    if (effort !== null) this.effort.set(effort);
+    const genui = q.get('genui');
+    if (genui !== null) this.genUiMode.set(genui);
+    const theme = q.get('theme');
+    if (theme !== null) this.theme.set(theme);
+    const color = q.get('color');
+    if (color === 'light' || color === 'dark') this.colorScheme.set(color);
+    const project = q.get('project');
+    if (project !== null) this.selectedProjectId.set(project);
   }
 
   /**
