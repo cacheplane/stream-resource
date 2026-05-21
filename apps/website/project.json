@@ -64,8 +64,5 @@
         "config": "apps/website/playwright.config.ts"
       }
     }
-  },
-  "implicitDependencies": [
-    "//vercel.json"
-  ]
+  }
 }

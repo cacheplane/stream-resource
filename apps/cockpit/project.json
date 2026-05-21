@@ -215,18 +215,5 @@
         "cwd": "."
       }
     }
-  },
-  "implicitDependencies": [
-    "//apps/cockpit/scripts/capability-registry.ts",
-    "//apps/cockpit/scripts/deploy-smoke.ts",
-    "//scripts/assemble-demo.ts",
-    "//scripts/assemble-examples.ts",
-    "//scripts/demo-middleware.ts",
-    "//scripts/generate-shared-deployment-config.ts",
-    "//scripts/langgraph-proxy.ts",
-    "//scripts/rate-limit.ts",
-    "//vercel.cockpit.json",
-    "//vercel.demo.json",
-    "//vercel.examples.json"
-  ]
+  }
 }
